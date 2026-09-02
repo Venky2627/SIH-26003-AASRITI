@@ -46,6 +46,10 @@ class VillageMarketEngine(
             "বজাৰৰ তালিকাখন মনত ৰাখক আৰু বজাৰৰ পৰা বস্তুবোৰ বাছক। (Remember the shopping list and pick the items from the local market.)"
         )
     }
+
+    fun speakList(itemsText: String) {
+        voicePromptManager.speak("আপোনাৰ বজাৰৰ তালিকা: $itemsText")
+    }
 }
 
 @Composable
@@ -56,29 +60,42 @@ fun VillageMarketGameScreen(
     val phase by engine.gamePhase.collectAsState()
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
+    val roundCount by engine.roundCount.collectAsState()
 
-    // Authentic NER Local Village Market Items
-    val marketStall = remember {
+    // Authentic North Eastern Village Market inventory
+    val allStallGoods = remember {
         listOf(
             MarketItem("rice", "জহা চাউল (Joha Rice)", "🌾"),
             MarketItem("lemon", "কাজি নেমু (Assam Lemon)", "🍋"),
             MarketItem("chilli", "ভূত জলকীয়া (Bhut Jolokia)", "🌶️"),
             MarketItem("betel", "তামোল-পান (Paan)", "🍃"),
             MarketItem("tea", "অসম চাহ (Assam Tea)", "🍵"),
-            MarketItem("fish", "লোকেল মাছ (River Fish)", "🐟")
+            MarketItem("fish", "লোকেল মাছ (River Fish)", "🐟"),
+            MarketItem("oil", "সৰিয়হ তেল (Mustard Oil)", "🫙"),
+            MarketItem("bamboo", "বাঁহৰ গাজ (Bamboo Shoot)", "🎍"),
+            MarketItem("ginger", "আদা (Ginger)", "🫚")
         )
     }
 
-    // Number of items on shopping list based on difficulty
-    val listCount = when (difficulty) {
-        1 -> 2
-        2 -> 3
-        else -> 4
+    val (shoppingList, activeStall) = remember(difficulty, roundCount) {
+        val count = when (difficulty) {
+            1 -> 2
+            2 -> 3
+            3 -> 3
+            4 -> 4
+            else -> 5
+        }
+        val targetList = allStallGoods.take(count)
+        val stall = when (difficulty) {
+            1 -> targetList + allStallGoods.drop(count).take(2) // 4 items total in stall
+            2 -> targetList + allStallGoods.drop(count).take(3) // 6 items in stall
+            else -> allStallGoods // full market stall
+        }.shuffled()
+        Pair(targetList, stall)
     }
 
-    val shoppingList = remember(difficulty) { marketStall.take(listCount) }
     var collectedItems by remember { mutableStateOf(listOf<String>()) }
-    var showListBeforeMarket by remember { mutableStateOf(true) }
+    var showListPhase by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -88,7 +105,7 @@ fun VillageMarketGameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Header
+        // Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +119,7 @@ fun VillageMarketGameScreen(
             ) {
                 Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ (Level) $difficulty", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         when (phase) {
@@ -121,9 +138,15 @@ fun VillageMarketGameScreen(
                         color = Color(0xFFFFD700),
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        "বজাৰৰ তালিকাখন ভালদৰে মনত ৰাখক। বজাৰলৈ গৈ সেই বস্তুবোৰ আনিব লাগিব।",
+                        when (difficulty) {
+                            1 -> "বজাৰৰ ২ টা বস্তু মনত ৰাখি বজাৰৰ পৰা বুটলক।"
+                            2 -> "৩ টা বস্তুৰ তালিকাখন মনত ৰাখক।"
+                            3 -> "তালিকা মনত ৰাখক, অনাহুত বস্তু নলব।"
+                            4 -> "ডাঙৰ বজাৰৰ পৰা ৪ টা বস্তু সংগ্ৰহ কৰক।"
+                            else -> "মনোযোগেৰে ৫ টা বস্তু মনত ৰাখি বাছক।"
+                        },
                         fontSize = 18.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -133,8 +156,9 @@ fun VillageMarketGameScreen(
                     Button(
                         onClick = {
                             collectedItems = emptyList()
-                            showListBeforeMarket = true
+                            showListPhase = true
                             engine.startRound()
+                            engine.speakList(shoppingList.joinToString(", ") { it.name })
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(14.dp),
@@ -148,17 +172,18 @@ fun VillageMarketGameScreen(
             }
 
             GamePhase.PLAYING -> {
-                if (showListBeforeMarket) {
-                    // Memory memorization phase
+                if (showListPhase) {
+                    // Memorization Phase
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                            .background(Color(0xFF1E1E1E), RoundedCornerShape(18.dp))
+                            .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(18.dp))
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "📝 বজাৰৰ তালিকা (Shopping List)",
+                            "📝 মনত ৰাখিবলগীয়া তালিকা:",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFFFD700)
@@ -177,7 +202,7 @@ fun VillageMarketGameScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
-                            onClick = { showListBeforeMarket = false },
+                            onClick = { showListPhase = false },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
@@ -188,32 +213,32 @@ fun VillageMarketGameScreen(
                         }
                     }
                 } else {
-                    // Shopping Stall selection
+                    // Village Market Stall Selection Phase
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "তালিকাত থকা বস্তুবোৰ স্পৰ্শ কৰক:",
-                            fontSize = 20.sp,
+                            "বজাৰৰ পৰা বস্তুবোৰ স্পৰ্শ কৰক: (${collectedItems.size}/${shoppingList.size})",
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFFFD700),
-                            modifier = Modifier.padding(bottom = 14.dp)
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
 
-                        marketStall.chunked(2).forEach { rowItems ->
+                        activeStall.chunked(2).forEach { rowItems ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 rowItems.forEach { item ->
                                     val isCollected = collectedItems.contains(item.id)
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(96.dp)
+                                            .height(90.dp)
                                             .background(
                                                 if (isCollected) Color(0xFF1B5E20) else Color(0xFF1E1E1E),
                                                 RoundedCornerShape(14.dp)
@@ -224,12 +249,11 @@ fun VillageMarketGameScreen(
                                                 RoundedCornerShape(14.dp)
                                             )
                                             .clickable(enabled = !isCollected) {
-                                                val nextCollected = collectedItems + item.id
-                                                collectedItems = nextCollected
-
                                                 val isTarget = shoppingList.any { it.id == item.id }
                                                 if (isTarget) {
-                                                    if (nextCollected.count { id -> shoppingList.any { it.id == id } } == shoppingList.size) {
+                                                    val next = collectedItems + item.id
+                                                    collectedItems = next
+                                                    if (next.size == shoppingList.size) {
                                                         engine.onAnswerAttempt(isCorrect = true)
                                                     }
                                                 } else {
@@ -239,10 +263,10 @@ fun VillageMarketGameScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(item.emoji, fontSize = 36.sp)
+                                            Text(item.emoji, fontSize = 34.sp)
                                             Text(
                                                 item.name,
-                                                fontSize = 13.sp,
+                                                fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isCollected) Color(0xFF00E676) else Color.White
                                             )

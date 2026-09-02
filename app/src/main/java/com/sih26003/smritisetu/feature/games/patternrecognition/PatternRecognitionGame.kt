@@ -24,6 +24,12 @@ import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 import com.sih26003.smritisetu.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
+data class PatternChallenge(
+    val sequence: List<String>,
+    val correctAnswer: String,
+    val choices: List<String>
+)
+
 class PatternRecognitionEngine(
     patientId: String,
     gameRepository: GameRepository,
@@ -54,19 +60,37 @@ fun PatternRecognitionGameScreen(
     val phase by engine.gamePhase.collectAsState()
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
+    val roundCount by engine.roundCount.collectAsState()
 
-    // High contrast pattern sequence: e.g. 🟡 🔷 🟡 🔷 [ ? ] -> Answer: 🟡
-    val patternSymbols = when (difficulty) {
-        1 -> listOf("🟡", "🔷", "🟡", "🔷", "❓")
-        2 -> listOf("🟡", "🔷", "🟩", "🟡", "🔷", "❓")
-        else -> listOf("🟡", "🔷", "🟩", "🔺", "🟡", "🔷", "❓")
+    // Level-scaled pattern challenges
+    val challenge = remember(difficulty, roundCount) {
+        when (difficulty) {
+            1 -> {
+                // Simple 2-item alternating pattern
+                if (roundCount % 2 == 1) {
+                    PatternChallenge(listOf("🟡", "🔷", "🟡", "🔷", "❓"), "🟡", listOf("🟡", "🔷"))
+                } else {
+                    PatternChallenge(listOf("🔴", "🟢", "🔴", "🟢", "❓"), "🔴", listOf("🔴", "🟢"))
+                }
+            }
+            2 -> {
+                // 3-item pattern
+                PatternChallenge(listOf("🟡", "🔷", "🟩", "🟡", "🔷", "❓"), "🟩", listOf("🟡", "🔷", "🟩"))
+            }
+            3 -> {
+                // Longer sequence with step rhythm
+                PatternChallenge(listOf("🔺", "🔺", "🔵", "🔺", "🔺", "❓"), "🔵", listOf("🔺", "🔵", "🟡"))
+            }
+            4 -> {
+                // Complex pattern + distractors
+                PatternChallenge(listOf("🔶", "🔷", "🔷", "🔶", "🔷", "❓"), "🔷", listOf("🔶", "🔷", "🔺", "🟩"))
+            }
+            else -> {
+                // Level 5: Abstract sequence requiring fast evaluation
+                PatternChallenge(listOf("🔴", "🔺", "🔵", "🔺", "🔴", "🔺", "❓"), "🔵", listOf("🔴", "🔵", "🔺", "🟡"))
+            }
+        }
     }
-    val correctAnswer = when (difficulty) {
-        1 -> "🟡"
-        2 -> "🟩"
-        else -> "🟩"
-    }
-    val choices = listOf("🟡", "🔷", "🟩", "🔺")
 
     Column(
         modifier = Modifier
@@ -76,7 +100,7 @@ fun PatternRecognitionGameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Header
+        // Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,7 +114,7 @@ fun PatternRecognitionGameScreen(
             ) {
                 Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ (Level) $difficulty", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         when (phase) {
@@ -103,15 +127,21 @@ fun PatternRecognitionGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "🔷 আৰ্হি চিনাক্তকৰণ (Pattern)",
-                        fontSize = 24.sp,
+                        "🔷 আৰ্হি চিনাক্তকৰণ (Pattern Recognition)",
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700),
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        "আৰ্হিটো মন দি চাওক আৰু প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি হ'ব বাছক।",
+                        when (difficulty) {
+                            1 -> "আৰ্হিটো চাওক আৰু প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি হ'ব বাছক।"
+                            2 -> "তিনিটা ৰঙৰ ক্ৰমটো মন দি বুজি লওক।"
+                            3 -> "দীঘলীয়া আৰ্হিৰ পিছৰ বস্তুটো নিৰ্ণয় কৰক।"
+                            4 -> "জটিল ক্ৰমৰ মাজৰ পৰা সঠিক উত্তৰ বিচাৰক।"
+                            else -> "ক্ষিপ্ৰভাৱে আৰ্হিটো পৰীক্ষা কৰি বাছক।"
+                        },
                         fontSize = 18.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -137,28 +167,28 @@ fun PatternRecognitionGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "ক্ৰম অনুসৰি পিছৰ বস্তুটো কি? (What comes next?)",
-                        fontSize = 20.sp,
+                        "প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি বহিব? (What comes next?)",
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700),
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Sequence Display Row
+                    // Sequence Display Row with High Contrast
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
                             .border(2.dp, Color(0xFF424242), RoundedCornerShape(16.dp))
-                            .padding(16.dp),
+                            .padding(vertical = 16.dp, horizontal = 8.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        patternSymbols.forEach { symbol ->
+                        challenge.sequence.forEach { symbol ->
                             Text(
                                 symbol,
-                                fontSize = if (symbol == "❓") 36.sp else 32.sp,
+                                fontSize = if (symbol == "❓") 36.sp else 30.sp,
                                 color = if (symbol == "❓") Color(0xFFFFD700) else Color.White
                             )
                         }
@@ -166,26 +196,26 @@ fun PatternRecognitionGameScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Tappable Choices
                     Text(
-                        "তলৰ এটা বাছক: (Tap your choice)",
-                        fontSize = 18.sp,
+                        "তলৰ যিকোনো এটা স্পৰ্শ কৰক: (Tap choice)",
+                        fontSize = 17.sp,
                         color = Color(0xFFE0E0E0),
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        modifier = Modifier.padding(bottom = 14.dp)
                     )
 
+                    // Big Tappable Choice Targets
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        choices.forEach { choice ->
+                        challenge.choices.forEach { choice ->
                             Box(
                                 modifier = Modifier
                                     .size(72.dp)
                                     .background(Color(0xFF262626), RoundedCornerShape(16.dp))
-                                    .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
+                                    .border(2.5.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
                                     .clickable {
-                                        val isCorrect = (choice == correctAnswer)
+                                        val isCorrect = (choice == challenge.correctAnswer)
                                         engine.onAnswerAttempt(isCorrect)
                                     },
                                 contentAlignment = Alignment.Center

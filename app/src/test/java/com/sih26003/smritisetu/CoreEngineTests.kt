@@ -1,6 +1,7 @@
 package com.sih26003.smritisetu
 
 import com.sih26003.smritisetu.core.security.CryptoUtils
+import com.sih26003.smritisetu.feature.games.framework.GameId
 import com.sih26003.smritisetu.feature.games.framework.PerformanceCollector
 import org.junit.Assert.*
 import org.junit.Test
@@ -44,5 +45,24 @@ class CoreEngineTests {
             else -> 2 // Maintain
         }
         assertEquals(2, mockRecommendation)
+    }
+
+    @Test
+    fun testAllSixGamesRegistered() {
+        val gameIds = GameId.values()
+        assertEquals(6, gameIds.size)
+        assertTrue(gameIds.contains(GameId.FAMILY_TRIVIA))
+        assertTrue(gameIds.contains(GameId.VOICE_CUE_CARD))
+        assertTrue(gameIds.contains(GameId.SEQUENCING))
+        assertTrue(gameIds.contains(GameId.CATEGORISATION))
+        assertTrue(gameIds.contains(GameId.VILLAGE_MARKET))
+        assertTrue(gameIds.contains(GameId.PATTERN_RECOGNITION))
+
+        // Confirm clinical domains are defined without diagnostic claims
+        gameIds.forEach { g ->
+            assertFalse(g.clinicalDomain.contains("Diagnosis"))
+            assertFalse(g.titleIndic.isBlank())
+            assertFalse(g.emoji.isBlank())
+        }
     }
 }

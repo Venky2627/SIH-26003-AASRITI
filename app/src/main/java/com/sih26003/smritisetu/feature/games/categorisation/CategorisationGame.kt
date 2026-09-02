@@ -24,7 +24,9 @@ import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 import com.sih26003.smritisetu.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
-data class CategorisationItem(val name: String, val category: String, val emoji: String)
+data class CategorisationItem(val name: String, val categoryId: String, val emoji: String)
+
+data class CategoryDefinition(val id: String, val labelIndic: String, val emoji: String)
 
 class CategorisationEngine(
     patientId: String,
@@ -56,28 +58,38 @@ fun CategorisationGameScreen(
     val phase by engine.gamePhase.collectAsState()
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
+    val roundCount by engine.roundCount.collectAsState()
 
-    // Test Item: আম (Mango) -> ফল (Fruits) vs শাক-পাচলি (Vegetables)
-    val testItem = remember {
-        CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭")
+    val categories = remember {
+        listOf(
+            CategoryDefinition("FRUIT", "ফল-মূল (Fruits)", "🍎"),
+            CategoryDefinition("VEGETABLE", "শাক-পাচলি (Vegetables)", "🥬"),
+            CategoryDefinition("ANIMAL", "পোহনীয়া জীৱ (Animals)", "🐄"),
+            CategoryDefinition("CLOTH", "কাপোৰ (Traditional Wear)", "🧣")
+        )
     }
 
-    val categories = when (difficulty) {
-        1 -> listOf(
-            Pair("FRUIT", "ফল-মূল (Fruits) 🍎"),
-            Pair("VEG", "শাক-পাচলি (Vegetables) 🥬")
+    val itemPool = remember {
+        listOf(
+            CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭"),
+            CategorisationItem("মালভোগ কল (Banana)", "FRUIT", "🍌"),
+            CategorisationItem("তিতা কেৰেলা (Bitter Gourd)", "VEGETABLE", "🥒"),
+            CategorisationItem("জাতি লাউ (Bottle Gourd)", "VEGETABLE", "🥬"),
+            CategorisationItem("ঘৰচীয়া গাই (Cow)", "ANIMAL", "🐄"),
+            CategorisationItem("ফুলাম গামোচা (Gamosa)", "CLOTH", "🧣")
         )
-        2 -> listOf(
-            Pair("FRUIT", "ফল-মূল (Fruits) 🍎"),
-            Pair("VEG", "শাক-পাচলি (Vegetables) 🥬"),
-            Pair("ANIMAL", "পোহনীয়া জন্তু (Animals) 🐄")
-        )
-        else -> listOf(
-            Pair("FRUIT", "ফল-মূল (Fruits) 🍎"),
-            Pair("VEG", "শাক-পাচলি (Vegetables) 🥬"),
-            Pair("ANIMAL", "পোহনীয়া জন্তু (Animals) 🐄"),
-            Pair("WEAR", "কাপোৰ-কানি (Clothes) 🧣")
-        )
+    }
+
+    val activeCategoryList = remember(difficulty) {
+        when (difficulty) {
+            1 -> categories.take(2)
+            2 -> categories.take(3)
+            else -> categories
+        }
+    }
+
+    val currentItem = remember(difficulty, roundCount) {
+        itemPool[(roundCount - 1) % itemPool.size]
     }
 
     Column(
@@ -88,7 +100,7 @@ fun CategorisationGameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Header
+        // Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +114,7 @@ fun CategorisationGameScreen(
             ) {
                 Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ (Level) $difficulty", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         when (phase) {
@@ -121,12 +133,19 @@ fun CategorisationGameScreen(
                         color = Color(0xFFFFD700),
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        "বস্তুটো চাই সঠিক দলটো বাছক। ফল নে পাচলি?",
+                        when (difficulty) {
+                            1 -> "বস্তুটো চাই ২ টা দলৰ পৰা সঠিক দলটো বাছক।"
+                            2 -> "৩ টা দলৰ মাজৰ পৰা সঠিক দলটো চিনাক্ত কৰক।"
+                            3 -> "কম পৰিচিত বস্তুৰ সঠিক শ্ৰেণী নিৰ্ধাৰণ কৰক।"
+                            4 -> "৪ টা সুকীয়া দলৰ মাজৰ পৰা বাছক।"
+                            else -> "মনোযোগেৰে আৰু ক্ষিপ্ৰভাৱে শ্ৰেণী নিৰ্বাচন কৰক।"
+                        },
                         fontSize = 18.sp,
                         color = Color.White,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        lineHeight = 26.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
@@ -147,45 +166,50 @@ fun CategorisationGameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Item to classify
+                    // Item to classify with high contrast border
                     Box(
                         modifier = Modifier
-                            .size(160.dp)
+                            .size(150.dp)
                             .background(Color(0xFF1E1E1E), RoundedCornerShape(20.dp))
                             .border(3.dp, Color(0xFFFFD700), RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(testItem.emoji, fontSize = 64.sp)
-                            Text(testItem.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(currentItem.emoji, fontSize = 58.sp)
+                            Text(currentItem.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        "এইটো কিহৰ দলত পৰে? (Which category?)",
+                        "এইটো কিহৰ দলত পৰে? (Which group?)",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Big Category Buttons
-                    categories.forEach { (catId, catLabel) ->
+                    // Large Category Target Buttons
+                    activeCategoryList.forEach { category ->
                         Button(
                             onClick = {
-                                val isCorrect = (catId == testItem.category)
+                                val isCorrect = (category.id == currentItem.categoryId)
                                 engine.onAnswerAttempt(isCorrect)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(64.dp)
+                                .height(62.dp)
                                 .padding(vertical = 4.dp)
                                 .border(2.dp, Color(0xFF424242), RoundedCornerShape(14.dp))
                         ) {
-                            Text(catLabel, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                "${category.emoji} ${category.labelIndic}",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
                 }

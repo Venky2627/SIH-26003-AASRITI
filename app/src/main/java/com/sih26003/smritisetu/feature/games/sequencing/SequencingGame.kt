@@ -24,7 +24,18 @@ import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 import com.sih26003.smritisetu.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
-data class SequenceStep(val stepIndex: Int, val description: String, val emoji: String)
+data class SequenceStep(
+    val stepOrder: Int, // 1, 2, 3... or -1 for distractor
+    val description: String,
+    val emoji: String,
+    val isDistractor: Boolean = false
+)
+
+data class ActivityScenario(
+    val id: String,
+    val title: String,
+    val steps: List<SequenceStep>
+)
 
 class SequencingEngine(
     patientId: String,
@@ -56,19 +67,59 @@ fun SequencingGameScreen(
     val phase by engine.gamePhase.collectAsState()
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
+    val roundCount by engine.roundCount.collectAsState()
 
-    // Example Scenario: Making Traditional Assam Milk Tea (চাহ তৈয়াৰ কৰা)
-    val fullSteps = remember {
-        listOf(
-            SequenceStep(1, "১. পানীত চাহপাত উতলোৱা (Boil water & tea)", "🫖"),
-            SequenceStep(2, "২. গাখীৰ আৰু চেনি দিয়া (Add milk & sugar)", "🥛"),
-            SequenceStep(3, "৩. কাপত চাহ বাকি খোৱা (Pour into cup & enjoy)", "☕")
+    // Cultural activities: Assam Tea Making and Namghar Morning Routine
+    val teaScenario = remember {
+        ActivityScenario(
+            id = "tea",
+            title = "চাহ তৈয়াৰ কৰা (Making Assam Tea)",
+            steps = listOf(
+                SequenceStep(1, "১. পানীত চাহপাত উতলোৱা (Boil water & tea)", "🫖"),
+                SequenceStep(2, "২. গাখীৰ আৰু চেনি দিয়া (Add milk & sugar)", "🥛"),
+                SequenceStep(3, "৩. ছাকনিৰে চাহ ছকা (Strain the tea)", "☕"),
+                SequenceStep(4, "৪. কাপত বাকি আনন্দ লোৱা (Pour & drink)", "🍵"),
+                SequenceStep(-1, "ছাতি খোলা (Open umbrella)", "☂️", isDistractor = true)
+            )
         )
     }
 
-    val currentSteps = when (difficulty) {
-        1 -> fullSteps.take(2)
-        else -> fullSteps
+    val morningScenario = remember {
+        ActivityScenario(
+            id = "morning",
+            title = "নামঘৰলৈ যোৱাৰ প্ৰস্তুতি (Morning Routine)",
+            steps = listOf(
+                SequenceStep(1, "১. হাত-মুখ ধোৱা (Freshen up)", "🚰"),
+                SequenceStep(2, "২. পৰিষ্কাৰ কাপোৰ পিন্ধা (Wear clean clothes)", "👕"),
+                SequenceStep(3, "৩. ফুলাম গামোচা লোৱা (Take Gamosa)", "🧣"),
+                SequenceStep(4, "৪. নামঘৰলৈ খোজ কঢ়া (Walk to Namghar)", "🚶"),
+                SequenceStep(5, "৫. সেৱা জনোৱা (Offer prayers)", "🙏"),
+                SequenceStep(-1, "বজাৰৰ মোনা লোৱা (Take market bag)", "🛍️", isDistractor = true)
+            )
+        )
+    }
+
+    val activeScenario = if (roundCount % 2 == 1) teaScenario else morningScenario
+
+    // Select step items and distractors according to difficulty level
+    val (displayedSteps, validStepsCount) = remember(difficulty, activeScenario) {
+        when (difficulty) {
+            1 -> Pair(activeScenario.steps.filter { !it.isDistractor }.take(2), 2)
+            2 -> Pair(activeScenario.steps.filter { !it.isDistractor }.take(3), 3)
+            3 -> Pair(activeScenario.steps.filter { !it.isDistractor }.take(4), 4)
+            4 -> {
+                // 5 items: 4 valid steps + 1 distractor
+                val valid = activeScenario.steps.filter { !it.isDistractor }.take(4)
+                val distractor = activeScenario.steps.filter { it.isDistractor }
+                Pair((valid + distractor).shuffled(), 4)
+            }
+            else -> {
+                // Level 5: 5-6 items with distractor
+                val valid = activeScenario.steps.filter { !it.isDistractor }
+                val distractor = activeScenario.steps.filter { it.isDistractor }
+                Pair((valid + distractor).shuffled(), valid.size)
+            }
+        }
     }
 
     var selectedOrder by remember { mutableStateOf(listOf<SequenceStep>()) }
@@ -95,7 +146,7 @@ fun SequencingGameScreen(
             ) {
                 Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ (Level) $difficulty", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         when (phase) {
@@ -108,15 +159,21 @@ fun SequencingGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "🫖 দৈনন্দিন ক্ৰম (Daily Sequencing)",
-                        fontSize = 24.sp,
+                        "🫖 দৈনন্দিন ক্ৰম: ${activeScenario.title}",
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700),
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        "চাহ তৈয়াৰ কৰাৰ সঠিক ক্ৰমটো বাছক। প্ৰথম কামটো প্ৰথমে স্পৰ্শ কৰক।",
+                        when (difficulty) {
+                            1 -> "কাম দুটাৰ মাজৰ পৰা প্ৰথম কামটো প্ৰথমে বাছক।"
+                            2 -> "কাম তিনিটা সঠিক ক্ৰম অনুসৰি সজাওক।"
+                            3 -> "চাৰিটা কাম একাদিক্ৰমে সজাওক।"
+                            4 -> "অদৰকাৰী কামটো বাদ দি ৪ টা কাম ক্ৰমত সজাওক।"
+                            else -> "মনোযোগেৰে সম্পূৰ্ণ ক্ৰমটো সজাওক।"
+                        },
                         fontSize = 18.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -145,47 +202,54 @@ fun SequencingGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "প্ৰথম কামটো বাছক: (Pick the next step)",
+                        "পৰৱৰ্তী কামটো বাছক: (${selectedOrder.size + 1}/$validStepsCount)",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700),
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 14.dp)
                     )
 
-                    // Display choices
-                    currentSteps.shuffled().forEach { step ->
+                    // Step cards
+                    displayedSteps.forEach { step ->
                         val isChosen = selectedOrder.contains(step)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 6.dp)
+                                .padding(vertical = 5.dp)
                                 .background(
                                     if (isChosen) Color(0xFF1B5E20) else Color(0xFF1E1E1E),
                                     RoundedCornerShape(14.dp)
                                 )
-                                .border(2.dp, if (isChosen) Color(0xFF00E676) else Color(0xFF424242), RoundedCornerShape(14.dp))
+                                .border(
+                                    2.dp,
+                                    if (isChosen) Color(0xFF00E676) else Color(0xFF424242),
+                                    RoundedCornerShape(14.dp)
+                                )
                                 .clickable(enabled = !isChosen) {
-                                    val nextOrder = selectedOrder + step
-                                    selectedOrder = nextOrder
-
-                                    // Validate sequence
-                                    val expectedStep = currentSteps[selectedOrder.size - 1]
-                                    if (step.stepIndex == expectedStep.stepIndex) {
-                                        if (nextOrder.size == currentSteps.size) {
-                                            engine.onAnswerAttempt(isCorrect = true)
-                                        }
-                                    } else {
+                                    if (step.isDistractor) {
+                                        // Picked an irrelevant distractor step
                                         engine.onAnswerAttempt(isCorrect = false)
-                                        selectedOrder = emptyList() // Reset for retry
+                                    } else {
+                                        val expectedOrder = selectedOrder.size + 1
+                                        if (step.stepOrder == expectedOrder) {
+                                            val nextOrder = selectedOrder + step
+                                            selectedOrder = nextOrder
+                                            if (nextOrder.size == validStepsCount) {
+                                                engine.onAnswerAttempt(isCorrect = true)
+                                            }
+                                        } else {
+                                            engine.onAnswerAttempt(isCorrect = false)
+                                            selectedOrder = emptyList() // Soft reset for gentle retry
+                                        }
                                     }
                                 }
-                                .padding(16.dp)
+                                .padding(14.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(step.emoji, fontSize = 32.sp, modifier = Modifier.padding(right = 12.dp))
+                                Text(step.emoji, fontSize = 28.sp, modifier = Modifier.padding(right = 12.dp))
                                 Text(
                                     step.description,
-                                    fontSize = 17.sp,
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isChosen) Color.White else Color(0xFFFFD700)
                                 )
