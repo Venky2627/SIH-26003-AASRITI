@@ -1,0 +1,59 @@
+# ==============================================================================
+# SIH26003 - CODEOWNERS
+# Review Responsibility Mapping for 6 Equal Contributors
+# Note: CODEOWNERS defines peer review routing, NOT rank or hierarchy.
+# ==============================================================================
+
+# Global fallback: All 6 contributors share review responsibility for top-level files
+*                                                                   @TeamNameSIH/core-team
+
+# ------------------------------------------------------------------------------
+# 1. SHARED / HIGH-CONFLICT INFRASTRUCTURE (Requires 2 Reviewers)
+# ------------------------------------------------------------------------------
+/build.gradle.kts                                                   @TeamNameSIH/core-team
+/settings.gradle.kts                                                @TeamNameSIH/core-team
+/gradle.properties                                                  @TeamNameSIH/core-team
+/gradle/                                                            @TeamNameSIH/core-team
+/app/build.gradle.kts                                               @TeamNameSIH/core-team
+/app/src/main/AndroidManifest.xml                                   @TeamNameSIH/core-team
+/app/src/main/java/com/sih26003/smritisetu/MainActivity.kt          @TeamNameSIH/core-team
+/app/src/main/java/com/sih26003/smritisetu/SmritiSetuApplication.kt @TeamNameSIH/core-team
+/app/src/main/java/com/sih26003/smritisetu/data/local/               @TeamNameSIH/core-team
+/app/src/main/java/com/sih26003/smritisetu/data/firebase/            @TeamNameSIH/core-team
+
+# ------------------------------------------------------------------------------
+# 2. FEATURE AREA OWNERSHIP (Default Reviewer Responsibilities)
+# ------------------------------------------------------------------------------
+
+# Member 1: Venkatesh (Game Framework + Session / Metrics)
+# Default Reviewer: Jasleen
+/app/src/main/java/com/sih26003/smritisetu/feature/games/framework/ @Venkatesh
+/app/src/main/java/com/sih26003/smritisetu/data/local/entities/     @Venkatesh
+/app/src/main/java/com/sih26003/smritisetu/ml/                      @Venkatesh
+/scripts/train_decision_tree.py                                     @Venkatesh
+
+# Member 2: Jasleen (Family Trivia + Personalization Integration)
+# Default Reviewer: Krishna
+/app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/ @Jasleen
+
+# Member 3: Krishna (Voice Cue Card + Voice Experience)
+# Default Reviewer: Shravani
+/app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/ @Krishna
+/app/src/main/java/com/sih26003/smritisetu/voice/                     @Krishna
+/assets/language-packs/                                               @Krishna
+/app/src/main/assets/language-packs/                                  @Krishna
+
+# Member 4: Shravani (Reminders System)
+# Default Reviewer: Bhavya
+/app/src/main/java/com/sih26003/smritisetu/feature/reminders/         @Shravani
+
+# Member 5: Bhavya (Accessibility + Patient UI Polish)
+# Default Reviewer: Kimaya
+/app/src/main/res/values/                                            @Bhavya
+/app/src/main/java/com/sih26003/smritisetu/feature/patient/          @Bhavya
+/app/src/main/java/com/sih26003/smritisetu/feature/auth/             @Bhavya
+
+# Member 6: Kimaya (Sequencing + Categorisation)
+# Default Reviewer: Venkatesh
+/app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/     @Kimaya
+/app/src/main/java/com/sih26003/smritisetu/feature/games/categorisation/ @Kimaya
