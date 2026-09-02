@@ -1,0 +1,112 @@
+{
+  "is_leaf": false,
+  "feature": "current_difficulty",
+  "threshold": 2.5,
+  "left": {
+    "is_leaf": false,
+    "feature": "accuracy",
+    "threshold": 0.845,
+    "left": {
+      "is_leaf": false,
+      "feature": "accuracy",
+      "threshold": 0.645,
+      "left": {
+        "is_leaf": true,
+        "recommended_difficulty": 1
+      },
+      "right": {
+        "is_leaf": false,
+        "feature": "current_difficulty",
+        "threshold": 1.5,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 1
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 2
+        }
+      }
+    },
+    "right": {
+      "is_leaf": false,
+      "feature": "current_difficulty",
+      "threshold": 1.5,
+      "left": {
+        "is_leaf": false,
+        "feature": "accuracy",
+        "threshold": 0.865,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 2
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 2
+        }
+      },
+      "right": {
+        "is_leaf": false,
+        "feature": "accuracy",
+        "threshold": 0.865,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 3
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 3
+        }
+      }
+    }
+  },
+  "right": {
+    "is_leaf": false,
+    "feature": "current_difficulty",
+    "threshold": 4.5,
+    "left": {
+      "is_leaf": false,
+      "feature": "accuracy",
+      "threshold": 0.645,
+      "left": {
+        "is_leaf": false,
+        "feature": "current_difficulty",
+        "threshold": 3.5,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 2
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 3
+        }
+      },
+      "right": {
+        "is_leaf": false,
+        "feature": "current_difficulty",
+        "threshold": 3.5,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 3
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 4
+        }
+      }
+    },
+    "right": {
+      "is_leaf": false,
+      "feature": "accuracy",
+      "threshold": 0.645,
+      "left": {
+        "is_leaf": true,
+        "recommended_difficulty": 4
+      },
+      "right": {
+        "is_leaf": true,
+        "recommended_difficulty": 5
+      }
+    }
+  }
+}

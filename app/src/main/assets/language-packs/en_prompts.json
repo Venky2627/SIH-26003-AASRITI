@@ -1,0 +1,19 @@
+{
+  "language": "en",
+  "language_name": "English",
+  "prompts": {
+    "welcome": "Welcome to SmritiSetu. Choose your activity.",
+    "tap_photo": "Tap your photo to begin.",
+    "family_trivia_instructions": "Look closely at the photo and choose your family member.",
+    "voice_cue_card_instructions": "Listen carefully and tap the matching item.",
+    "sequencing_instructions": "Arrange these daily steps in the correct order.",
+    "categorisation_instructions": "Group the items that belong together.",
+    "village_market_instructions": "Remember your market list and collect the items.",
+    "pattern_instructions": "Observe the pattern and pick what comes next.",
+    "correct_feedback": "Wonderful job! That was correct.",
+    "encourage_feedback": "That's completely fine. Let's try once more together.",
+    "next_round": "Let's proceed to the next round.",
+    "medicine_reminder": "It is time for your scheduled medication.",
+    "hydration_reminder": "Time to drink a fresh glass of water."
+  }
+}
