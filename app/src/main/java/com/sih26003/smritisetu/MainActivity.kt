@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
+import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.feature.auth.PinAuthScreen
 import com.sih26003.smritisetu.feature.auth.RoleAndModeSelectScreen
 import com.sih26003.smritisetu.feature.caregiver.CaregiverDashboardScreen
@@ -27,6 +28,7 @@ import com.sih26003.smritisetu.feature.games.voicecuecard.VoiceCueCardEngine
 import com.sih26003.smritisetu.feature.games.voicecuecard.VoiceCueCardGameScreen
 import com.sih26003.smritisetu.feature.patient.PatientHomeScreen
 import com.sih26003.smritisetu.feature.reminders.RemindersScreen
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -38,7 +40,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val scope = rememberCoroutineScope()
             var activePatient by remember { mutableStateOf<PatientEntity?>(null) }
-            var activePatientRelationships by remember { mutableStateOf<List<com.sih26003.smritisetu.data.local.entities.RelationshipEntity>>(emptyList()) }
+            var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
 
             NavHost(navController = navController, startDestination = "role_select") {
                 // 1. Role Selection & Direct Patient Photo Mode
@@ -48,6 +50,9 @@ class MainActivity : ComponentActivity() {
                         onPatientSelected = { patient ->
                             activePatient = patient
                             app.voicePromptManager.setLanguage(patient.primaryLanguage)
+                            scope.launch {
+                                activePatientRelationships = app.patientRepository.getRelationshipsList(patient.id)
+                            }
                             navController.navigate("patient_home")
                         },
                         onCaregiverLoginSelected = {
@@ -92,7 +97,12 @@ class MainActivity : ComponentActivity() {
                         voicePromptManager = app.voicePromptManager,
                         onSelectGame = { gameId ->
                             when (gameId) {
-                                GameId.FAMILY_TRIVIA -> navController.navigate("game_family_trivia")
+                                GameId.FAMILY_TRIVIA -> {
+                                    scope.launch {
+                                        activePatientRelationships = app.patientRepository.getRelationshipsList(p.id)
+                                        navController.navigate("game_family_trivia")
+                                    }
+                                }
                                 GameId.VOICE_CUE_CARD -> navController.navigate("game_voice_cue_card")
                                 GameId.SEQUENCING -> navController.navigate("game_sequencing")
                                 GameId.CATEGORISATION -> navController.navigate("game_categorisation")
@@ -107,7 +117,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 1: Family Trivia
                 composable("game_family_trivia") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id, activePatientRelationships) {
                         FamilyTriviaEngine(
                             patientId = p.id,
                             relationships = activePatientRelationships,
@@ -123,7 +133,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 2: Voice Cue Card
                 composable("game_voice_cue_card") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id) {
                         VoiceCueCardEngine(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
@@ -138,7 +148,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 3: Sequencing
                 composable("game_sequencing") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id) {
                         SequencingEngine(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
@@ -153,7 +163,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 4: Categorisation
                 composable("game_categorisation") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id) {
                         CategorisationEngine(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
@@ -168,7 +178,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 5: Village Market
                 composable("game_village_market") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id) {
                         VillageMarketEngine(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
@@ -183,7 +193,7 @@ class MainActivity : ComponentActivity() {
                 // GAME 6: Pattern Recognition
                 composable("game_pattern_recognition") {
                     val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                    val engine = remember {
+                    val engine = remember(p.id) {
                         PatternRecognitionEngine(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
