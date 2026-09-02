@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude sensitive patient database and media files from cloud backup -->
+    <exclude domain="database" path="smritisetu.db" />
+</full-backup-content>
