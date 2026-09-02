@@ -15,45 +15,50 @@
 
 ## 🛑 Strict Engineering Directives for AI Assistants
 
-### 1. Offline-First is Absolute Law
+### 1. Offline-First is Absolute Law ("ROOM IS KING")
 * NEVER write code that assumes an active internet connection.
-* NEVER suggest third-party cloud speech APIs (e.g., Google Speech-to-Text API, AWS Transcribe, OpenAI Whisper cloud) for the core user loop.
-* ALL speech inference must use local **ONNX Runtime Mobile** with the quantized **IndicConformer** model.
-* ALL game state and patient metrics must be written immediately to **local SQLite (SQLCipher)** before any background sync queueing is attempted.
+* Local SQLite via **Room Database** is the single source of truth.
+* Firebase is used ONLY for background opportunistic backup, sharing, and sync.
+* Adaptive difficulty uses local **Decision Tree Classifier** in Kotlin (`assets/ml/decision_tree_difficulty.json`). Zero cloud inference.
 
 ### 2. Strict Healthcare Privacy & DPDA 2023
 * NEVER save raw microphone audio files (`.wav`, `.mp3`) to disk storage.
-* Audio streams must be processed directly from volatile memory and explicitly zeroed out after inference.
-* Always enforce caregiver consent validation before unlocking assessment flows.
+* Audio streams must be processed directly from volatile memory and explicitly zeroed out.
+* Caregivers and Doctors use local 6-digit PINs (SHA-256 hashed in Room).
+* Patients use **NO PIN** (direct photo/avatar card select). **NO OTP/SMS**.
 
 ### 3. Elderly & Dementia Accessibility (WCAG 2.2 AAA)
-* All interactive touch targets must be at least `64x64 dp`.
+* All interactive touch targets must be at least `60x60 dp` (prefer `64x64 dp`).
 * Contrast ratios between text and background must exceed `7:1`.
-* NEVER use complex navigation gestures (e.g., pinch-to-zoom, horizontal carousels, complex swipe gestures). Use large, explicit buttons with both visual icons and localized text.
-* Provide audio feedback prompts for all key transitions in Assamese (`as`), Manipuri (`mn`), Bodo (`br`), Hindi (`hi`), and English (`en`).
+* Large, calm tactile buttons with visual icons and localized text.
+* Provide audio prompts in Assamese (`as`) and English (`en`).
 
 ### 4. Codebase Patterns
-* **Mobile Runtime**: Expo SDK 50+ / React Native 0.73+ with TypeScript in strict mode.
-* **State Management**: Redux Toolkit (RTK) with offline-first slicing.
-* **Database**: `expo-sqlite` with SQLCipher encryption pragmas.
-* **Backend**: FastAPI with async SQLAlchemy and PostgreSQL (for opportunistic sync only).
+* **Platform**: Native Android with Kotlin 1.9+ and Jetpack Compose.
+* **Database**: Room 2.6.1 with KSP compiler.
+* **Games**: 6 first-class playable games on a unified `BaseGameEngine`.
 
 ---
 
-## 📂 Repository Directory Layout Cheat Sheet
+## 📂 Repository Directory Layout
 
 ```
-├── mobile-app/              # React Native Expo Client
-│   ├── src/
-│   │   ├── features/games/  # Speed Match, Story Weaver, Picture Naming
-│   │   ├── database/        # SQLite migrations, SQLCipher schema, repositories
-│   │   ├── services/ai/     # ONNX Runtime IndicConformer ASR engine
-│   │   ├── store/           # Redux Toolkit slices (offline sync queue, patient)
-│   │   └── theme/           # High-contrast accessibility themes & typography
-├── backend/                 # FastAPI Sync Gateway (Python 3.11)
-├── infrastructure/          # Docker Compose, PostgreSQL configs
-├── docs/                    # Architectural specs, clinical evidence, risk registers
-└── .github/                 # Workflows, issue templates, PR checklists
+SIH26003/
+├── app/
+│   ├── src/main/java/com/sih26003/smritisetu/
+│   │   ├── feature/games/    # Common framework + 6 games
+│   │   ├── feature/auth/     # Local PIN & Patient photo select
+│   │   ├── feature/patient/  # Large-target patient dashboard
+│   │   ├── feature/caregiver/# Profile & doctor access code management
+│   │   ├── feature/doctor/   # Longitudinal game signal review
+│   │   ├── feature/reminders/# Exact offline AlarmManager scheduling
+│   │   ├── data/local/       # Room database, 7 entities, 7 DAOs
+│   │   ├── ml/               # On-device Decision Tree engine
+│   │   └── voice/            # Voice prompts & language packs
+│   └── src/main/assets/      # Local ML tree JSON & language packs
+├── assets/                   # Master ML model & language packs
+├── docs/                     # Architecture, Room schema, game specs
+└── scripts/                  # train_decision_tree.py
 ```
 
 ---
@@ -61,15 +66,12 @@
 ## ⚡ Routine Terminal Commands
 
 ```bash
-# Mobile Dev
-cd mobile-app && npm install
-npx expo start --clear
-npx expo run:android
+# Export on-device ML model
+python scripts/train_decision_tree.py
 
-# Run Tests
-npm test
-npm run lint
+# Build Android APK
+./gradlew assembleDebug
 
-# Backend Dev
-cd backend && uvicorn app.main:app --reload --port 8000
+# Run Unit Tests
+./gradlew testDebugUnitTest
 ```
