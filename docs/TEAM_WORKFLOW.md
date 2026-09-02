@@ -37,20 +37,64 @@ Review responsibility is a **quality gate**, not a hierarchy. Workload is distri
 
 ---
 
-## 🛑 3. Protected Branches Policy
+## 🛑 3. Protected Branches & Integration Diagram
 
-* **`main`**: Production / release branch.
-  - Locked. Direct pushes are strictly forbidden.
-  - Only merged from `develop` via PR after release sign-off.
-* **`develop`**: Integration branch.
-  - Locked. Direct pushes are strictly forbidden.
-  - All feature branches merge into `develop` via PR + peer review + green CI.
-* **`feature/<member>/<feature>`**: Developer workspace.
-  - Where vibecoding and active development happens.
+```
+[main] (Production / Release) ◀───────────── Release PR + Verification
+  ▲
+  │
+[develop] (Integration Trunk) ◀───────────── Feature PR + Peer Review + CI
+  ▲
+  ├─── [feature/venkatesh/game-framework]
+  ├─── [feature/jasleen/family-trivia]
+  ├─── [feature/krishna/voice-cue-card]
+  ├─── [feature/shravani/reminders]
+  ├─── [feature/bhavya/accessibility]
+  └─── [feature/kimaya/sequencing-categorisation]
+```
+
+* **`main`**: Production / release branch. Direct pushes are strictly forbidden.
+* **`develop`**: Integration branch. Direct pushes are strictly forbidden.
+* **`feature/<member>/<feature>`**: Developer workspace where active vibecoding happens.
 
 ---
 
-## 🛡️ 4. AI Coding Agent Safety Contract
+## ⚡ 4. Daily Developer Workflow & Git Commands
+
+```bash
+# 1. Start of Day: Sync with latest develop
+git checkout develop
+git pull origin develop
+git checkout feature/<your-name>/<feature>
+git merge develop
+
+# 2. Before Committing: Review changes
+git status
+git diff --stat
+git diff
+
+# 3. Test locally
+./gradlew testDebugUnitTest
+
+# 4. Commit and Push
+git add <modified-files>
+git commit -m "feat(<scope>): descriptive message"
+git push origin feature/<your-name>/<feature>
+```
+
+---
+
+## ⚔️ 5. Conflict Resolution Protocol
+
+1. **Never** choose `checkout --ours` or `checkout --theirs` blindly.
+2. **Never** tell an AI assistant to "auto-resolve all conflicts" without inspection.
+3. Open conflicting files, review both implementations, merge them logically.
+4. Run `./gradlew testDebugUnitTest` to verify integrity.
+5. Commit the resolution and notify your reviewer.
+
+---
+
+## 🛡️ 6. AI Coding Agent Safety Contract
 
 When using AI coding assistants (Antigravity, Cursor, Claude Code, Gemini, Copilot):
 
