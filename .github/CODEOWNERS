@@ -1,59 +1,67 @@
 # ==============================================================================
-# SIH26003 - CODEOWNERS
-# Review Responsibility Mapping for 6 Equal Contributors
-# Note: CODEOWNERS defines peer review routing, NOT rank or hierarchy.
+# SIH-26003 (SmritiSetu) — CODEOWNERS
+# Formal Subsystem Review Routing for 6 Equal Contributors
 # ==============================================================================
 
-# Global fallback: All 6 contributors share review responsibility for top-level files
+# Global fallback: Core team shares review responsibility
 *                                                                   @TeamNameSIH/core-team
 
 # ------------------------------------------------------------------------------
-# 1. SHARED / HIGH-CONFLICT INFRASTRUCTURE (Requires 2 Reviewers)
+# 1. PROTECTED / INTEGRATION-SENSITIVE FILES (Requires 2 Approvals)
 # ------------------------------------------------------------------------------
-/build.gradle.kts                                                   @TeamNameSIH/core-team
-/settings.gradle.kts                                                @TeamNameSIH/core-team
-/gradle.properties                                                  @TeamNameSIH/core-team
-/gradle/                                                            @TeamNameSIH/core-team
-/app/build.gradle.kts                                               @TeamNameSIH/core-team
-/app/src/main/AndroidManifest.xml                                   @TeamNameSIH/core-team
-/app/src/main/java/com/sih26003/smritisetu/MainActivity.kt          @TeamNameSIH/core-team
-/app/src/main/java/com/sih26003/smritisetu/SmritiSetuApplication.kt @TeamNameSIH/core-team
-/app/src/main/java/com/sih26003/smritisetu/data/local/               @TeamNameSIH/core-team
-/app/src/main/java/com/sih26003/smritisetu/data/firebase/            @TeamNameSIH/core-team
+/build.gradle.kts                                                   @Venkatesh @Jasleen
+/settings.gradle.kts                                                @Venkatesh @Jasleen
+/gradle/                                                            @Venkatesh @Jasleen
+/app/build.gradle.kts                                               @Venkatesh @Jasleen
+/app/src/main/AndroidManifest.xml                                   @Venkatesh @Shravani
+/app/src/main/java/**/MainActivity.kt                               @Jasleen @Venkatesh
+/app/src/main/java/**/DementiaCareApp.kt                            @Jasleen @Venkatesh
+/app/src/main/java/**/navigation/                                   @Jasleen @Venkatesh
+/app/src/main/java/**/data/local/database/                          @Jasleen @Venkatesh
+/app/src/main/java/**/di/                                           @Jasleen @Venkatesh
+/app/src/main/java/**/core/ui/theme/                                @Bhavya @Krishna
+/app/src/main/java/**/feature/games/framework/                      @Krishna @Bhavya
 
 # ------------------------------------------------------------------------------
-# 2. FEATURE AREA OWNERSHIP (Default Reviewer Responsibilities)
+# 2. SUBSYSTEM OWNERSHIP
 # ------------------------------------------------------------------------------
 
-# Member 1: Venkatesh (Game Framework + Session / Metrics)
-# Default Reviewer: Jasleen
-/app/src/main/java/com/sih26003/smritisetu/feature/games/framework/ @Venkatesh
-/app/src/main/java/com/sih26003/smritisetu/data/local/entities/     @Venkatesh
-/app/src/main/java/com/sih26003/smritisetu/ml/                      @Venkatesh
-/scripts/train_decision_tree.py                                     @Venkatesh
+# Venkatesh: Architecture Integration, Adaptive Engine, Priority Engine, ML
+/app/src/main/java/**/engine/adaptive/                              @Venkatesh
+/app/src/main/java/**/engine/priority/                              @Venkatesh
+/app/src/main/java/**/ml/                                           @Venkatesh
+/scripts/                                                           @Venkatesh
 
-# Member 2: Jasleen (Family Trivia + Personalization Integration)
-# Default Reviewer: Krishna
-/app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/ @Jasleen
+# Jasleen: Data Layer, Room, Repositories, Domain Models
+/app/src/main/java/**/data/                                         @Jasleen
+/app/src/main/java/**/domain/                                       @Jasleen
+/backend/firebase/                                                  @Jasleen
 
-# Member 3: Krishna (Voice Cue Card + Voice Experience)
-# Default Reviewer: Shravani
-/app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/ @Krishna
-/app/src/main/java/com/sih26003/smritisetu/voice/                     @Krishna
-/assets/language-packs/                                               @Krishna
-/app/src/main/assets/language-packs/                                  @Krishna
+# Krishna: Game Framework & Games 1 to 3, Voice Service
+/app/src/main/java/**/feature/games/familytrivia/                   @Krishna
+/app/src/main/java/**/feature/games/voicecuecard/                   @Krishna
+/app/src/main/java/**/feature/games/sequencing/                     @Krishna
+/app/src/main/java/**/voice/                                        @Krishna
+/assets/audio/                                                      @Krishna
 
-# Member 4: Shravani (Reminders System)
-# Default Reviewer: Bhavya
-/app/src/main/java/com/sih26003/smritisetu/feature/reminders/         @Shravani
+# Bhavya: Games 4 to 6, Cultural Theme Engine, UI Components & Accessibility
+/app/src/main/java/**/feature/games/categorisation/                 @Bhavya
+/app/src/main/java/**/feature/games/villagemarket/                  @Bhavya
+/app/src/main/java/**/feature/games/patternrecognition/             @Bhavya
+/app/src/main/java/**/cultural/                                     @Bhavya
+/assets/cultural/                                                   @Bhavya
+/app/src/main/java/**/core/ui/components/                           @Bhavya
+/app/src/main/java/**/core/ui/accessibility/                        @Bhavya
 
-# Member 5: Bhavya (Accessibility + Patient UI Polish)
-# Default Reviewer: Kimaya
-/app/src/main/res/values/                                            @Bhavya
-/app/src/main/java/com/sih26003/smritisetu/feature/patient/          @Bhavya
-/app/src/main/java/com/sih26003/smritisetu/feature/auth/             @Bhavya
+# Shravani: Caregiver Workflows, ASHA Workflows, Reminders, SOS, Memory Album
+/app/src/main/java/**/feature/caregiver/                            @Shravani
+/app/src/main/java/**/feature/asha/                                 @Shravani
+/app/src/main/java/**/feature/reminders/                            @Shravani
+/app/src/main/java/**/engine/reminder/                              @Shravani
+/app/src/main/java/**/feature/memoryalbum/                          @Shravani
 
-# Member 6: Kimaya (Sequencing + Categorisation)
-# Default Reviewer: Venkatesh
-/app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/     @Kimaya
-/app/src/main/java/com/sih26003/smritisetu/feature/games/categorisation/ @Kimaya
+# Kimaya: Doctor Workflows, Analytics, Longitudinal Trends, Clinical Reports
+/app/src/main/java/**/feature/doctor/                               @Kimaya
+/app/src/main/java/**/feature/analytics/                            @Kimaya
+/app/src/main/java/**/engine/trend/                                 @Kimaya
+/docs/                                                              @Kimaya

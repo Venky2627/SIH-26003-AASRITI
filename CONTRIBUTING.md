@@ -1,155 +1,115 @@
-# Contributing to SmritiSetu (SIH26003)
+# Contributing to SmritiSetu (SIH-26003)
 
-Welcome to the SmritiSetu development workflow. This project is built by a team of **six equal contributors** working concurrently with AI-assisted workflows (vibecoding).
+Welcome to the SmritiSetu development team! We are **6 equal contributors** building an AI-based cognitive gaming and memory assistance platform for rural North Eastern India.
 
 ---
 
-## 🧭 The 12-Step Development Lifecycle
+## 🌿 1. Git Branching Model
 
-Every contributor follows this exact path for every feature and fix:
+To ensure seamless parallel work and prevent merge conflicts across the 6 members, we enforce a strict 3-tier branch hierarchy:
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git
-   cd AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER
-   ```
+```
+[feature/<member>/<feature-name>] ──(PR + Review + CI)──> [develop] ──(Release Sign-off)──> [main]
+```
 
-2. **Update `develop`**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   ```
-
-3. **Create Feature Branch**:
+### Golden Git Directives:
+1. **NO DIRECT PUSHES TO `main` OR `develop`**.
+2. **NO FORCE PUSHES (`git push --force`) ON SHARED BRANCHES**.
+3. All development must occur on your assigned feature branch:
    ```bash
    git checkout -b feature/<member>/<feature-name>
    ```
 
-4. **Code with AI Coding Assistant**:
-   - Guide your AI agent (Antigravity, Cursor, etc.) within your specific feature boundary.
-   - Do not instruct the AI to rewrite shared architectures.
+### Branch Naming Convention:
+* `feature/venkatesh/<task-name>` (e.g., `feature/venkatesh/priority-engine`)
+* `feature/jasleen/<task-name>` (e.g., `feature/jasleen/domain-mappers`)
+* `feature/krishna/<task-name>` (e.g., `feature/krishna/game-framework`)
+* `feature/bhavya/<task-name>` (e.g., `feature/bhavya/cultural-theme-engine`)
+* `feature/shravani/<task-name>` (e.g., `feature/shravani/caregiver-quick-log`)
+* `feature/kimaya/<task-name>` (e.g., `feature/kimaya/doctor-trends-screen`)
 
-5. **Review Working Tree & Diffs**:
+---
+
+## 🧭 2. The 12-Step Contributor Lifecycle
+
+Every feature or bugfix follows this exact path:
+
+1. **Pull Latest `develop`**:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   ```
+2. **Create Feature Branch**:
+   ```bash
+   git checkout -b feature/<member>/<feature-name>
+   ```
+3. **Open Antigravity / Gemini**:
+   - The AI assistant reads `AGENTS.md`, detects your branch, and outputs your execution contract.
+4. **Code Within Module Scope**:
+   - Stay strictly within your assigned safe directories (see [`TEAM_ALLOCATION.md`](file:///TEAM_ALLOCATION.md)).
+5. **Inspect Diffs Before Staging**:
    ```bash
    git status
    git diff --stat
    git diff
    ```
-   *Inspect every line modified. If the AI touched unrelated files, revert them immediately.*
-
-6. **Build & Test Locally**:
+   *Verify line-by-line. If unrelated files were touched, revert them.*
+6. **Run Local Unit Tests**:
    ```bash
    ./gradlew testDebugUnitTest
-   ./gradlew assembleDebug
    ```
-
-7. **Commit Meaningful Work**:
+7. **Commit with Conventional Messages**:
    ```bash
    git add <modified-files>
-   git commit -m "feat(reminders): implement offline alarm scheduling"
+   git commit -m "feat(priority): implement deterministic triage rules"
    ```
-
 8. **Push Feature Branch**:
    ```bash
    git push -u origin feature/<member>/<feature-name>
    ```
-
-9. **Create Pull Request**:
-   - Open PR targeting `develop` (NEVER directly to `main`).
-   - Fill out the PR template completely, disclosing any shared-file impacts.
-
-10. **Peer Review**:
-    - Tag your designated peer reviewer (see [Rotation](#peer-review-rotation)).
-    - Address comments collaboratively.
-
-11. **Merge**:
-    - Merge only after approval and green CI.
-    - Prefer **Squash and Merge** to keep the `develop` history clean and understandable.
-
-12. **Delete Merged Branch**:
-    - Delete the remote and local feature branch after merging to prevent stale branch clutter.
+9. **Update Tracking**:
+   - Update `TASK_BOARD.md` (set task status to `REVIEW`) and `PROJECT_STATE.md`.
+10. **Open Pull Request Targeting `develop`**:
+    - Complete all checklist items in `.github/pull_request_template.md`.
+    - Tag your designated peer reviewer.
+11. **Peer Review & CI Verification**:
+    - Reviewer inspects code; GitHub Actions runs build and tests.
+12. **Squash and Merge**:
+    - Once approved, squash and merge into `develop`, then delete your feature branch.
 
 ---
 
-## 🌿 Branch Naming Convention
+## ✍️ 3. Commit Convention
 
-Always use: `feature/<member>/<feature>`
-
-Valid Examples:
-- `feature/venkatesh/game-framework`
-- `feature/jasleen/family-trivia`
-- `feature/krishna/voice-cue-card`
-- `feature/shravani/reminders`
-- `feature/bhavya/accessibility`
-- `feature/kimaya/sequencing-categorisation`
-
-Invalid Examples (Forbidden):
-- `testbranch`, `newfinal`, `working`, `temp`, `mycode`, `venky-branch`
-
----
-
-## ✍️ Commit Conventions
-
-Follow Conventional Commits format:
-* `feat:` A new feature or screen
-* `fix:` A bug fix
+We use standard Conventional Commits format:
+* `feat:` A new feature, screen, or domain use case
+* `fix:` A bug fix or crash resolution
 * `test:` Adding or updating unit tests
-* `refactor:` Code change that neither fixes a bug nor adds a feature
-* `docs:` Documentation updates
-* `chore:` Build configs, dependencies, or tool settings
+* `refactor:` Code restructuring without functional change
+* `docs:` Documentation or diagram updates
+* `chore:` Gradle build configs, assets, or repository settings
 
 ---
 
-## 🔄 Peer Review Rotation
+## 🔒 4. Protected Files & 2-Approval Rule
 
-Review responsibility is distributed circularly so no single member is overburdened:
-
-| PR Author | Assigned Default Reviewer |
-| :--- | :--- |
-| **Venkatesh** | Jasleen |
-| **Jasleen** | Krishna |
-| **Krishna** | Shravani |
-| **Shravani** | Bhavya |
-| **Bhavya** | Kimaya |
-| **Kimaya** | Venkatesh |
-
-*Rule for Shared Files*: Any PR touching `AppDatabase.kt`, `Entities.kt`, `MainActivity.kt`, `build.gradle.kts`, or `CommonGameFramework.kt` requires **TWO approvals**.
+Modifying integration-sensitive files requires **TWO approvals** (Primary Custodian + Secondary Reviewer):
+* `AppNavigation.kt` (Jasleen + Venkatesh)
+* `DementiaDatabase.kt` / `AppDatabase.kt` (Jasleen + Venkatesh)
+* `build.gradle.kts` / `settings.gradle.kts` (Venkatesh + Jasleen)
+* `AndroidManifest.xml` (Venkatesh + Shravani)
+* `Theme.kt` / `colors.xml` (Bhavya + Krishna)
+* `CommonGameFramework.kt` (Krishna + Bhavya)
 
 ---
 
-## 🤖 AI Coding Agent Safety Contract
+## ⚔️ 5. Conflict Resolution Protocol
 
-If you use Antigravity, Cursor, Claude Code, Gemini, Copilot, or any AI assistant:
-
-1. **NO Direct Pushes**: AI is never allowed to run `git push origin main` or `git push origin develop`.
-2. **NO Force Pushes**: `git push -f` is completely disabled on shared branches.
-3. **NO Scope Creep**: If the AI attempts to rewrite Room, navigation, or another member's game, stop the agent and revert the unauthorized changes.
-4. **Inspect Before Commit**: Always run `git diff` and verify every changed line yourself.
-
----
-
-## ⚔️ Merge Conflict Resolution Protocol
-
-When merge conflicts occur between your feature branch and `develop`:
-
-1. Update your local `develop`:
+When merge conflicts occur:
+1. **NEVER** use `checkout --ours` or `checkout --theirs` blindly.
+2. **NEVER** ask an AI assistant to "auto-resolve all conflicts" without manual review.
+3. Open conflicting files, review both changes, merge them logically, and verify with:
    ```bash
-   git checkout develop
-   git pull origin develop
+   ./gradlew testDebugUnitTest
    ```
-2. Rebase or merge `develop` into your feature branch:
-   ```bash
-   git checkout feature/<member>/<feature>
-   git merge develop
-   ```
-3. **DO NOT** use `git checkout --ours` or `git checkout --theirs` blindly.
-4. **DO NOT** tell the AI to "auto-resolve all conflicts" without inspection.
-5. Manually review conflicting chunks, preserve both features cleanly, run `./gradlew testDebugUnitTest`, and commit the resolution.
-
----
-
-## 🔐 Secrets & Privacy Policy
-
-* **NEVER** commit API keys, signing keystores (`.jks`, `.keystore`), or credentials.
-* **NEVER** write raw patient audio files (`.wav`, `.mp3`) to disk storage.
-* Non-PII pseudonyms (e.g. `AS-DEMO-01`) must always be used for patient profiles.
+4. Commit the resolution and notify your designated reviewer.
