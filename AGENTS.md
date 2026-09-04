@@ -1,144 +1,215 @@
-# Antigravity & AI Agent Master Operating System — SIH-26003 (SmritiSetu)
+# AASRITI AI AGENT MASTER OPERATING SYSTEM & GOVERNANCE DIRECTIVE
+## `/AGENTS.md` — Authoritative Protocol for Antigravity & AI Coding Assistants
 
-> **PROJECT**: SIH-26003 — AI-Based Cognitive Gaming and Memory Assistance Platform for Elderly Dementia Patients in the North Eastern Region (NER)  
-> **TEAM**: 6-Member Student Team (Smart India Hackathon)  
-> **IMMEDIATE CRITICAL DEADLINE**: **SEPTEMBER 5 — PPT SUBMISSION**  
-> **PRIMARY OPERATIONAL DIRECTIVE**: Freeze architecture, eliminate ambiguity, protect integration files, prevent duplicate work, and enforce disciplined feature-first clean architecture.
+> **APPLICATION**: AASRITI (SIH-26003: AI-Based Cognitive Gaming & Memory Assistance Platform)  
+> **SCOPE**: Mandatory for Google Antigravity, Cursor, Claude Code, Gemini CLI, and all AI agents.  
+> **PRIMARY OPERATIONAL DIRECTIVE**: **"The repository is the single source of truth. Read before coding, enforce role-based UI rules, protect main, automate Git lifecycles, and never bypass repository safeguards."**
 
 ---
 
-## 🛑 MANDATORY AI OPERATING PROTOCOL
+## 🛑 MANDATORY AI OPERATING PROTOCOL (THE 20 GOLDEN RULES)
 
-Every AI coding assistant (Google Antigravity, Cursor, Claude Code, Gemini CLI) operating in this repository **MUST** execute the following protocol strictly in sequence. **DO NOT GENERATE CODE IMMEDIATELY.**
+Every AI coding assistant entering this repository **MUST** execute and adhere to these 20 commands strictly in sequence:
+
+1. **Read `AGENTS.md` first** before generating any code or executing bash mutations.
+2. **Read `README.md`** to understand the high-level architecture and current state.
+3. **Inspect repository state**: Verify Git status, active branch, and uncommitted diffs.
+4. **Inspect current Git branch**: Check `git branch --show-current`.
+5. **Inspect current working tree**: Never silently discard or overwrite existing uncommitted work.
+6. **Read architecture guidance** (`/docs/ARCHITECTURE.md` and `/ARCHITECTURE.md`) relevant to the task.
+7. **Read UI rules** (`/UI_RULES.md`, `/UI_COMPONENT_RULES.md`, `/UI_SCREEN_SPEC.md`) before touching any UI composable.
+8. **Read security rules** (`/SECURITY.md`) before touching authentication, session tokens, or patient data.
+9. **Read database/API rules** (`/docs/DATA_MODEL.md`, `/docs/API_SYNC_CONTRACT.md`) before modifying schema or contracts.
+10. **Reuse existing functionality**: Check for existing components, mappers, or utilities before creating new ones.
+11. **Preserve existing working behavior**: Never rewrite working code merely for aesthetic or stylistic preference.
+12. **Follow repository contribution rules** (`/CONTRIBUTING.md`).
+13. **Run appropriate validation**: Execute unit tests (`./gradlew testDebugUnitTest`) before claiming completion.
+14. **Self-correct failures**: Investigate and fix own build/test errors automatically where safe.
+15. **Commit meaningful changes**: Use concise conventional commit syntax (`feat:`, `fix:`, `docs:`, `ui:`).
+16. **Push the contributor branch**: `git push -u origin <branch-name>`.
+17. **Create/update Pull Request**: Populate `.github/pull_request_template.md` where permissions allow.
+18. **Report exactly what changed**: Output the canonical **AASRITI CHANGE REPORT** at task completion.
+19. **Never directly modify `main`**: Normal feature development occurs strictly in `feature/<member>/<task>`.
+20. **Never bypass security, testing, or repository rules** merely to make a feature compile or pass.
+
+---
+
+## ⚡ 1. ANTIGRAVITY STARTUP BEHAVIOR
+
+Whenever Antigravity is opened in this repository, it must begin by determining:
+* **Repository Name**: AASRITI (`AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER`)
+* **Remote Origin**: `https://github.com/TeamNameSIH/...`
+* **Current Branch & Git Status**: Branch name, clean/dirty working tree, uncommitted files.
+* **Technology Stack**: Native Android (Kotlin 1.9+, Jetpack Compose, Room SQLite, Scikit-Learn Decision Tree JSON runtime).
+* **Governance Status**: Verify that `/UI_RULES.md`, `/UI_SCREEN_SPEC.md`, `/SECURITY.md`, and `/docs/ARCHITECTURE.md` are loaded.
+
+**It must NOT blindly start editing files. It must understand the repository state first.**
+
+---
+
+## 👤 2. CONTRIBUTOR IDENTITY & THE "I JUST CLONED IT" EXPERIENCE
+
+When a teammate opens Antigravity and says:
+> *"I'm Kimaya, set me up."* (or *"I'm Venkatesh"*, *"I'm Jasleen"*, *"I'm Krishna"*, *"I'm Bhavya"*, *"I'm Shravani"*)
+
+Antigravity must execute the following setup sequence:
+1. Identify the contributor from the message.
+2. Verify that the working tree is clean.
+3. Check out the contributor's assigned task branch:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/<member>/<task-name>
+   ```
+4. Output the concise initialization summary:
+   ```text
+   AASRITI workspace initialized.
+
+   Contributor:      <Member Name>
+   Repository:       AASRITI
+   Base branch:      develop
+   Working branch:   feature/<member>/<task-name>
+   Repository rules: Loaded
+   UI governance:    Loaded (Warm Ivory / Forest Green / AAA Contrast)
+   Security rules:   Loaded (DPDPA 2023 / Room SQLite Source of Truth)
+   Architecture:     Loaded (Clean Feature-First / On-device Decision Tree)
+   Working tree:     Clean
+
+   Ready. What feature would you like to build?
+   ```
+
+---
+
+## 🔄 3. THE 20-STEP TASK EXECUTION MODEL ("I AM KIMAYA")
+
+When a developer requests a feature (e.g. *"I'm Kimaya. I need to build the Memory Garden."*), Antigravity executes these 20 steps internally:
 
 ```
-[Repository Opened]
-       │
-       ▼
-[STEP 0: Read Before Coding] (AGENTS.md, PROJECT_STATE.md, TASK_BOARD.md, TEAM_ALLOCATION.md, ARCHITECTURE.md)
-       │
-       ▼
-[STEP 1: Identify Developer] ("Which team member are you working as?")
-       │
-       ▼
-[STEP 2: Output Task Execution Contract] (Task, Owner, Dependencies, Safe Files, Protected Files, DoD)
-       │
-       ▼
-[STEP 3: Implement Within Assigned Module Boundary] (Zero touching of protected integration files without authorization)
-       │
-       ▼
-[STEP 4: Post-Task Update] (Update PROJECT_STATE.md and TASK_BOARD.md)
+[1. Load AGENTS.md] ──► [2. Inspect State] ──► [3. Scope Feature] ──► [4. Find Reusable Code]
+                                                                                │
+[8. Cultural Rules] ◄── [7. Access Rules] ◄── [6. Screen Spec] ◄── [5. UI Rules]
+        │
+        ▼
+[9. Data / API Req] ──► [10. DB Check] ──► [11. Reuse Check] ──► [12. Switch/Create Branch]
+                                                                            │
+[16. Review Diff] ◄── [15. Auto-Fix] ◄── [14. Validate/Test] ◄── [13. Implement Feature]
+        │
+        ▼
+[17. Commit] ──► [18. Push Branch] ──► [19. Create PR] ──► [20. Output Change Report]
 ```
 
----
-
-## STEP 0 — READ BEFORE CODING
-
-Before modifying or creating any code, the AI agent must read:
-1. [`AGENTS.md`](file:///AGENTS.md) (This operational directive)
-2. [`PROJECT_STATE.md`](file:///PROJECT_STATE.md) (Single source of truth for phase, status, and active blockers)
-3. [`TASK_BOARD.md`](file:///TASK_BOARD.md) (Prioritized backlog, ownership, and dependencies)
-4. [`TEAM_ALLOCATION.md`](file:///TEAM_ALLOCATION.md) (Subsystem ownership, primary owners, and secondary reviewers)
-5. [`ARCHITECTURE.md`](file:///ARCHITECTURE.md) (Authoritative architectural rules and data flow)
-
-Then determine:
-* Current project phase (**Phase 0: Architecture Freeze & PPT Readiness**)
-* Active task and dependencies
-* Assigned team member boundary
-* Integration risk level
-
----
-
-## STEP 1 — IDENTIFY THE DEVELOPER
-
-The AI must check the current git branch:
-```bash
-git branch --show-current
-```
-
-### Branch-to-Member Mapping:
-| Branch Pattern | Developer | Primary Subsystem Ownership | Secondary Reviewer |
-| :--- | :--- | :--- | :--- |
-| `feature/venkatesh/*` | **Venkatesh** | Architecture Integration, Adaptive Engine, Priority Engine | Jasleen |
-| `feature/jasleen/*` | **Jasleen** | Core Application, Data Layer, Room, Repositories, Domain Models | Krishna |
-| `feature/krishna/*` | **Krishna** | Game Framework, Games 1–3 (Trivia, Cue Card, Sequencing) | Bhavya |
-| `feature/bhavya/*` | **Bhavya** | Games 4–6 (Categorisation, Market, Pattern/Rotation), Cultural Theme Engine | Shravani |
-| `feature/shravani/*` | **Shravani** | Caregiver Workflows, ASHA Workflows, Offline Reminders, SOS | Kimaya |
-| `feature/kimaya/*` | **Kimaya** | Doctor Workflows, Analytics, Longitudinal Trends, Reports | Venkatesh |
-
-* If on `main` or `develop`: Ask the developer:
-  > *"Which team member are you working as? (1. Venkatesh, 2. Jasleen, 3. Krishna, 4. Bhavya, 5. Shravani, 6. Kimaya). Please create your feature branch: `git checkout -b feature/<member>/<task-name>` before coding."*
-* Once identified: Consult [`TEAM_ALLOCATION.md`](file:///TEAM_ALLOCATION.md) and present **EXACTLY ONE PRIMARY TASK** and optionally **ONE SECONDARY TASK**. Do not overwhelm the developer.
+1. **Step 1**: Load `AGENTS.md`.
+2. **Step 2**: Inspect repository state and active Git branch.
+3. **Step 3**: Determine feature scope and affected subsystems.
+4. **Step 4**: Find existing code (e.g., check `feature/memoryalbum/` or Room DAOs).
+5. **Step 5**: Read patient UI rules (`/UI_RULES.md` — Very Low Density, $\ge 64\text{dp}$ touch targets).
+6. **Step 6**: Read screen specifications (`/UI_SCREEN_SPEC.md` — `SCREEN_PATIENT_MEMORY_GARDEN`).
+7. **Step 7**: Read accessibility rules (`/UI_ACCESSIBILITY_RULES.md` — WCAG AAA, non-punitive language).
+8. **Step 8**: Read cultural rules (`/UI_HERITAGE_GUIDE.md` — Assam/Manipur/Meghalaya authentic framing).
+9. **Step 9**: Determine backend/API/data synchronization requirements.
+10. **Step 10**: Check if database migration is required (Room entity modification requires 2 approvals).
+11. **Step 11**: Ensure no duplicate models or components are being introduced.
+12. **Step 12**: Ensure development is on `feature/<member>/<task-name>`.
+13. **Step 13**: Implement the feature using approved design tokens (`AasritiColorTokens`, `AasritiSpacing`).
+14. **Step 14**: Run relevant validation tests (`./gradlew testDebugUnitTest`).
+15. **Step 15**: If a test fails, investigate root cause, fix, and re-run.
+16. **Step 16**: Review complete Git diff (`git diff`) and remove accidental edits/whitespace changes.
+17. **Step 17**: Create a descriptive commit (`git commit -m "feat(memory): ..."`).
+18. **Step 18**: Push contributor branch (`git push -u origin feature/...`).
+19. **Step 19**: Open or update the Pull Request using `.github/pull_request_template.md`.
+20. **Step 20**: Output the canonical **AASRITI CHANGE REPORT**.
 
 ---
 
-## STEP 2 — TASK EXECUTION PROTOCOL
+## 📋 4. CANONICAL AASRITI CHANGE REPORT FORMAT
 
-Before writing any code, the AI must output the following execution contract to the chat:
+Whenever Antigravity finishes a contributor task, its response must conclude with this exact structured report:
 
 ```text
-======================================================================
-AI EXECUTION CONTRACT
-======================================================================
-TASK:               <Task ID and Title from TASK_BOARD.md>
-DEVELOPER:          <Active Team Member>
-REVIEWER:           <Designated Peer Reviewer>
-DEPENDENCIES:       <Required models/interfaces that must be present>
-SAFE FILES:         <Files/folders within the developer's assigned module>
-PROTECTED FILES:    <DO NOT TOUCH: AppNavigation.kt, DementiaDatabase.kt, etc.>
-DEFINITION OF DONE: <Exact completion and verification criteria>
-======================================================================
+============================================================
+AASRITI CHANGE REPORT
+============================================================
+
+CONTRIBUTOR:
+<Member Name>
+
+TASK:
+<Task Title / Summary>
+
+BRANCH:
+<Working Branch Name>
+
+FILES / AREAS CHANGED:
+- <File path 1>
+- <File path 2>
+
+SYSTEMS AFFECTED:
+[X] Frontend       [ ] Backend      [ ] Database
+[ ] API            [ ] Auth         [ ] AI/ML
+[X] UI             [X] Accessibility [ ] Security
+
+RULES FOLLOWED:
+- UI Governance: Followed /UI_RULES.md (Warm Ivory, Forest Green, Zero Dashboard)
+- Accessibility: Followed /UI_ACCESSIBILITY_RULES.md (Touch target >= 64dp, Non-punitive copy)
+- Architecture: Reused Clean Architecture / Feature-First patterns
+- Security: Followed /SECURITY.md
+
+TESTS:
+PASS (Unit tests: <List passing test suites>)
+
+BUILD:
+PASS (Gradle debug APK assemble verified)
+
+LINT / TYPE CHECK:
+PASS (Kotlin compiler & ProGuard verified)
+
+SECURITY:
+PASS (Zero plaintext secret leaks detected)
+
+DATABASE:
+Not required (Existing Room schema preserved)
+
+PULL REQUEST:
+Created: PR #<Number> -> develop
+
+CI:
+Passing / Running on GitHub Actions
+
+REMAINING ISSUES:
+None
+
+NEXT HUMAN ACTION:
+Assign peer review to <Designated Reviewer> for approval.
+============================================================
 ```
 
 ---
 
-## STEP 3 — AFTER TASK COMPLETION
+## 🛡️ 5. PROTECTED / INTEGRATION FILES (DO NOT CASUALLY TOUCH)
 
-Upon completing a task and verifying with unit tests, the AI **MUST** instruct the developer to update both [`PROJECT_STATE.md`](file:///PROJECT_STATE.md) and [`TASK_BOARD.md`](file:///TASK_BOARD.md) with:
-
-```text
-STATUS:               DONE
-OWNER:                <Member Name>
-DATE:                 <YYYY-MM-DD>
-FILES CREATED:        <List of new files>
-FILES MODIFIED:       <List of modified files>
-DEPENDENCIES RESOLVED:<List of completed interfaces/models>
-NEXT RECOMMENDED TASK:<Single next priority>
-INTEGRATION NOTES:    <Notes for secondary reviewer or shared modules>
-```
-
----
-
-## STEP 4 — PROTECTED / INTEGRATION FILES (DO NOT CASUALLY TOUCH)
-
-The following files are architectural integration points. Modifying them can break parallel work across the team.
+The following files are architectural integration points. Modifying them requires **2 designated reviewer approvals**:
 
 | Protected File | Architectural Role | Designated Owner | Required Approvals |
-| :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :---: |
 | `AppNavigation.kt` | Top-level Jetpack Compose NavHost | **Jasleen** | 2 Approvals |
-| `DementiaDatabase.kt` / `AppDatabase.kt` | Room SQLite Database singleton & tables | **Jasleen** | 2 Approvals |
-| `RepositoryModule.kt` / DI containers | Dependency injection wiring | **Jasleen** / **Venkatesh** | 2 Approvals |
-| `build.gradle.kts` / `settings.gradle.kts` | Build configuration & dependencies | **Venkatesh** | 2 Approvals |
+| `MainActivity.kt` | Application Activity entry point | **Jasleen** / **Venkatesh** | 2 Approvals |
+| `AppDatabase.kt` | Room SQLite Database singleton & tables | **Jasleen** | 2 Approvals |
+| `build.gradle.kts` / `settings.gradle.kts` | Root build configuration & dependencies | **Venkatesh** | 2 Approvals |
 | `AndroidManifest.xml` | Application permissions & receivers | **Venkatesh** | 2 Approvals |
-| `Theme.kt` / `colors.xml` | Global UI styling & WCAG AAA contrast | **Bhavya** | 2 Approvals |
+| `UI_RULES.md` / `core/ui/theme/` | Master UI governance & color tokens | **Bhavya** | 2 Approvals |
+| `SECURITY.md` | Security policy & cryptographic rules | **Venkatesh** | 2 Approvals |
 | `CommonGameFramework.kt` | Base engine contract for all 6 games | **Krishna** | 2 Approvals |
-
-### AI Guardrail for Protected Files:
-If a task requires modifying a protected file:
-1. **STOP** and inform the user.
-2. Explain specifically why the modification is necessary.
-3. Keep the diff minimal (e.g., adding one line to a navigation route enum or registering one Room DAO).
-4. Disclose the modification in the PR template.
 
 ---
 
-## STEP 5 — FORBIDDEN BEHAVIORS & NO RANDOM REFACTORING
+## 🚫 6. FORBIDDEN BEHAVIORS & REFACTORING GUARDRAILS
 
 AI coding agents are strictly prohibited from:
-1. **Introducing React Native, Expo, or WebViews**: The stack is 100% Native Kotlin + Jetpack Compose.
-2. **Introducing OTP / SMS / Email-Password Auth**: Caregiver/Doctor/ASHA use local PIN; Patients use direct photo/avatar tap (zero PIN).
-3. **Renaming Folders or Moving Models Arbitrarily**: All structural paths must match [`ARCHITECTURE.md`](file:///ARCHITECTURE.md).
-4. **Adding Arbitrary Gradle Dependencies**: Every library must be justified and approved.
-5. **Inventing Cloud ML or LLM Dependencies**: The adaptive engine uses an explainable on-device Decision Tree (JSON runtime) in Kotlin. Zero LLMs for core game logic.
-6. **Making Dementia Diagnosis Claims**: The platform provides neutral functional signals (reaction time, error frequency, hesitation); it **never** claims to diagnose dementia or score dementia progression.
-7. **Bypassing the Sync Queue**: Room is the single source of truth; Firebase is exclusively a background replication layer. Direct UI-to-Firebase writes are forbidden.
+1. **Introducing React Native, Flutter, or WebViews**: The stack is 100% Native Kotlin + Jetpack Compose.
+2. **Introducing OTP / SMS / Cloud Email Auth**: Caregiver/Doctor/ASHA use local PIN; Patients use direct photo tap (Zero PIN).
+3. **Renaming Folders or Moving Models Arbitrarily**: All structural paths must match `/docs/ARCHITECTURE.md`.
+4. **Adding Arbitrary External Gradle Dependencies**: Every library must be justified and approved.
+5. **Inventing Cloud ML or LLM Dependencies**: The adaptive engine uses an on-device Decision Tree (JSON runtime). Zero LLMs for core game logic.
+6. **Making Dementia Diagnosis Claims**: The platform provides neutral functional signals; it **never** claims to diagnose dementia.
+7. **Bypassing the Sync Queue**: Room SQLite is the single source of truth; direct UI-to-Firebase writes are forbidden.
+8. **Introducing Rainbow UI or Floating Glassmorphism**: Colors must strictly use `AasritiColorTokens`.

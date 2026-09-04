@@ -1,69 +1,94 @@
-## 📌 What changed?
-<!-- Describe the specific feature, fix, or improvement introduced in this PR. -->
+## 📝 Summary
+<!-- Concise 1-2 sentence overview of this pull request -->
 
-## 🎯 Why?
-<!-- Explain the user problem or task requirement addressed by this change. -->
+### What changed?
+<!-- Detailed bullet points of modifications introduced -->
 
-## 📁 Files changed
-<!-- List key files modified and explain why each file was changed. -->
-
-## 🔍 Feature scope
-<!-- Which member assignment does this fall under:
-- Venkatesh: Game Framework + Session/Metrics
-- Jasleen: Family Trivia + Personalization
-- Krishna: Voice Cue Card + Voice UX
-- Shravani: Reminders
-- Bhavya: Accessibility + Patient UX
-- Kimaya: Sequencing + Categorisation
-- Other (specify)
--->
-
-## 🧪 Testing performed
-<!-- Detail testing executed: unit tests, manual device runs, airplane mode tests. -->
+### Why?
+<!-- Purpose, user requirement, or bug resolved -->
 
 ---
 
-## 🚦 Architectural Impact & Risk Checklist
-
-### 📶 Offline behavior checked?
-- [ ] **Yes** (Verified functionality with 0 Kbps / Airplane Mode active)
-- [ ] **No** (Explain reason below)
-
-### 🗄️ Room / database changed?
-- [ ] **Yes** (Requires 2 reviewers if entity/schema modified)
-- [ ] **No**
-
-### 🧭 Navigation changed?
-- [ ] **Yes** (Requires notification to team)
-- [ ] **No**
-
-### 🏛️ Shared architecture changed?
-- [ ] **Yes** (Shared Game Framework, Base Classes, Gradle, Application entry)
-- [ ] **No**
-
-### 🔥 Firebase changed?
-- [ ] **Yes** (Remember: "Room is King, Firebase is the Messenger")
-- [ ] **No**
+## 🔍 Affected Systems
+Check all components impacted by this PR:
+- [ ] **Frontend** (Jetpack Compose, UI Screens, Navigation)
+- [ ] **Backend** (Firebase Messenger, Sync Processors, Cloud Rules)
+- [ ] **Database** (Room Entities, SQLite Schema, DAOs, Migrations)
+- [ ] **API** (Sync Queue Payloads, Network Contracts)
+- [ ] **Authentication** (Local PIN, Role Gatekeeper, Session Tokens)
+- [ ] **Authorization** (Role-Based Permissions, Data Isolation)
+- [ ] **AI / ML** (Decision Tree Engine, Scikit-Learn Training Scripts)
+- [ ] **Voice** (TextToSpeech, Audio Prompt Packs, Language Manager)
+- [ ] **Games** (BaseGameEngine, Cognitive Mini-Games 1–6)
+- [ ] **Memory** (Memory Garden, Reminiscence Media Storage)
+- [ ] **Notifications** (AlarmManager Reminders, BootReceiver)
+- [ ] **Security** (Encryption, CryptoUtils, Input Sanitization, DPDPA)
+- [ ] **UI** (Theme Tokens, Colors, Spacing, Typography Scale)
+- [ ] **Accessibility** (Touch Targets ≥ 64dp, WCAG AAA Contrast, Non-punitive copy)
+- [ ] **Localization** (Assamese, Manipuri, English String Resources)
+- [ ] **Infrastructure** (GitHub Actions CI, Gradle Config, ProGuard)
+- [ ] **Documentation** (Architecture, Task Board, Team Guides)
 
 ---
 
-## 📸 Screenshots / video (if UI change)
-<!-- Attach screenshots showing high-contrast and large touch targets -->
-
-## ⚠️ Known limitations
-<!-- Document any temporary edge cases or follow-up items -->
+## 🧪 Testing Performed
+- [ ] Unit Tests executed locally (`./gradlew testDebugUnitTest`)
+- [ ] Manual Device / Emulator run verified
+- [ ] **Airplane Mode Verification** (100% offline functionality verified with 0 Kbps data)
+- [ ] Test names / details: <!-- e.g., DecisionTreeEngineTest, PriorityEngineTest -->
 
 ---
 
-## 👥 Assigned Reviewer Sign-Off
+## 🎨 UI Governance Verification
+- Did this change follow the existing AASRITI UI system?
+  - [ ] **Yes** (Used canonical colors from `AasritiColorTokens`, typography from `AasritiTypography`, spacing from `AasritiSpacing`)
+  - [ ] **N/A** (Non-UI backend change)
+- Are touch targets on patient screens at least 64dp $\times$ 64dp?
+  - [ ] **Yes**
+  - [ ] **N/A**
+- Does the patient screen avoid any dashboard/score/analytics metrics?
+  - [ ] **Yes**
+  - [ ] **N/A**
+
+---
+
+## 🏛️ Architecture & Database Impact
+- **Architecture**: Was an existing pattern reused?
+  - [ ] **Yes** (Reused BaseGameEngine, Repository, or Clean Architecture pattern)
+  - [ ] **No / New Pattern** (Requires explanation and `/UI_RULES.md` or `/docs/ARCHITECTURE.md` update)
+- **Database**: Was a Room database migration or entity change required?
+  - [ ] **No**
+  - [ ] **Yes** (Requires 2 approvals from @Venkatesh and @Jasleen)
+- **API**: Did any API or Sync Queue contract change?
+  - [ ] **No**
+  - [ ] **Yes** (Explain consumer impact below)
+
+---
+
+## 🔒 Security & Configuration
+- **Security**: Were permissions, credentials, or sensitive patient data affected?
+  - [ ] **No**
+  - [ ] **Yes** (Explain threat model and DPDPA compliance below)
+- **Configuration**: Were environment variables or `.env.example` modified?
+  - [ ] **No**
+  - [ ] **Yes**
+
+---
+
+## 💥 Breaking Changes
+- [ ] **No**
+- [ ] **Yes** (Provide backward-compatibility rationale below)
+
+---
+
+## 📌 Additional Notes & Reviewer Sign-Off
 <!-- Peer review rotation:
-Venkatesh PR -> Jasleen
-Jasleen PR -> Krishna
-Krishna PR -> Shravani
-Shravani PR -> Bhavya
-Bhavya PR -> Kimaya
-Kimaya PR -> Venkatesh
-Shared/core PRs require TWO approvals.
+- Venkatesh -> Jasleen
+- Jasleen -> Krishna
+- Krishna -> Bhavya
+- Bhavya -> Shravani
+- Shravani -> Kimaya
+- Kimaya -> Venkatesh
 -->
-- [ ] Peer Reviewer 1: 
-- [ ] Peer Reviewer 2 (if shared core):
+- **Assigned Reviewer**: @
+- **Reviewer Status**: [ ] Approved [ ] Changes Requested

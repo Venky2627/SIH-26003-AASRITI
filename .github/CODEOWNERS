@@ -1,5 +1,5 @@
 # ==============================================================================
-# SIH-26003 (SmritiSetu) — CODEOWNERS
+# AASRITI (SIH-26003) — CODEOWNERS
 # Formal Subsystem Review Routing for 6 Equal Contributors
 # ==============================================================================
 
@@ -7,18 +7,26 @@
 *                                                                   @TeamNameSIH/core-team
 
 # ------------------------------------------------------------------------------
-# 1. PROTECTED / INTEGRATION-SENSITIVE FILES (Requires 2 Approvals)
+# 1. PROTECTED GOVERNANCE & INTEGRATION FILES (Requires 2 Approvals)
 # ------------------------------------------------------------------------------
+/AGENTS.md                                                          @Venkatesh @Jasleen
+/SECURITY.md                                                        @Venkatesh @Jasleen
+/CONTRIBUTING.md                                                    @Venkatesh @Jasleen
+/UI_RULES.md                                                        @Bhavya @Venkatesh
+/UI_SCREEN_SPEC.md                                                  @Bhavya @Krishna
+/UI_COMPONENT_RULES.md                                              @Bhavya @Jasleen
+/UI_HERITAGE_GUIDE.md                                               @Bhavya @Shravani
+/UI_ACCESSIBILITY_RULES.md                                          @Bhavya @Kimaya
 /build.gradle.kts                                                   @Venkatesh @Jasleen
 /settings.gradle.kts                                                @Venkatesh @Jasleen
 /gradle/                                                            @Venkatesh @Jasleen
+/.github/                                                           @Venkatesh @Jasleen
 /app/build.gradle.kts                                               @Venkatesh @Jasleen
 /app/src/main/AndroidManifest.xml                                   @Venkatesh @Shravani
 /app/src/main/java/**/MainActivity.kt                               @Jasleen @Venkatesh
-/app/src/main/java/**/DementiaCareApp.kt                            @Jasleen @Venkatesh
+/app/src/main/java/**/SmritiSetuApplication.kt                      @Jasleen @Venkatesh
 /app/src/main/java/**/navigation/                                   @Jasleen @Venkatesh
 /app/src/main/java/**/data/local/database/                          @Jasleen @Venkatesh
-/app/src/main/java/**/di/                                           @Jasleen @Venkatesh
 /app/src/main/java/**/core/ui/theme/                                @Bhavya @Krishna
 /app/src/main/java/**/feature/games/framework/                      @Krishna @Bhavya
 
@@ -32,7 +40,7 @@
 /app/src/main/java/**/ml/                                           @Venkatesh
 /scripts/                                                           @Venkatesh
 
-# Jasleen: Data Layer, Room, Repositories, Domain Models
+# Jasleen: Data Layer, Room, Repositories, Domain Models, SQLite DAOs
 /app/src/main/java/**/data/                                         @Jasleen
 /app/src/main/java/**/domain/                                       @Jasleen
 /backend/firebase/                                                  @Jasleen

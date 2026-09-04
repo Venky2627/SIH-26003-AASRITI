@@ -1,225 +1,188 @@
-# SmritiSetu (SIH26003) — Master Implementation & Architecture Blueprint
+# AASRITI (SIH-26003) — Master System Blueprint & Engineering Guide
 
-**AI-Based Cognitive Gaming and Memory Assistance Platform for Elderly Dementia Patients in North Eastern Region (NER) of India**  
-*Sponsoring Ministry*: Ministry of Development of North Eastern Region (MDoNER), Government of India.  
-*Core Architectural Tenet*: **"ROOM IS KING. FIREBASE IS THE MESSENGER."**
-
----
-
-## 🏛️ 1. Project Overview & SIH Problem Context
-
-In rural North Eastern India (Assam, Manipur, Mizoram, Nagaland), elderly individuals facing Mild Cognitive Impairment (MCI) and early dementia encounter significant challenges: geographic isolation, intermittent 2G/zero internet connectivity, low digital literacy, and cultural alienation from generic Westernized cognitive assessments.
-
-**AASRITI (SmritiSetu / SIH-26003)** resolves this challenge with an offline-autonomous Android native application providing:
-1. **Culturally Grounded Cognitive Gaming**: Six native games reflecting authentic regional traditions (Assam tea preparation, Namghar routines, local village markets, high-contrast cultural motifs).
-2. **On-Device Adaptive Difficulty**: Scikit-learn trained Decision Tree classifier evaluated locally in Kotlin in $<1\text{ms}$ with zero cloud dependencies.
-3. **Local-First Caregiver & Clinician Bridge**: Autonomous local Room SQLite database as the single source of truth, backed by an opportunistic, non-blocking Firebase synchronization messenger.
+> **AI-Based Cognitive Gaming, Memory Assistance, and Care-Connection Platform for Elderly Dementia Patients in the North Eastern Region (NER) of India**  
+> *Sponsoring Ministry*: Ministry of Development of North Eastern Region (MDoNER), Government of India  
+> *Core Architectural Axiom*: **"ROOM LOCAL SQLITE IS KING. FIREBASE IS THE MESSENGER."**  
+> *Target Environment*: 100% Autonomous Offline Execution in Rural NER (Assam, Manipur, Meghalaya)
 
 ---
 
-## 🎨 UI GOVERNANCE & DESIGN SYSTEM CONSTITUTION
+## 🏛️ 1. WHAT AASRITI IS
 
-> [!IMPORTANT]
-> **AASRITI UI IS A SYSTEM, NOT A COLLECTION OF SCREENS.**  
-> **Read the UI rules before changing any interface.**  
-> *Reuse before reinventing. New patterns require documentation.*
+In rural North Eastern India, elderly individuals facing Mild Cognitive Impairment (MCI) and early dementia encounter geographic isolation, intermittent 2G/zero internet connectivity, low digital literacy, and cultural alienation from generic Westernized cognitive tools.
 
-Every contributor and AI coding assistant operating in this repository must strictly adhere to the five permanent UI governance documents at the repository root:
+**AASRITI** is an offline-autonomous Android companion platform engineered around elderly patients, family caregivers, rural ASHA workers, and clinicians.
 
-1. [`/UI_RULES.md`](file:///UI_RULES.md) — Master visual philosophy, 13 canonical colors, typography scale, spacing rhythm, and forbidden patterns.
-2. [`/UI_SCREEN_SPEC.md`](file:///UI_SCREEN_SPEC.md) — Canonical layout contracts for Patient, Caregiver, ASHA, and Doctor screens.
-3. [`/UI_COMPONENT_RULES.md`](file:///UI_COMPONENT_RULES.md) — Exact specifications for buttons, cards, voice pills, choice tiles, and feedback.
-4. [`/UI_HERITAGE_GUIDE.md`](file:///UI_HERITAGE_GUIDE.md) — Authentic integration of Assam, Manipur, and Meghalaya cultural motifs.
-5. [`/UI_ACCESSIBILITY_RULES.md`](file:///UI_ACCESSIBILITY_RULES.md) — WCAG 2.2 AAA standards, $\ge 64\text{dp}$ touch targets, and non-punitive language.
-
----
-
-## 🏗️ 2. Authoritative Architecture & Data Flow
-
-```mermaid
-graph TD
-    UI[Jetpack Compose UI] --> VM[ViewModel / UI State]
-    VM --> REPO[Repository Layer]
-    REPO -->|Immediate Local Write| ROOM[(Room SQLite Database\nsmritisetu.db)]
-    ROOM -->|Enqueue Pending Mutation| SYNC_QUEUE[sync_queue Table]
-    SYNC_QUEUE -->|Opportunistic Background Sync| FB[Firebase Messenger]
-    
-    subgraph "100% Offline Core (Airplane Mode)"
-        ROOM
-        ML[On-Device Decision Tree Engine]
-        VOICE[Local Language Packs & TTS]
-        ALARMS[Android AlarmManager]
-    end
-    
-    REPO --> ML
-    UI --> VOICE
-    REPO --> ALARMS
-```
-
-### Architectural Principles:
-* **Platform**: 100% Native Android (Kotlin + Jetpack Compose + Material 3).
-* **Source of Truth**: Room Database (`smritisetu.db`) with SQLite engine. Every read and write originates locally.
-* **Secondary Messenger**: Firebase is used exclusively for background backup and doctor sharing.
-* **Zero OTP / SMS**: Caregivers and Doctors authenticate with local 6-digit PINs (SHA-256 in Room); Patients authenticate with **zero PIN** (direct photo card tap).
-* **Ethical Boundary**: Measures physical reaction latency, accuracy, and hesitation gaps. Absolutely **NEVER** outputs a dementia diagnosis or clinical severity score.
+### Core Capabilities:
+1. **Patient Guided Companion (Very Low Density)**: Direct photo avatar entry (Zero PIN barrier), large touch targets ($\ge 64\text{dp}$), temporal orientation, daily routine assistance, and family calling.
+2. **Culturally Grounded Cognitive Gaming**: Six native mini-games reflecting authentic regional heritage (Assam tea preparation, Namghar routines, local village market goods, high-contrast cultural motifs).
+3. **On-Device Adaptive Difficulty (Zero Cloud ML)**: Scikit-learn trained Decision Tree classifier evaluated locally in Kotlin in $<0.5\text{ms}$ with zero cloud dependencies.
+4. **Memory Garden (Reminiscence)**: High-contrast family photo album with attached spoken voice notes from children and grandchildren.
+5. **Caregiver & ASHA Field Tools**: Under-30-second Quick Care Log for medications, appetite, sleep, and falls; Today's Priority triage; and multi-patient roster switching on shared devices.
+6. **Clinician Longitudinal Signals**: 7/30/90-day physical reaction time and hesitation trend curves with 1-page high-contrast PDF clinical summary generation.
+7. **Absolute Ethical Guardrail**: Evaluates physical interaction signals; **never** claims to diagnose dementia or compute clinical disease severity scores.
 
 ---
 
-## 🎮 3. The Six Native Cognitive Games
+## 🚀 2. HOW TO RUN IT
 
-All six games inherit from the unified `BaseGameEngine` framework with non-punitive audio encouragement:
+### Prerequisites:
+* **Android Studio**: Jellyfish, Iguana, or Hedgehog (2023.2+)
+* **Java Development Kit**: JDK 17 (Temurin or OpenJDK)
+* **Android SDK**: Compile SDK 34, Min SDK 24 (Android 7.0+)
+* **Python (Optional for ML model export)**: Python 3.10+ (`scikit-learn`, `numpy`)
 
-| # | Game | Clinical Focus | Cultural & Interaction Highlights | Adaptive Levels (1 to 5) | Status |
-|---|---|---|---|---|:---:|
-| **1** | **Family Trivia** (`পৰিয়ালৰ স্মৃতি`) | Memory & Identity | Personal family photos and relationships loaded from local Room database. | L1: Photo+Name (2 choices) $\rightarrow$ L2: Relationship prompt $\rightarrow$ L3: 4 choices $\rightarrow$ L4: Audio clue $\rightarrow$ L5: Direct recall. | **REAL** |
-| **2** | **Voice Cue Card** (`কণ্ঠ আৰু ছবি`) | Attention & Recall | Spoken item audio prompts with large visual touch cards. | L1: Single item $\rightarrow$ L2: Short instruction $\rightarrow$ L3: 2-step cue $\rightarrow$ L4: Mixed list $\rightarrow$ L5: 3-item sequence. | **REAL** |
-| **3** | **Daily Sequencing** (`দৈনন্দিন ক্ৰম`) | Executive Function | Familiar routines (making Assam milk tea, morning Namghar routine). | L1: 2 steps $\rightarrow$ L2: 3 steps $\rightarrow$ L3: 4 steps $\rightarrow$ L4: 4 steps + distractor $\rightarrow$ L5: 5–6 chronological steps. | **REAL** |
-| **4** | **Categorisation** (`শ্ৰেণীবিভাজন`) | Categorical Thinking | Grouping items into fruits, vegetables, animals, and traditional wear. | L1: 2 obvious groups $\rightarrow$ L2: 3 groups $\rightarrow$ L3: Less obvious items $\rightarrow$ L4: 4 groups + distractors $\rightarrow$ L5: Multi-item sorting. | **REAL** |
-| **5** | **Village Market** (`গাঁওৰ বজাৰ`) | Working Memory | Shopping list recall with authentic NER goods (Joha rice, Kaji nemu). | L1: 2 items $\rightarrow$ L2: 3 items $\rightarrow$ L3: 3–4 items + stall distractors $\rightarrow$ L4: 8-item market stall $\rightarrow$ L5: 5 items + delayed recall. | **REAL** |
-| **6** | **Pattern Recognition** (`আৰ্হি চিনাক্তকৰণ`) | Visuospatial Speed | High-contrast visual sequences and cultural motifs. | L1: 2-item alternating $\rightarrow$ L2: 3-item repeating $\rightarrow$ L3: Step rhythm $\rightarrow$ L4: Complex + distractors $\rightarrow$ L5: Abstract sequence. | **REAL** |
-
----
-
-## 🖼️ 4. Reminiscence & Sensory Experiences (Roadmap Phase 2)
-
-Designed for calming, non-scored emotional and sensory stimulation:
-* **Module 1: Memory Album**: Viewing high-contrast family photographs with spoken descriptions and voice recordings.
-* **Module 2: Familiar Music / Audio**: Offline local player for traditional folk tunes, borgeet, and calming melodies with play/pause/repeat controls.
-* **Module 3: Festival / Food Stories**: Conversational cultural prompts (Bihu festivals, traditional pitha/tea making).
-
----
-
-## 👨‍👩‍👦 5. Caregiver & Clinician Systems
-
-### Caregiver Experience:
-* **Today's Priority Engine**: Deterministic logic presenting max 3 actionable priorities (missed medications, appointments, recent falls).
-* **Quick Log**: Fast $<30\text{s}$ event logger for medication, appetite, sleep, falls, wandering, and agitation.
-* **Weekly Overview**: Real SQLite adherence percentages and incident tallies with zero fake graphs.
-* **Emergency Toolkit**: Emergency Call intent, Patient Missing card with photo and emergency contacts, Fall triage steps, and De-escalation guidance.
-* **Caregiver Wellbeing**: Weekly stress check-in (Doing okay, Tired, Stressed, Overwhelmed).
-
-### Clinician Experience:
-* **Doctor Access**: 6-digit Doctor Access Code entry granting scoped, revocable access.
-* **Longitudinal Review**: Physical interaction trends (latency, errors, hesitation) without automated diagnosis.
-* **Explainable Referral Prompts**: Rule-based prompts (*"Consider clinical review"*) triggered if $>1$ fall or adherence $<60\%$.
-* **1-Page PDF Export**: Local generation via Android `PdfDocument` stored in app-private storage without cloud dependencies.
-
----
-
-## 👥 6. Six Equal Contributors & Work Allocation
-
-All six team members are **equal contributors**. Everyone writes code, tests, and conducts peer reviews:
-
-| Member | Feature Ownership Area | Designated Working Branch | Default Peer Reviewer |
-| :--- | :--- | :--- | :--- |
-| **Venkatesh** | Game Framework + Session/Metrics | `feature/venkatesh/game-framework` | Jasleen |
-| **Jasleen** | Family Trivia + Personalization | `feature/jasleen/family-trivia` | Krishna |
-| **Krishna** | Voice Cue Card + Voice Experience | `feature/krishna/voice-cue-card` | Shravani |
-| **Shravani** | Reminders System (Medicine/Alarms) | `feature/shravani/reminders` | Bhavya |
-| **Bhavya** | Accessibility + Patient UI Polish | `feature/bhavya/accessibility` | Kimaya |
-| **Kimaya** | Sequencing + Categorisation Games | `feature/kimaya/sequencing-categorisation` | Venkatesh |
-
-### 🔄 Review Rotation:
-$$\text{Venkatesh} \rightarrow \text{Jasleen} \rightarrow \text{Krishna} \rightarrow \text{Shravani} \rightarrow \text{Bhavya} \rightarrow \text{Kimaya} \rightarrow \text{Venkatesh}$$
-*Shared infrastructure PRs (Room schema, navigation, Gradle) require **TWO approvals**.*
-
----
-
-## 🌿 7. Protected Branch Strategy & Contributor Workflow
-
-> **NO DIRECT PUSHES TO `main` OR `develop`.**  
-> All work occurs in `feature/<member>/<feature>` branches and merges into `develop` through Pull Requests and peer review.
-
-```
-[feature/<member>/<feature>] ──(PR + Review + CI)──> [develop] ──(Release Sign-off)──> [main]
-```
-
-### Contributor Lifecycle:
-1. `git checkout develop && git pull origin develop`
-2. `git checkout -b feature/<member>/<feature>`
-3. Work with AI coding agent within your feature scope.
-4. Run `git status` and `git diff` to verify only your module was touched.
-5. Run `./gradlew testDebugUnitTest` and `./gradlew assembleDebug`.
-6. Commit with conventional format (e.g. `feat(familytrivia): load patient relationships`).
-7. Push: `git push -u origin feature/<member>/<feature>`.
-8. Open Pull Request targeting `develop` using the PR template checklist.
-9. Designated reviewer approves PR $\rightarrow$ GitHub Actions CI passes $\rightarrow$ Squash & Merge.
-
----
-
-## 📂 8. Repository Layout
-
-```text
-SIH26003/
-├── app/
-│   ├── src/main/java/com/sih26003/smritisetu/
-│   │   ├── feature/games/    # Common framework + 6 native games
-│   │   ├── feature/auth/     # Local PIN & Patient photo select
-│   │   ├── feature/patient/  # Large-target patient dashboard
-│   │   ├── feature/caregiver/# Caregiver dashboard & doctor linking
-│   │   ├── feature/doctor/   # Longitudinal game signal review
-│   │   ├── feature/reminders/# Exact offline AlarmManager scheduling
-│   │   ├── data/local/       # Room database (7 entities, 7 DAOs)
-│   │   ├── data/firebase/    # Background sync queue messenger
-│   │   ├── ml/               # On-device Decision Tree interpreter
-│   │   └── voice/            # Voice prompts & language packs
-│   ├── src/main/assets/      # Local ML tree JSON & language packs
-│   └── src/test/java/        # Unit test suite
-├── assets/                   # Master ML tree model & language packs
-├── docs/                     # Authoritative Documentation
-│   ├── LOCKED_ARCHITECTURE.md
-│   ├── PS_COVERAGE_MATRIX.md
-│   ├── IMPLEMENTATION_ROADMAP.md
-│   ├── TEAM_WORKFLOW.md
-│   ├── data-model/ROOM_SCHEMA.md
-│   ├── games/SIX_GAMES_SPECIFICATION.md
-│   └── testing/OFFLINE_VERIFICATION_CHECKLIST.md
-├── gradle/                   # Gradle wrapper & libs.versions.toml
-├── scripts/                  # train_decision_tree.py
-├── .agents/                  # Antigravity project intelligence (rules, agents, workflows)
-├── .github/                  # CODEOWNERS, PR template, CI workflow
-├── .gitignore                # Android & OS ignore rules
-├── CONTRIBUTING.md           # Developer workflow & AI safety contract
-├── LICENSE                   # Open source license
-├── build.gradle.kts          # Root build configuration
-├── gradle.properties         # JVM & AndroidX properties
-├── gradlew / gradlew.bat     # Gradle wrapper executables
-└── settings.gradle.kts       # Module settings
-```
-
----
-
-## ⚡ 9. Build & Verification Commands
-
+### Quick Start:
 ```bash
-# 1. Generate & export Decision Tree model to JSON
+# 1. Clone repository
+git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git AASRITI
+cd AASRITI
+
+# 2. Copy environment template (optional)
+cp .env.example .env
+
+# 3. Verify ML Decision Tree export (optional)
 python scripts/train_decision_tree.py
 
-# 2. Build Android Debug APK
-./gradlew assembleDebug
-
-# 3. Execute unit tests
+# 4. Build and run unit tests
 ./gradlew testDebugUnitTest
+
+# 5. Build Debug APK
+./gradlew assembleDebug
+```
+*In Android Studio*: Click **File $\rightarrow$ Open $\rightarrow$ select AASRITI**, wait for Gradle sync, connect device via USB (or start an API 34 emulator), and press **Run (▶)**.
+
+---
+
+## 📂 3. HOW THE REPOSITORY IS STRUCTURED
+
+AASRITI follows Feature-First Clean Architecture to ensure parallel work across 6 developers:
+
+```text
+AASRITI/
+├── AGENTS.md                            # Primary Antigravity & AI agent operating system
+├── README.md                            # Start-here guide & system architecture
+├── CONTRIBUTING.md                      # Plain-language contributor lifecycle
+├── SECURITY.md                          # Full-product security, DPDPA 2023, and RBAC
+├── .env.example                         # Environment configuration template
+│
+├── UI_RULES.md                          # Master UI constitution & 13 canonical colors
+├── UI_SCREEN_SPEC.md                    # Canonical layout contracts for all screens
+├── UI_COMPONENT_RULES.md                # Component behaviors, buttons, cards, voice pill
+├── UI_HERITAGE_GUIDE.md                 # Regional heritage rules (Assam, Manipur, Meghalaya)
+├── UI_ACCESSIBILITY_RULES.md            # WCAG 2.2 AAA standards & >=64dp touch targets
+│
+├── app/
+│   └── src/main/java/com/sih26003/smritisetu/
+│       ├── MainActivity.kt              # Single-activity NavHost wrapped in AasritiTheme
+│       ├── SmritiSetuApplication.kt     # Application container & dependency wiring
+│       ├── core/
+│       │   ├── ui/theme/                # AasritiTheme, Color, Type, Shape, Spacing tokens
+│       │   └── security/                # CryptoUtils, SHA-256 local PIN hashing
+│       ├── data/
+│       │   ├── local/database/          # Room SQLite Database singleton (smritisetu.db)
+│       │   ├── local/entity/            # Room SQLite Entities (Zero UI imports)
+│       │   ├── local/dao/               # 7 Room DAOs
+│       │   └── mapper/                  # Entity <-> Domain Model extension mappers
+│       ├── domain/model/                # Pure Kotlin immutable domain data classes
+│       ├── engine/
+│       │   ├── adaptive/                # DecisionTreeEngine (Difficulty 1-5 scaler)
+│       │   ├── priority/                # Deterministic care triage engine
+│       │   ├── reminder/                # AlarmManager offline scheduling & BootReceiver
+│       │   └── trend/                   # Longitudinal reaction time & hesitation analyzer
+│       ├── feature/
+│       │   ├── auth/                    # Role selection & local PIN auth
+│       │   ├── patient/                 # Patient home (Very Low Density)
+│       │   ├── games/                   # BaseGameEngine + 6 cognitive games
+│       │   ├── memoryalbum/             # Memory Garden photo & voice album
+│       │   ├── caregiver/               # Caregiver dashboard & Quick Log
+│       │   ├── asha/                    # Multi-patient community roster
+│       │   └── doctor/                  # Doctor access & patient snapshot
+│       ├── sync/                        # Offline sync_queue processor & network listener
+│       └── voice/                       # Shared voice manager (0.85x TTS & audio packs)
+│
+├── backend/firebase/                    # Security rules & indexes for background sync
+├── docs/                                # Detailed technical documents
+│   ├── ARCHITECTURE.md                  # Comprehensive product architecture
+│   ├── GETTING_STARTED_FOR_TEAM.md      # Beginner developer onboarding guide
+│   ├── DATA_MODEL.md                    # SQLite schemas and domain models
+│   ├── API_SYNC_CONTRACT.md             # Offline sync queue payload contracts
+│   ├── DEMO_SCRIPT.md                   # 16-step verified demonstration script
+│   └── DECISIONS.md                     # Architectural Decision Records (ADRs 001-006)
+│
+├── .github/
+│   ├── workflows/android.yml            # CI build, test, secret scan, UI token checks
+│   ├── pull_request_template.md         # Comprehensive PR checklist
+│   └── CODEOWNERS                       # Review routing for protected files & subsystems
+└── scripts/train_decision_tree.py       # Scikit-learn model training script
 ```
 
 ---
 
-## 🎬 10. Verified SIH Demonstration Flow
+## 👥 4. HOW TO CONTRIBUTE
 
-1. **Caregiver Login**: Opens app $\rightarrow$ Selects Caregiver $\rightarrow$ Enters 6-digit PIN.
-2. **Patient Management**: Caregiver adds/selects patient profile (`AS-KAM-0042`).
-3. **Personalization**: Caregiver adds family member (Name: *Rupam*, Relationship: *Son*).
-4. **Patient Entry**: Logs out $\rightarrow$ Taps patient avatar card (Zero PIN).
-5. **Game 1 (Family Trivia)**: Personalized question displays with family member from Room.
-6. **Adaptive Difficulty**: Decision Tree adapts round difficulty (1–5) based on real physical latency.
-7. **Offline Alarms**: Offline reminder triggers via native `AlarmManager`.
-8. **Airplane Mode Verification**: Turn Airplane Mode ON $\rightarrow$ Play Games 2 to 6 $\rightarrow$ All operate smoothly with zero network.
-9. **Doctor Access**: Doctor enters 6-digit access code $\rightarrow$ Views longitudinal signals and flags.
+All 6 team members follow the **11-Stage Contributor Lifecycle**:
+```
+1. CLONE ──► 2. RUN ──► 3. BRANCH ──► 4. WORK ──► 5. TEST ──► 6. COMMIT
+                                                                  │
+11. MERGE ◄── 10. APPROVE ◄── 9. REVIEW ◄── 8. CI ◄── 7. PUSH & PR ◄┘
+```
+
+1. **Work in a feature branch**: Never commit directly to `main` or `develop`.  
+   Format: `feature/<member>/<task-name>` (e.g. `feature/kimaya/memory-garden`).
+2. **Tell Antigravity**: Say *"I'm Kimaya, set me up."* Antigravity will check out your branch, load all rules, and verify your clean workspace.
+3. **Commit clearly**: Use conventional commit prefixes (`feat:`, `fix:`, `docs:`, `ui:`).
+4. **Open a PR**: Target `develop`. Fill out the `.github/pull_request_template.md` checklist.
+5. **Get Peer Approval**: Your designated peer reviewer must approve before merge:
+   $$\text{Venkatesh} \rightarrow \text{Jasleen} \rightarrow \text{Krishna} \rightarrow \text{Bhavya} \rightarrow \text{Shravani} \rightarrow \text{Kimaya} \rightarrow \text{Venkatesh}$$
+
+For full details, read [`/docs/GETTING_STARTED_FOR_TEAM.md`](file:///docs/GETTING_STARTED_FOR_TEAM.md) and [`/CONTRIBUTING.md`](file:///CONTRIBUTING.md).
 
 ---
 
-## ⚠️ 11. Known Limitations & Safety Guardrails
+## 📜 5. WHERE THE RULES ARE (SOURCE OF TRUTH)
 
-* **Non-Diagnostic Tool**: Evaluates physical gameplay metrics (reaction speed, accuracy, hesitation gaps). Does **NOT** diagnose dementia.
-* **TTS Language Availability**: High-quality local TTS depends on system voice engines; pre-recorded JSON prompt packs provide reliable fallbacks for Assamese and English.
-* **Speech Recognition**: Voice input is strictly optional; touch is always available to prevent blocking users with rural dialects.
+The Git repository itself is the permanent guardian of all product rules:
+
+| Rule Category | Authoritative File | Key Takeaway |
+| :--- | :--- | :--- |
+| **AI Agent Operating System** | [`/AGENTS.md`](file:///AGENTS.md) | 20 golden rules, developer detection, and task contract. |
+| **UI Design Constitution** | [`/UI_RULES.md`](file:///UI_RULES.md) | 13 canonical colors, no dashboards for patients, typography scale. |
+| **Screen Layout Contracts** | [`/UI_SCREEN_SPEC.md`](file:///UI_SCREEN_SPEC.md) | Rigid information hierarchy for every major screen. |
+| **Component Specifications**| [`/UI_COMPONENT_RULES.md`](file:///UI_COMPONENT_RULES.md)| Buttons, cards, voice pill states, and feedback banners. |
+| **Cultural Heritage Guide** | [`/UI_HERITAGE_GUIDE.md`](file:///UI_HERITAGE_GUIDE.md) | Authentic Assam, Manipur, and Meghalaya visual integration. |
+| **Accessibility & COGA** | [`/UI_ACCESSIBILITY_RULES.md`](file:///UI_ACCESSIBILITY_RULES.md)| $\ge 64\text{dp}$ touch targets, non-punitive copy, WCAG AAA. |
+| **Full-Product Security** | [`/SECURITY.md`](file:///SECURITY.md) | RBAC matrix, local PIN hashing, zero plaintext secrets. |
+| **System Architecture** | [`/docs/ARCHITECTURE.md`](file:///docs/ARCHITECTURE.md)| Room persistence, sync queue, and Decision Tree runtime. |
+
+---
+
+## ⚙️ 6. HOW CI & PULL REQUESTS WORK
+
+Every Pull Request targeting `develop` or `main` automatically triggers **GitHub Actions CI** (`.github/workflows/android.yml`):
+1. **Security Scan**: Automatically searches for accidental commits of `.env`, private keys (`.pem`, `.p12`), or `.keystore` files.
+2. **Governance Verification**: Verifies presence and integrity of all constitutional UI and security files.
+3. **ML Engine Validation**: Runs `scripts/train_decision_tree.py` to confirm model training and JSON export.
+4. **Android Build & Test**: Runs `./gradlew testDebugUnitTest` and `./gradlew assembleDebug` using Java 17.
+
+*PRs cannot be merged if any CI step fails or if the designated peer reviewer has not approved.*
+
+---
+
+## 📦 7. DEPLOYMENT & VERIFICATION
+
+### Offline Airplane Mode Verification:
+AASRITI is engineered to operate 100% autonomously without internet connectivity.
+To verify:
+1. Install debug APK on physical Android device:
+   ```bash
+   ./gradlew installDebug
+   ```
+2. Turn **Airplane Mode ON** (0 Kbps internet).
+3. Execute the 16-step demonstration script in [`/docs/DEMO_SCRIPT.md`](file:///docs/DEMO_SCRIPT.md):
+   - Authenticate caregiver locally via 6-digit PIN.
+   - Switch to Patient (Zero PIN photo tap).
+   - Play Family Trivia and Voice Cue Card; verify adaptive difficulty updates in SQLite.
+   - Log a care observation in Quick Log (<30s).
+   - Switch to Doctor view via 6-digit access code and verify 7-day reaction time trend.
+4. Turn **Airplane Mode OFF**: Verify that `SyncQueueProcessor` opportunistically drains mutations to Firebase Firestore in the background without user interruption.

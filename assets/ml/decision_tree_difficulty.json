@@ -5,10 +5,28 @@
   "left": {
     "is_leaf": false,
     "feature": "accuracy",
-    "threshold": 0.645,
+    "threshold": 0.695,
     "left": {
-      "is_leaf": true,
-      "recommended_difficulty": 1
+      "is_leaf": false,
+      "feature": "accuracy",
+      "threshold": 0.645,
+      "left": {
+        "is_leaf": true,
+        "recommended_difficulty": 1
+      },
+      "right": {
+        "is_leaf": false,
+        "feature": "current_difficulty",
+        "threshold": 1.5,
+        "left": {
+          "is_leaf": true,
+          "recommended_difficulty": 1
+        },
+        "right": {
+          "is_leaf": true,
+          "recommended_difficulty": 2
+        }
+      }
     },
     "right": {
       "is_leaf": false,
@@ -17,7 +35,7 @@
       "left": {
         "is_leaf": false,
         "feature": "accuracy",
-        "threshold": 0.855,
+        "threshold": 0.845,
         "left": {
           "is_leaf": true,
           "recommended_difficulty": 1
@@ -30,7 +48,7 @@
       "right": {
         "is_leaf": false,
         "feature": "accuracy",
-        "threshold": 0.855,
+        "threshold": 0.845,
         "left": {
           "is_leaf": true,
           "recommended_difficulty": 2

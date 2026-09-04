@@ -1,115 +1,104 @@
-# Contributing to SmritiSetu (SIH-26003)
+# AASRITI CONTRIBUTOR & ENGINEERING WORKFLOW GUIDE
+## `/CONTRIBUTING.md` — The Standard Development Operating System
 
-Welcome to the SmritiSetu development team! We are **6 equal contributors** building an AI-based cognitive gaming and memory assistance platform for rural North Eastern India.
+> **WELCOME TO AASRITI (SIH-26003)**  
+> **CORE ENGINEERING PRINCIPLE**: **"Hard to break, simple to contribute. The Git repository is the single source of truth."**
 
 ---
 
-## 🌿 1. Git Branching Model
+## 🌟 1. THE 11-STAGE DEVELOPMENT LIFECYCLE
 
-To ensure seamless parallel work and prevent merge conflicts across the 6 members, we enforce a strict 3-tier branch hierarchy:
+Every contribution to AASRITI — whether frontend UI, backend sync, database migration, ML logic, security rule, or documentation — follows this exact predictable lifecycle:
 
 ```
-[feature/<member>/<feature-name>] ──(PR + Review + CI)──> [develop] ──(Release Sign-off)──> [main]
+1. CLONE ──► 2. RUN ──► 3. BRANCH ──► 4. WORK ──► 5. TEST ──► 6. COMMIT
+                                                                  │
+11. MERGE ◄── 10. APPROVE ◄── 9. REVIEW ◄── 8. CI ◄── 7. PUSH & PR ◄┘
 ```
 
-### Golden Git Directives:
-1. **NO DIRECT PUSHES TO `main` OR `develop`**.
-2. **NO FORCE PUSHES (`git push --force`) ON SHARED BRANCHES**.
-3. All development must occur on your assigned feature branch:
-   ```bash
-   git checkout -b feature/<member>/<feature-name>
-   ```
+### Stage 1: CLONE
+Clone the official repository to your machine:
+```bash
+git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git AASRITI
+cd AASRITI
+```
 
-### Branch Naming Convention:
-* `feature/venkatesh/<task-name>` (e.g., `feature/venkatesh/priority-engine`)
-* `feature/jasleen/<task-name>` (e.g., `feature/jasleen/domain-mappers`)
-* `feature/krishna/<task-name>` (e.g., `feature/krishna/game-framework`)
-* `feature/bhavya/<task-name>` (e.g., `feature/bhavya/cultural-theme-engine`)
-* `feature/shravani/<task-name>` (e.g., `feature/shravani/caregiver-quick-log`)
-* `feature/kimaya/<task-name>` (e.g., `feature/kimaya/doctor-trends-screen`)
+### Stage 2: RUN
+Open the project in Android Studio (Jellyfish / Iguana / Hedgehog with JDK 17). Build and run on an Android device or emulator (API 34). Confirm that the default `AasritiTheme` loads with `Warm Ivory` backgrounds and large buttons.
 
----
+### Stage 3: BRANCH
+**NEVER WORK DIRECTLY ON `main` OR `develop`.**  
+Create your feature branch off `develop` (or tell Antigravity who you are and what you want to build):
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/<member>/<task-name>
+# Examples:
+# git checkout -b feature/kimaya/memory-garden
+# git checkout -b feature/venkatesh/priority-engine
+# git checkout -b fix/shravani/reminder-alarm
+```
 
-## 🧭 2. The 12-Step Contributor Lifecycle
+### Stage 4: WORK (REUSE EXISTING PATTERNS)
+- **UI Changes**: Read [`/UI_RULES.md`](file:///UI_RULES.md) and [`/UI_COMPONENT_RULES.md`](file:///UI_COMPONENT_RULES.md). Reuse `AasritiColorTokens`, `AasritiTypography`, and `AasritiSpacing`.
+- **Backend / Database Changes**: Read [`/docs/ARCHITECTURE.md`](file:///docs/ARCHITECTURE.md) and [`/SECURITY.md`](file:///SECURITY.md). Room SQLite is the source of truth.
+- **Patient Views**: Keep density VERY LOW. No scoreboards, no dashboards, touch targets $\ge 64\text{dp}$.
 
-Every feature or bugfix follows this exact path:
+### Stage 5: TEST
+Run local checks and tests before committing:
+```bash
+# Run unit tests
+./gradlew testDebugUnitTest
 
-1. **Pull Latest `develop`**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   ```
-2. **Create Feature Branch**:
-   ```bash
-   git checkout -b feature/<member>/<feature-name>
-   ```
-3. **Open Antigravity / Gemini**:
-   - The AI assistant reads `AGENTS.md`, detects your branch, and outputs your execution contract.
-4. **Code Within Module Scope**:
-   - Stay strictly within your assigned safe directories (see [`TEAM_ALLOCATION.md`](file:///TEAM_ALLOCATION.md)).
-5. **Inspect Diffs Before Staging**:
-   ```bash
-   git status
-   git diff --stat
-   git diff
-   ```
-   *Verify line-by-line. If unrelated files were touched, revert them.*
-6. **Run Local Unit Tests**:
-   ```bash
-   ./gradlew testDebugUnitTest
-   ```
-7. **Commit with Conventional Messages**:
-   ```bash
-   git add <modified-files>
-   git commit -m "feat(priority): implement deterministic triage rules"
-   ```
-8. **Push Feature Branch**:
-   ```bash
-   git push -u origin feature/<member>/<feature-name>
-   ```
-9. **Update Tracking**:
-   - Update `TASK_BOARD.md` (set task status to `REVIEW`) and `PROJECT_STATE.md`.
-10. **Open Pull Request Targeting `develop`**:
-    - Complete all checklist items in `.github/pull_request_template.md`.
-    - Tag your designated peer reviewer.
-11. **Peer Review & CI Verification**:
-    - Reviewer inspects code; GitHub Actions runs build and tests.
-12. **Squash and Merge**:
-    - Once approved, squash and merge into `develop`, then delete your feature branch.
+# Test offline capability: Turn on Airplane Mode on your test device!
+```
 
----
+### Stage 6: COMMIT
+Make meaningful, clean commits:
+```bash
+git add .
+git commit -m "feat(memory): implement Memory Garden photo viewer with audio voice note"
+```
 
-## ✍️ 3. Commit Convention
+### Stage 7: PUSH & OPEN PULL REQUEST
+Push your branch to GitHub:
+```bash
+git push -u origin feature/<member>/<task-name>
+```
+Open a Pull Request targeting `develop`. The template in `.github/pull_request_template.md` will automatically load. Complete the checklist.
 
-We use standard Conventional Commits format:
-* `feat:` A new feature, screen, or domain use case
-* `fix:` A bug fix or crash resolution
-* `test:` Adding or updating unit tests
-* `refactor:` Code restructuring without functional change
-* `docs:` Documentation or diagram updates
-* `chore:` Gradle build configs, assets, or repository settings
+### Stage 8: CI (GITHUB ACTIONS)
+Automated GitHub Actions will build the project, run unit tests, check for secret leaks, and verify UI governance file presence. If CI fails, inspect the log, fix locally, and push to the same branch.
+
+### Stage 9: REVIEW
+Your designated peer reviewer conducts code review:
+* **Venkatesh** $\leftrightarrow$ **Jasleen**
+* **Jasleen** $\leftrightarrow$ **Krishna**
+* **Krishna** $\leftrightarrow$ **Bhavya**
+* **Bhavya** $\leftrightarrow$ **Shravani**
+* **Shravani** $\leftrightarrow$ **Kimaya**
+* **Kimaya** $\leftrightarrow$ **Venkatesh**
+
+### Stage 10: APPROVE
+Address feedback. Once the reviewer gives explicit approval (LGTM), the PR is ready.
+
+### Stage 11: MERGE
+Merge via **Squash and Merge** into `develop`. Branch is deleted after successful merge.
 
 ---
 
-## 🔒 4. Protected Files & 2-Approval Rule
+## 🛑 2. PROTECTED BRANCH POLICY
 
-Modifying integration-sensitive files requires **TWO approvals** (Primary Custodian + Secondary Reviewer):
-* `AppNavigation.kt` (Jasleen + Venkatesh)
-* `DementiaDatabase.kt` / `AppDatabase.kt` (Jasleen + Venkatesh)
-* `build.gradle.kts` / `settings.gradle.kts` (Venkatesh + Jasleen)
-* `AndroidManifest.xml` (Venkatesh + Shravani)
-* `Theme.kt` / `colors.xml` (Bhavya + Krishna)
-* `CommonGameFramework.kt` (Krishna + Bhavya)
+* **`main` is protected**: Represents production-ready code. Direct pushes are blocked.
+* **`develop` is the integration branch**: Features merge into `develop` via approved PRs.
+* **Protected Files Rule**: Modifying integration files (`MainActivity.kt`, `DementiaDatabase.kt`, `build.gradle.kts`, `AndroidManifest.xml`, `UI_RULES.md`, `SECURITY.md`) strictly requires **2 reviewer approvals**.
 
 ---
 
-## ⚔️ 5. Conflict Resolution Protocol
+## 🎯 3. PULL REQUEST-FIRST CULTURE
 
-When merge conflicts occur:
-1. **NEVER** use `checkout --ours` or `checkout --theirs` blindly.
-2. **NEVER** ask an AI assistant to "auto-resolve all conflicts" without manual review.
-3. Open conflicting files, review both changes, merge them logically, and verify with:
-   ```bash
-   ./gradlew testDebugUnitTest
-   ```
-4. Commit the resolution and notify your designated reviewer.
+Every meaningful change must pass through a Pull Request. No exceptions for UI, backend, documentation, or security files. Every PR must clearly document:
+1. **What changed**
+2. **Why it changed**
+3. **Systems affected** (Frontend, Database, API, ML, UI, etc.)
+4. **Testing performed** (including offline Airplane Mode verification)
