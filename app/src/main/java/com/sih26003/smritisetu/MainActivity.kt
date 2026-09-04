@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sih26003.smritisetu.core.ui.theme.AasritiTheme
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
 import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.feature.auth.PinAuthScreen
@@ -37,12 +38,13 @@ class MainActivity : ComponentActivity() {
         val app = application as SmritiSetuApplication
 
         setContent {
-            val navController = rememberNavController()
-            val scope = rememberCoroutineScope()
-            var activePatient by remember { mutableStateOf<PatientEntity?>(null) }
-            var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
+            AasritiTheme {
+                val navController = rememberNavController()
+                val scope = rememberCoroutineScope()
+                var activePatient by remember { mutableStateOf<PatientEntity?>(null) }
+                var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
 
-            NavHost(navController = navController, startDestination = "role_select") {
+                NavHost(navController = navController, startDestination = "role_select") {
                 // 1. Role Selection & Direct Patient Photo Mode
                 composable("role_select") {
                     RoleAndModeSelectScreen(
@@ -239,3 +241,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+}
+

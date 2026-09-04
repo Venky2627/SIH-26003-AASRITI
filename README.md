@@ -10,10 +10,27 @@
 
 In rural North Eastern India (Assam, Manipur, Mizoram, Nagaland), elderly individuals facing Mild Cognitive Impairment (MCI) and early dementia encounter significant challenges: geographic isolation, intermittent 2G/zero internet connectivity, low digital literacy, and cultural alienation from generic Westernized cognitive assessments.
 
-**SmritiSetu** resolves this challenge with an offline-autonomous Android native application providing:
+**AASRITI (SmritiSetu / SIH-26003)** resolves this challenge with an offline-autonomous Android native application providing:
 1. **Culturally Grounded Cognitive Gaming**: Six native games reflecting authentic regional traditions (Assam tea preparation, Namghar routines, local village markets, high-contrast cultural motifs).
 2. **On-Device Adaptive Difficulty**: Scikit-learn trained Decision Tree classifier evaluated locally in Kotlin in $<1\text{ms}$ with zero cloud dependencies.
 3. **Local-First Caregiver & Clinician Bridge**: Autonomous local Room SQLite database as the single source of truth, backed by an opportunistic, non-blocking Firebase synchronization messenger.
+
+---
+
+## 🎨 UI GOVERNANCE & DESIGN SYSTEM CONSTITUTION
+
+> [!IMPORTANT]
+> **AASRITI UI IS A SYSTEM, NOT A COLLECTION OF SCREENS.**  
+> **Read the UI rules before changing any interface.**  
+> *Reuse before reinventing. New patterns require documentation.*
+
+Every contributor and AI coding assistant operating in this repository must strictly adhere to the five permanent UI governance documents at the repository root:
+
+1. [`/UI_RULES.md`](file:///UI_RULES.md) — Master visual philosophy, 13 canonical colors, typography scale, spacing rhythm, and forbidden patterns.
+2. [`/UI_SCREEN_SPEC.md`](file:///UI_SCREEN_SPEC.md) — Canonical layout contracts for Patient, Caregiver, ASHA, and Doctor screens.
+3. [`/UI_COMPONENT_RULES.md`](file:///UI_COMPONENT_RULES.md) — Exact specifications for buttons, cards, voice pills, choice tiles, and feedback.
+4. [`/UI_HERITAGE_GUIDE.md`](file:///UI_HERITAGE_GUIDE.md) — Authentic integration of Assam, Manipur, and Meghalaya cultural motifs.
+5. [`/UI_ACCESSIBILITY_RULES.md`](file:///UI_ACCESSIBILITY_RULES.md) — WCAG 2.2 AAA standards, $\ge 64\text{dp}$ touch targets, and non-punitive language.
 
 ---
 

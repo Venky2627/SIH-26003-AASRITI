@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#2E7D32</color>
-    <color name="primary_dark">#1B5E20</color>
-    <color name="gold_accent">#FFD700</color>
-    <color name="background_dark">#121212</color>
-    <color name="surface_dark">#1E1E1E</color>
-    <color name="text_white">#FFFFFF</color>
-    <color name="text_muted">#BDBDBD</color>
+    <!-- AASRITI Canonical Semantic Color Tokens -->
+    <color name="warm_ivory">#FDFBF7</color>
+    <color name="soft_cream">#F5EFE6</color>
+    <color name="warm_sunken_surface">#EFE7DA</color>
+    <color name="deep_charcoal">#1C2024</color>
+    <color name="warm_slate">#4A525A</color>
+    <color name="warm_stone_border">#D6CBBB</color>
+    <color name="deep_northeast_forest">#245C45</color>
+    <color name="muted_heritage_terracotta">#9E2A2B</color>
+    <color name="muga_gold">#C88D34</color>
+    <color name="supporting_sage">#A8B9A0</color>
+    <color name="soft_clay">#CB8067</color>
+    <color name="deep_cranberry_emergency">#8B183F</color>
+    <color name="warm_amber_warning">#B45309</color>
+
+    <!-- Legacy / System compatibility fallbacks -->
+    <color name="primary">#245C45</color>
+    <color name="primary_dark">#1B4634</color>
+    <color name="gold_accent">#C88D34</color>
+    <color name="background_dark">#1C2024</color>
+    <color name="surface_dark">#2A3036</color>
+    <color name="text_white">#FDFBF7</color>
+    <color name="text_muted">#4A525A</color>
 </resources>
