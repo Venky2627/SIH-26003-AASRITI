@@ -101,7 +101,59 @@ com.sih26003.smritisetu/
 
 ---
 
-## 🔄 3. DATA PERSISTENCE & THE SYNC QUEUE CONTRACT
+## 🚫 3. CLEAN ARCHITECTURE MODEL SEPARATION & MAPPERS
+
+To eliminate ambiguity between persistence entities and presentation models, AASRITI strictly enforces:
+
+1. **`data/local/entity/`**:
+   - Contains Room-annotated SQLite tables (`PatientEntity`, `GameSessionEntity`, `ReminderEntity`, `CareLogEntity`, `UserEntity`, `RelationshipEntity`, `SyncQueueEntity`).
+   - Represents raw database schema, foreign keys, and indices.
+   - **RULE**: Room entities are strictly internal to the `data/` layer. They must **NEVER** be imported into `feature/`, UI composables, or ViewModels.
+
+2. **`domain/model/`**:
+   - Contains pure, immutable Kotlin data classes (`Patient`, `GameSession`, `Reminder`, `CareLog`, `Relationship`).
+   - Completely free of Android, Room, or Firebase annotations.
+   - Used across ViewModels, UI Composables, and Domain Use Cases.
+
+3. **`data/mapper/`**:
+   - Contains explicit Kotlin extension functions:
+     ```kotlin
+     fun PatientEntity.toDomain(): Patient
+     fun Patient.toEntity(): PatientEntity
+     fun GameSessionEntity.toDomain(): GameSession
+     fun GameSession.toEntity(): GameSessionEntity
+     ```
+   - Encapsulates JSON conversions, default values, and migration fallbacks.
+
+---
+
+## 👥 4. FOUR DISTINCT USER ROLES
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               AASRITI USERS                                 │
+├───────────────────┬───────────────────┬───────────────────┬─────────────────┤
+│      PATIENT      │     CAREGIVER     │       ASHA        │     DOCTOR      │
+├───────────────────┼───────────────────┼───────────────────┼─────────────────┤
+│ • Zero PIN        │ • Local 6-digit   │ • Shared-device   │ • Local PIN +   │
+│   (Photo tap)     │   PIN (SHA-256)   │   multi-patient   │   Doctor Access │
+│ • 6 Cognitive     │ • Patient profile │ • Patient switch  │   Code          │
+│   Games           │ • Today's Priority│ • Quick Field Log │ • My Patients   │
+│ • Memory Garden   │ • Quick Log (<30s)│ • Flag review     │ • 7/30/90 Day   │
+│ • Offline Voice   │ • Reminders       │ • Batch offline   │   Trends        │
+│ • Offline Alarms  │ • Memory Garden   │   synchronization │ • Neutral Flags │
+│ • SOS Help Button │ • Emergency / SOS │ • Caregiver alert │ • 1-Page PDF    │
+│ • No Analytics    │ • Doctor Access   │   handover        │ • Zero Medical  │
+│                   │   Code generation │                   │   Diagnosis     │
+└───────────────────┴───────────────────┴───────────────────┴─────────────────┘
+```
+
+> [!IMPORTANT]
+> **ASHA Workflows are NOT Caregiver Screens**: ASHA workers visit multiple elderly households in rural villages using a single tablet or phone. The ASHA module explicitly provides **Patient Switching**, **Batch Offline Logging**, and **Community Observation Registers** without requiring personal family access.
+
+---
+
+## 🔄 5. DATA PERSISTENCE & THE SYNC QUEUE CONTRACT
 
 ### The "Room is King" Principle:
 1. Every write operation (saving game session, logging a fall, creating a reminder, adding a family member) writes **synchronously and immediately** to Room SQLite.
@@ -124,7 +176,46 @@ com.sih26003.smritisetu/
 
 ---
 
-## 🧠 4. ON-DEVICE ADAPTIVE ML ENGINE (ZERO LLM)
+## 🎮 6. UNIFIED SIX-GAME FRAMEWORK & ENGINE CONTRACTS
+
+All six cognitive games inherit from the unified `CommonGameFramework` and enforce the 5-level adaptive difficulty curve:
+
+```mermaid
+stateDiagram-v2
+    [*] --> GameSelect
+    GameSelect --> LoadPatientSettings
+    LoadPatientSettings --> LoadPersonalizedData
+    LoadPersonalizedData --> Instructions: Voice + Visual Clues
+    Instructions --> Playing: Round Start
+    Playing --> CollectMetrics: Touch / Speech Interaction
+    CollectMetrics --> Feedback: Non-punitive audio encouragement
+    Feedback --> AdaptiveDecision: On-Device Decision Tree
+    AdaptiveDecision --> SaveGameSession: Commit to Room SQLite
+    SaveGameSession --> NextRound: Check Session Length (5-20 min)
+    NextRound --> Playing: More Rounds
+    NextRound --> Summary: Session Complete
+    Summary --> [*]
+```
+
+### Standardized Game Engine Contracts:
+* `GameDefinition`: Metadata, clinical domain, supported difficulty levels (1–5).
+* `GameState`: Reactive state containing current round, timer, active stimuli, distractors, and score.
+* `GameAction`: User inputs (`TapOption`, `DragItem`, `VoiceResponseReceived`, `Timeout`).
+* `GameResult`: Round outcome (`isCorrect`, `reactionTimeMs`, `hesitationGaps`, `errorCount`).
+* `GameSession`: Domain model written to Room capturing duration, accuracy, and adaptation recommendation.
+* `GameTelemetry`: Real-time touch coordinates, tap latency, and pauses.
+
+### The Six Games & Clinical Domains:
+1. **Family Trivia** (`পৰিয়ালৰ স্মৃতি`): Memory & Identity Preservation — photo and relationship recognition from Room `relationships`.
+2. **Voice Cue Card** (`কণ্ঠ আৰু ছবি`): Attention & Recall — spoken audio prompts with 5-second voice fallback and touch cards.
+3. **Daily Sequencing** (`দৈনন্দিন ক্ৰম`): Executive Function — chronological steps of daily routines (Assam tea, morning Namghar routine) with distractors.
+4. **Categorisation** (`শ্ৰেণীবিভাজন`): Categorical Thinking — grouping fruits, vegetables, animals, and traditional textiles.
+5. **Village Market** (`গাঁওৰ বজাৰ`): Working Memory & Visual Search — shopping list recall with authentic regional items (Joha rice, Kaji nemu).
+6. **Pattern / Object Matching + Mental Rotation** (`আৰ্হি চিনাক্তকৰণ`): Visuospatial Processing — high-contrast geometric motifs and rotated cultural symbols.
+
+---
+
+## 🧠 7. ON-DEVICE ADAPTIVE ML ENGINE (ZERO LLM)
 
 ### Design & Safety Rationale:
 Elderly cognitive gaming must run reliably on low-cost devices in offline village environments. Generic LLMs or heavy neural networks require continuous internet, consume excessive battery, and introduce hallucination risks.
@@ -137,7 +228,7 @@ Elderly cognitive gaming must run reliably on low-cost devices in offline villag
 
 ---
 
-## 🏥 5. PRIORITY & CLINICAL TRIAGE ENGINE
+## 🏥 8. PRIORITY & CLINICAL TRIAGE ENGINE
 
 ### Deterministic Rule-Based Triage:
 To eliminate black-box unpredictability, caregiver and clinical priority calculation uses transparent deterministic logic:
@@ -148,7 +239,25 @@ To eliminate black-box unpredictability, caregiver and clinical priority calcula
 
 ---
 
-## 🔊 6. SHARED VOICE & ACCESSIBILITY SUBSYSTEM
+## 🎨 9. CULTURAL THEME ENGINE (`cultural/`)
+
+The Cultural Theme Engine personalizes games, objects, and visual assets according to the patient's cultural background, **independently of UI language**:
+
+```
+[Cultural Theme Pack: Assam / Manipur / Meghalaya]
+       │
+       ├── Foods:      Assam Tea, Pitha, Kaji Nemu vs Manipuri Chak-hao vs Khasi Rice
+       ├── Objects:    Japi, Gamosa vs Radha-Krishna Pung, Meitei Pot vs Ryndia Shawl
+       ├── Music:      Borgeet, Flute vs Pena Melodies vs Traditional Khasi Tunes
+       └── Markets:    Bihu Village Haat vs Khwairamband Bazar vs Iewduh Market
+```
+
+* **Decoupled Architecture**: An Assamese patient who prefers English UI still experiences authentic Assam cultural items and motifs.
+* **Extensibility**: Modular theme pack contracts (`cultural/ThemePack.kt`) allow adding further NER states without modifying core game logic.
+
+---
+
+## 🔊 10. SHARED VOICE & ACCESSIBILITY SUBSYSTEM
 
 * **Horizontal Service**: `VoicePromptManager` is a singleton service accessible across all games and views.
 * **Elderly Speech Calibration**: Android `TextToSpeech` rate is set to **$0.85\times$** standard speed with slightly elevated pitch (+10%) to compensate for age-related high-frequency hearing loss.
@@ -156,7 +265,7 @@ To eliminate black-box unpredictability, caregiver and clinical priority calcula
 
 ---
 
-## 🧪 7. TESTING & VALIDATION STRATEGY
+## 🧪 11. TESTING & VALIDATION STRATEGY
 
 ```
 ┌────────────────────────────────────────────────────────┐

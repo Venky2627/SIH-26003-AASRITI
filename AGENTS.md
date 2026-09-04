@@ -16,7 +16,7 @@ Every AI coding assistant entering this repository **MUST** execute and adhere t
 3. **Inspect repository state**: Verify Git status, active branch, and uncommitted diffs.
 4. **Inspect current Git branch**: Check `git branch --show-current`.
 5. **Inspect current working tree**: Never silently discard or overwrite existing uncommitted work.
-6. **Read architecture guidance** (`/docs/ARCHITECTURE.md` and `/ARCHITECTURE.md`) relevant to the task.
+6. **Read architecture guidance** (`/docs/ARCHITECTURE.md`) relevant to the task.
 7. **Read UI rules** (`/UI_RULES.md`, `/UI_COMPONENT_RULES.md`, `/UI_SCREEN_SPEC.md`) before touching any UI composable.
 8. **Read security rules** (`/SECURITY.md`) before touching authentication, session tokens, or patient data.
 9. **Read database/API rules** (`/docs/DATA_MODEL.md`, `/docs/API_SYNC_CONTRACT.md`) before modifying schema or contracts.

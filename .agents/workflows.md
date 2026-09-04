@@ -13,7 +13,7 @@ Execute this workflow whenever starting a coding session:
 git branch --show-current
 git status
 ```
-- If on `feature/<member>/<task-name>`: Confirm active contributor, feature scope, and working directories from [`TEAM_ALLOCATION.md`](../TEAM_ALLOCATION.md).
+- If on `feature/<member>/<task-name>`: Confirm active contributor, feature scope, and working directories from [`TEAM_ALLOCATION.md`](../docs/TEAM_ALLOCATION.md).
 - If on `develop`: Stop and instruct the developer to branch off `develop`:
   ```bash
   git checkout -b feature/<member>/<task-name>
@@ -60,7 +60,7 @@ git merge develop
 - **STOP** if git reports conflicts.
 - **DO NOT** blindly run `checkout --ours` or `checkout --theirs`.
 - Open conflicting files, understand both changes, and resolve manually.
-- If conflicts involve shared infrastructure (`AppDatabase.kt`, `MainActivity.kt`), consult your designated peer reviewer from [`TEAM_ALLOCATION.md`](../TEAM_ALLOCATION.md).
+- If conflicts involve shared infrastructure (`AppDatabase.kt`, `MainActivity.kt`), consult your designated peer reviewer from [`TEAM_ALLOCATION.md`](../docs/TEAM_ALLOCATION.md).
 
 ### Step 5: Verify Build Afterward
 ```bash
@@ -127,7 +127,7 @@ Fill out all fields in [`.github/pull_request_template.md`](../.github/pull_requ
 - Verify UI compliance against [`UI_RULES.md`](../UI_RULES.md).
 
 ### Step 4: Tag Assigned Default Reviewer
-- Refer to [`TEAM_ALLOCATION.md`](../TEAM_ALLOCATION.md) for your designated reviewer:
+- Refer to [`TEAM_ALLOCATION.md`](../docs/TEAM_ALLOCATION.md) for your designated reviewer:
   $$\text{Venkatesh} \rightarrow \text{Jasleen} \rightarrow \text{Krishna} \rightarrow \text{Bhavya} \rightarrow \text{Shravani} \rightarrow \text{Kimaya} \rightarrow \text{Venkatesh}$$
 - If shared infrastructure was touched, tag a second reviewer.
 

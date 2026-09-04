@@ -108,7 +108,12 @@ AASRITI/
 │   ├── DATA_MODEL.md                    # SQLite schemas and domain models
 │   ├── API_SYNC_CONTRACT.md             # Offline sync queue payload contracts
 │   ├── DEMO_SCRIPT.md                   # 16-step verified demonstration script
-│   └── DECISIONS.md                     # Architectural Decision Records (ADRs 001-006)
+│   ├── DECISIONS.md                     # Architectural Decision Records (ADRs 001-006)
+│   ├── PS_TRACEABILITY.md               # SIH Problem Statement Traceability Matrix
+│   ├── IMPLEMENTATION_ROADMAP.md        # 10-day sprint execution roadmap
+│   ├── PROJECT_STATE.md                 # Current phase and milestone status
+│   ├── TASK_BOARD.md                    # Granular P0/P1/P2 task tickets
+│   └── TEAM_ALLOCATION.md               # 6-member subsystem ownership matrix
 │
 ├── .github/
 │   ├── workflows/android.yml            # CI build, test, secret scan, UI token checks
@@ -154,6 +159,8 @@ The Git repository itself is the permanent guardian of all product rules:
 | **Accessibility & COGA** | [`/UI_ACCESSIBILITY_RULES.md`](file:///UI_ACCESSIBILITY_RULES.md)| $\ge 64\text{dp}$ touch targets, non-punitive copy, WCAG AAA. |
 | **Full-Product Security** | [`/SECURITY.md`](file:///SECURITY.md) | RBAC matrix, local PIN hashing, zero plaintext secrets. |
 | **System Architecture** | [`/docs/ARCHITECTURE.md`](file:///docs/ARCHITECTURE.md)| Room persistence, sync queue, and Decision Tree runtime. |
+| **Team Subsystem Allocation** | [`/docs/TEAM_ALLOCATION.md`](file:///docs/TEAM_ALLOCATION.md)| 6-member vertical ownership, safe directories, reviewers. |
+| **Sprint State & Task Board**| [`/docs/PROJECT_STATE.md`](file:///docs/PROJECT_STATE.md)| Active Phase 1 status, milestones, and P0/P1/P2 task tickets. |
 
 ---
 

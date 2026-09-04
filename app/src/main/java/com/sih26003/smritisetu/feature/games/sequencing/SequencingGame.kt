@@ -246,7 +246,7 @@ fun SequencingGameScreen(
                                 .padding(14.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(step.emoji, fontSize = 28.sp, modifier = Modifier.padding(right = 12.dp))
+                                Text(step.emoji, fontSize = 28.sp, modifier = Modifier.padding(end = 12.dp))
                                 Text(
                                     step.description,
                                     fontSize = 16.sp,

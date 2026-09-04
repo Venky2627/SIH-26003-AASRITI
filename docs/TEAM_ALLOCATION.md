@@ -1,11 +1,11 @@
-# SIH-26003 (SmritiSetu) — Team Ownership & Allocation Matrix
+# SIH-26003 (SmritiSetu) â€” Team Ownership & Allocation Matrix
 
 > **Core Philosophy**: 6 Equal Contributors. Zero Hierarchy. Vertical Subsystem Ownership.  
 > Every subsystem has **ONE Primary Owner** and **ONE Secondary Reviewer** to eliminate knowledge silos and guarantee code review quality.
 
 ---
 
-## 👤 1. VENKATESH
+## ðŸ‘¤ 1. VENKATESH
 
 * **Primary Ownership**:
   - Architecture Integration & Repository Health
@@ -15,9 +15,9 @@
 * **Secondary Ownership / Reviewer Role**:
   - Secondary Reviewer for: **Firebase Sync & SyncQueue** (Jasleen) and **Doctor Workflows / Analytics** (Kimaya)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/engine/adaptive/`
-  - `app/src/main/java/com/sih/dementia/engine/priority/`
-  - `app/src/main/java/com/sih/dementia/ml/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/adaptive/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/priority/`
+  - `app/src/main/java/com/sih26003/smritisetu/ml/`
   - `scripts/`
 * **Protected Files (Primary Custodian)**:
   - `build.gradle.kts`, `settings.gradle.kts`, `AndroidManifest.xml`
@@ -32,7 +32,7 @@
 
 ---
 
-## 👤 2. JASLEEN
+## ðŸ‘¤ 2. JASLEEN
 
 * **Primary Ownership**:
   - Core Application Foundation (`DementiaCareApp.kt`)
@@ -42,8 +42,8 @@
 * **Secondary Ownership / Reviewer Role**:
   - Secondary Reviewer for: **Architecture Integration** (Venkatesh) and **Navigation Graph** (AppNavigation)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/data/`
-  - `app/src/main/java/com/sih/dementia/domain/`
+  - `app/src/main/java/com/sih26003/smritisetu/data/`
+  - `app/src/main/java/com/sih26003/smritisetu/domain/`
   - `backend/firebase/`
 * **Protected Files (Primary Custodian)**:
   - `DementiaDatabase.kt` / `AppDatabase.kt`, `AppNavigation.kt`
@@ -58,7 +58,7 @@
 
 ---
 
-## 👤 3. KRISHNA
+## ðŸ‘¤ 3. KRISHNA
 
 * **Primary Ownership**:
   - Reusable Game Framework (`feature/games/framework/`, `engine/game/`)
@@ -66,17 +66,17 @@
   - Game 2: Voice Cue Card (`feature/games/voicecuecard/`)
   - Game 3: Daily Sequencing (`feature/games/sequencing/`)
 * **Secondary Ownership / Reviewer Role**:
-  - Secondary Reviewer for: **Game Telemetry** (Jasleen) and **Games 4–6** (Bhavya)
+  - Secondary Reviewer for: **Game Telemetry** (Jasleen) and **Games 4â€“6** (Bhavya)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/feature/games/framework/`
-  - `app/src/main/java/com/sih/dementia/feature/games/familytrivia/`
-  - `app/src/main/java/com/sih/dementia/feature/games/voicecuecard/`
-  - `app/src/main/java/com/sih/dementia/feature/games/sequencing/`
-  - `app/src/main/java/com/sih/dementia/voice/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/framework/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/`
+  - `app/src/main/java/com/sih26003/smritisetu/voice/`
 * **Protected Files**:
   - `CommonGameFramework.kt` / `BaseGameEngine`
 * **Current Task (Pre-Sept 5)**:
-  - Finalize Game 1–3 PPT mechanics slides and game lifecycle state machine specification.
+  - Finalize Game 1â€“3 PPT mechanics slides and game lifecycle state machine specification.
 * **Dependencies**:
   - `domain/model/GameSession.kt`, `domain/model/Relationship.kt`
 * **Definition of Done**:
@@ -86,7 +86,7 @@
 
 ---
 
-## 👤 4. BHAVYA
+## ðŸ‘¤ 4. BHAVYA
 
 * **Primary Ownership**:
   - Game 4: Categorisation (`feature/games/categorisation/`)
@@ -96,10 +96,10 @@
 * **Secondary Ownership / Reviewer Role**:
   - Secondary Reviewer for: **Reusable UI Components & Accessibility** (Jasleen/Shravani)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/feature/games/categorisation/`
-  - `app/src/main/java/com/sih/dementia/feature/games/villagemarket/`
-  - `app/src/main/java/com/sih/dementia/feature/games/patternrecognition/`
-  - `app/src/main/java/com/sih/dementia/cultural/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/categorisation/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/villagemarket/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/patternrecognition/`
+  - `app/src/main/java/com/sih26003/smritisetu/cultural/`
   - `assets/cultural/`
 * **Protected Files**:
   - `Theme.kt`, `colors.xml`
@@ -108,13 +108,13 @@
 * **Dependencies**:
   - `CommonGameFramework.kt`, `assets/cultural/`
 * **Definition of Done**:
-  - Cultural theme architecture decoupled from UI language strings; Games 4–6 mechanics verified.
+  - Cultural theme architecture decoupled from UI language strings; Games 4â€“6 mechanics verified.
 * **Review Responsibilities**:
-  - Reviews PRs from: **Krishna** (Game Framework & Games 1–3).
+  - Reviews PRs from: **Krishna** (Game Framework & Games 1â€“3).
 
 ---
 
-## 👤 5. SHRAVANI
+## ðŸ‘¤ 5. SHRAVANI
 
 * **Primary Ownership**:
   - Caregiver Workflows (`feature/caregiver/`: Patient Overview, Today's Priorities, Quick Log)
@@ -125,11 +125,11 @@
 * **Secondary Ownership / Reviewer Role**:
   - Secondary Reviewer for: **Cultural Content Integration** (Bhavya)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/feature/caregiver/`
-  - `app/src/main/java/com/sih/dementia/feature/asha/`
-  - `app/src/main/java/com/sih/dementia/feature/reminders/`
-  - `app/src/main/java/com/sih/dementia/engine/reminder/`
-  - `app/src/main/java/com/sih/dementia/feature/memoryalbum/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/caregiver/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/asha/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/reminders/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/reminder/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/memoryalbum/`
 * **Protected Files**:
   - `ReminderScheduler.kt`, `BootReceiver.kt`
 * **Current Task (Pre-Sept 5)**:
@@ -139,11 +139,11 @@
 * **Definition of Done**:
   - ASHA shared-device flow clearly separated from individual Caregiver workflow; offline reminder state diagram frozen.
 * **Review Responsibilities**:
-  - Reviews PRs from: **Bhavya** (Games 4–6 & Cultural Theme Engine).
+  - Reviews PRs from: **Bhavya** (Games 4â€“6 & Cultural Theme Engine).
 
 ---
 
-## 👤 6. KIMAYA
+## ðŸ‘¤ 6. KIMAYA
 
 * **Primary Ownership**:
   - Doctor / Clinician Workflows (`feature/doctor/`: Patient Snapshot, Since Last Visit)
@@ -154,9 +154,9 @@
 * **Secondary Ownership / Reviewer Role**:
   - Secondary Reviewer for: **Testing & Documentation** (All)
 * **Safe Directories (Normal Working Scope)**:
-  - `app/src/main/java/com/sih/dementia/feature/doctor/`
-  - `app/src/main/java/com/sih/dementia/feature/analytics/`
-  - `app/src/main/java/com/sih/dementia/engine/trend/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/doctor/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/analytics/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/trend/`
   - `docs/`
 * **Protected Files**:
   - `DoctorAccessScreen.kt`
@@ -171,17 +171,18 @@
 
 ---
 
-## 🤖 AI AGENT ROUTING DIRECTIVE
+## ðŸ¤– AI AGENT ROUTING DIRECTIVE
 
 ```text
 IF CURRENT DEVELOPER = <NAME>
 THEN:
-  1. Read PROJECT_STATE.md to verify current project phase and blockers.
-  2. Read <NAME>'s section in TEAM_ALLOCATION.md.
-  3. Search TASK_BOARD.md for highest priority unfinished task assigned to <NAME>.
+  1. Read docs/PROJECT_STATE.md to verify current project phase and blockers.
+  2. Read <NAME>'s section in docs/TEAM_ALLOCATION.md.
+  3. Search docs/TASK_BOARD.md for highest priority unfinished task assigned to <NAME>.
   4. Verify all dependencies for that task are satisfied.
   5. Recommend EXACTLY ONE primary task (and optionally one secondary task).
   6. DO NOT modify protected files without explicit justification and warning.
   7. Enforce that all modified code remains strictly within <NAME>'s safe directories.
-  8. Update TASK_BOARD.md and PROJECT_STATE.md upon completion.
+  8. Update docs/TASK_BOARD.md and docs/PROJECT_STATE.md upon completion.
 ```
+

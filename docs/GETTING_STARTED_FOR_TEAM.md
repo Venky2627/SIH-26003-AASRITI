@@ -119,4 +119,4 @@ Once your reviewer approves and CI passes with green checkmarks (✅), click **S
 * **"Gradle sync is failing!"**
   - Make sure your Android Studio Gradle JDK is set to **Java 17** (File $\rightarrow$ Settings $\rightarrow$ Build, Execution, Deployment $\rightarrow$ Build Tools $\rightarrow$ Gradle $\rightarrow$ Gradle JDK $\rightarrow$ select JDK 17).
 * **"I need to add a new dependency!"**
-  - Stop and check [`/TEAM_ALLOCATION.md`](file:///TEAM_ALLOCATION.md). Modifying `build.gradle.kts` is a protected action requiring 2 approvals. Ask first!
+  - Stop and check [`/docs/TEAM_ALLOCATION.md`](file:///docs/TEAM_ALLOCATION.md). Modifying `build.gradle.kts` is a protected action requiring 2 approvals. Ask first!

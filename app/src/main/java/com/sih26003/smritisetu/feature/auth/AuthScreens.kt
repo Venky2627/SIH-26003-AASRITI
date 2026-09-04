@@ -95,7 +95,7 @@ fun RoleAndModeSelectScreen(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🧓", fontSize = 48.sp, modifier = Modifier.padding(right = 16.dp))
+                        Text("🧓", fontSize = 48.sp, modifier = Modifier.padding(end = 16.dp))
                         Column {
                             Text("বোপা (Grandfather)", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
                             Text("স্পৰ্শ কৰি খেল আৰম্ভ কৰক (Tap to play)", fontSize = 14.sp, color = Color(0xFF00E676))
@@ -114,7 +114,7 @@ fun RoleAndModeSelectScreen(
                             .padding(16.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🧓", fontSize = 40.sp, modifier = Modifier.padding(right = 16.dp))
+                            Text("🧓", fontSize = 40.sp, modifier = Modifier.padding(end = 16.dp))
                             Column {
                                 Text(patient.pseudonymCode, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
                                 Text("মাতৃভাষা: ${patient.primaryLanguage} • স্তৰ: ${patient.cognitiveStage}", fontSize = 13.sp, color = Color.White)

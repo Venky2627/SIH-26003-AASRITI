@@ -20,6 +20,6 @@
     └── kimaya.md           # Doctor Workflows, Analytics, Longitudinal Trends, PDF Reports
 ```
 
-For team allocations, see [`/TEAM_ALLOCATION.md`](../TEAM_ALLOCATION.md).  
+For team allocations, see [`/docs/TEAM_ALLOCATION.md`](../docs/TEAM_ALLOCATION.md).  
 For UI governance, see [`/UI_RULES.md`](../UI_RULES.md).  
 For full-product security, see [`/SECURITY.md`](../SECURITY.md).
