@@ -1,4 +1,4 @@
-# SmritiSetu (SIH-26003) — Problem Statement Traceability Matrix
+# AASRITI (SIH-26003) — Problem Statement Traceability Matrix
 
 > **Official SIH Problem Statement**: SIH-26003 — AI-Based Cognitive Gaming and Memory Assistance Platform for Elderly Dementia Patients in the North Eastern Region (NER)  
 > **Sponsoring Authority**: Ministry of Development of North Eastern Region (MDoNER), Government of India

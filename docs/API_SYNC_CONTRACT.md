@@ -1,4 +1,4 @@
-# SmritiSetu (SIH-26003) — API & Offline Synchronization Contract
+# AASRITI (SIH-26003) — API & Offline Synchronization Contract
 
 > **Core Tenet**: Local Room writes are synchronous and immediate. Cloud replication to Firebase is asynchronous, opportunistic, and strictly non-blocking.
 

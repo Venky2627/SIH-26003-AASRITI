@@ -1,4 +1,4 @@
-# SmritiSetu (SIH-26003) — 16-Step SIH Demonstration Script
+# AASRITI (SIH-26003) — 16-Step SIH Demonstration Script
 
 > **Objective**: A repeatable, bulletproof 5-to-7 minute demonstration designed for Smart India Hackathon evaluators and jury members, proving 100% offline functionality, multi-role workflows, cultural grounding, and explainable AI.
 

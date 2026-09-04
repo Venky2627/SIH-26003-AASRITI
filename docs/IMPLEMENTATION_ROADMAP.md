@@ -1,4 +1,4 @@
-# SIH26003 (SmritiSetu) — 10-Day Implementation Roadmap
+# AASRITI (SIH-26003) — 10-Day Implementation Roadmap
 
 > **Notice**: This document defines the **execution blueprint and engineering sequence** for the 6-person team. No application code is executed during this planning phase.
 

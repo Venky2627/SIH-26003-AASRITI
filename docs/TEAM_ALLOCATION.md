@@ -1,4 +1,4 @@
-# SIH-26003 (SmritiSetu) â€” Team Ownership & Allocation Matrix
+# AASRITI (SIH-26003) — Team Ownership & Allocation Matrix
 
 > **Core Philosophy**: 6 Equal Contributors. Zero Hierarchy. Vertical Subsystem Ownership.  
 > Every subsystem has **ONE Primary Owner** and **ONE Secondary Reviewer** to eliminate knowledge silos and guarantee code review quality.

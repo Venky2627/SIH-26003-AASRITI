@@ -1,4 +1,4 @@
-# SmritiSetu (SIH-26003) — Data Model & Schema Specification
+# AASRITI (SIH-26003) — Data Model & Schema Specification
 
 > **CORE PRINCIPLE**: Strict separation between SQLite Database Entities (`data/local/entity/`) and Application Domain Models (`domain/model/`). UI composables and ViewModels must **never** consume Room entities directly.
 

@@ -1,4 +1,4 @@
-# SIH-26003 (SmritiSetu) — Project State
+# AASRITI (SIH-26003) — Project State
 
 > **SINGLE SOURCE OF TRUTH FOR CURRENT PROJECT PROGRESS**  
 > All team members and AI coding assistants must consult this document before starting work and update it immediately upon task completion.

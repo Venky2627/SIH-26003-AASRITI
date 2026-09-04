@@ -1,4 +1,4 @@
-# SmritiSetu (SIH26003) — The Six First-Class Games Specification
+# AASRITI (SIH-26003) — The Six First-Class Games Specification
 
 Every game inherits from `BaseGameEngine` and implements the strict 5-level adaptive difficulty curve.
 

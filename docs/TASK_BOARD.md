@@ -1,4 +1,4 @@
-# SIH-26003 (SmritiSetu) — Task Board
+# AASRITI (SIH-26003) — Task Board
 
 > **STATUS CODES**: `NOT_STARTED` | `IN_PROGRESS` | `BLOCKED` | `REVIEW` | `DONE`  
 > **PRIORITIZATION**: **P0** = Immediate / Core Vertical Slice • **P1** = Regional Differentiators • **P2** = Polish & Clinical Export

@@ -1,4 +1,4 @@
-# SmritiSetu (SIH-26003) — Architectural Decision Records (ADRs)
+# AASRITI (SIH-26003) — Architectural Decision Records (ADRs)
 
 > This document captures the rationale, tradeoffs, and formal justification for key architectural decisions made by the engineering team.
 

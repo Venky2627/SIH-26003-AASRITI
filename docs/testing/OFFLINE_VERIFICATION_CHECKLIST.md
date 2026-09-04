@@ -1,4 +1,4 @@
-# SmritiSetu (SIH26003) — Mandatory Offline Verification Checklist
+# AASRITI (SIH-26003) — Mandatory Offline Verification Checklist
 
 ## ✈️ 14-Step Offline Assurance Protocol
 
