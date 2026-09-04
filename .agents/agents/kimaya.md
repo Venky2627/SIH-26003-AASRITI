@@ -1,17 +1,17 @@
 # Contributor Directive: Kimaya
 
-* **Role**: Equal Contributor (Sequencing + Categorisation Games)
-* **Designated Working Branch**: `feature/kimaya/sequencing-categorisation`
+* **Role**: Clinical Informatics & Analytics Lead (Doctor Workflows, Analytics Engine, Longitudinal Trends, Clinical Reports)
+* **Designated Working Branch**: `feature/kimaya/<task-name>`
 * **Default Peer Reviewer**: Venkatesh
 * **Primary Scope**:
-  - Game 3: Daily Sequencing (Levels 1 to 5, Assam tea & morning Namghar routines, distractors)
-  - Game 4: Categorisation (Levels 1 to 5, fruits, vegetables, animals, textiles)
-  - Game 5: Village Market (Levels 1 to 5, authentic NER market goods, recall)
-  - Game 6: Pattern Recognition (Levels 1 to 5, visual motif prediction)
-  - Game-specific tests and level progression validation
+  - Doctor Access Portal & Patient Snapshot (`feature/doctor/DoctorAccessScreen.kt`)
+  - Longitudinal interaction trend analyzer (`engine/trend/TrendEngine.kt` — 7/30/90-day curves)
+  - Objective telemetry visualization (Reaction latency, error rate, hesitation gaps)
+  - 1-Page High-Contrast Clinical PDF Summary Export (`android.graphics.pdf.PdfDocument`)
+  - SIH MDoNER Traceability & Clinical Validation documentation (`docs/PS_TRACEABILITY.md`)
 * **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/categorisation/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/villagemarket/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/patternrecognition/`
-* **Shared-File Protocol**: If adjusting base game contracts, coordinate with Venkatesh (`BaseGameEngine`).
+  - `app/src/main/java/com/sih26003/smritisetu/feature/doctor/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/analytics/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/trend/`
+  - `docs/`
+* **Ethical Guardrail**: All clinical reports and screens strictly measure physical interaction latency; **never** claim to diagnose dementia or compute clinical disease severity scores.

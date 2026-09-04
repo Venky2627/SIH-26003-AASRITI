@@ -1,16 +1,19 @@
 # Contributor Directive: Krishna
 
-* **Role**: Equal Contributor (Voice Cue Card + Voice Experience)
-* **Designated Working Branch**: `feature/krishna/voice-cue-card`
-* **Default Peer Reviewer**: Shravani
+* **Role**: Lead Game Framework & Voice Engineer (Common Game Framework, Games 1–3, Shared Voice Subsystem)
+* **Designated Working Branch**: `feature/krishna/<task-name>`
+* **Default Peer Reviewer**: Bhavya
 * **Primary Scope**:
-  - Game 2: Voice Cue Card (Levels 1 to 5)
-  - Shared `VoicePromptManager.kt` (Offline TTS, speech rate calibration $0.85\times$)
-  - Local language pack JSONs (`as_prompts.json`, `en_prompts.json`)
-  - 5-second voice fallback listener and touch redundancy
+  - Authoritative `BaseGameEngine` round lifecycle & `PerformanceCollector` (`CommonGameFramework.kt`)
+  - Game 1: Family Trivia (`feature/games/familytrivia/`)
+  - Game 2: Voice Cue Card (`feature/games/voicecuecard/`)
+  - Game 3: Daily Sequencing (`feature/games/sequencing/`)
+  - Shared audio/TTS service (`voice/VoiceManager.kt`, offline speech packs in `assets/audio/`)
 * **Primary Directories**:
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/framework/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/`
   - `app/src/main/java/com/sih26003/smritisetu/voice/`
-  - `app/src/main/assets/language-packs/`
-  - `assets/language-packs/`
-* **Shared-File Protocol**: If changing shared voice APIs consumed by other games, coordinate with Venkatesh and Jasleen.
+  - `assets/audio/`
+* **Protected Files Protocol**: Modifying `CommonGameFramework.kt` requires 2 approvals (Krishna + Bhavya).

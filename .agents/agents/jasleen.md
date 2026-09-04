@@ -1,14 +1,17 @@
 # Contributor Directive: Jasleen
 
-* **Role**: Equal Contributor (Family Trivia + Personalization Integration)
-* **Designated Working Branch**: `feature/jasleen/family-trivia`
+* **Role**: Data Architect & Backend Lead (Core App, Data Layer, Room SQLite, Repositories, Domain Models & Mappers)
+* **Designated Working Branch**: `feature/jasleen/<task-name>`
 * **Default Peer Reviewer**: Krishna
 * **Primary Scope**:
-  - Game 1: Family Trivia (Levels 1 to 5)
-  - Room `RelationshipEntity` binding (loading real family photos, names, relationships)
-  - Caregiver family photo and relationship setup UX
-  - Non-punitive encouragement feedback (*"একো কথা নাই, আকৌ এবাৰ চেষ্টা কৰোঁ আহক"*)
+  - Room SQLite database singleton (`AppDatabase.kt`, `smritisetu.db`)
+  - Room DAOs (`PatientDao`, `GameSessionDao`, `CareLogDao`, `ReminderDao`, `SyncQueueDao`)
+  - Domain models (`domain/model/`) and entity mappers (`data/mapper/`)
+  - Offline sync queue drainage (`sync/SyncQueueProcessor.kt`)
+  - Firebase Firestore security rules & index synchronization (`backend/firebase/`)
 * **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/`
-  - `app/src/main/java/com/sih26003/smritisetu/data/local/` (relationships)
-* **Shared-File Protocol**: If modifying `MainActivity.kt` or `BaseGameEngine`, request extra review from Venkatesh.
+  - `app/src/main/java/com/sih26003/smritisetu/data/`
+  - `app/src/main/java/com/sih26003/smritisetu/domain/`
+  - `app/src/main/java/com/sih26003/smritisetu/sync/`
+  - `backend/firebase/`
+* **Protected Files Protocol**: Modifying `AppDatabase.kt`, `Entities.kt`, or Room schema requires 2 approvals (Venkatesh + Jasleen).

@@ -1,15 +1,18 @@
 # Contributor Directive: Venkatesh
 
-* **Role**: Equal Contributor (Game Framework + Session / Metrics)
-* **Designated Working Branch**: `feature/venkatesh/game-framework`
+* **Role**: Chief Architect & Senior Android Engineer (Architecture Integration, Adaptive Engine, Priority Engine, ML)
+* **Designated Working Branch**: `feature/venkatesh/<task-name>`
 * **Default Peer Reviewer**: Jasleen
 * **Primary Scope**:
-  - Reusable `BaseGameEngine` lifecycle (`Select` $\rightarrow$ `Instructions` $\rightarrow$ `Playing` $\rightarrow$ `Feedback` $\rightarrow$ `Next Round`)
-  - `PerformanceCollector` (Real-time latency, error count, and hesitation detection $>3500\text{ms}$)
-  - `GameSessionEntity` persistence to Room SQLite
-  - On-device Decision Tree integration (`DecisionTreeEngine.kt`, `scripts/train_decision_tree.py`)
+  - Top-level architecture integration and dependency governance
+  - Adaptive difficulty Decision Tree engine (`engine/adaptive/DecisionTreeEngine.kt`)
+  - Deterministic care priority engine (`engine/priority/PriorityEngine.kt`)
+  - ML training pipeline and runtime JSON verification (`scripts/train_decision_tree.py`)
+  - CI/CD workflows and security scans (`.github/workflows/android.yml`)
 * **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/framework/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/adaptive/`
+  - `app/src/main/java/com/sih26003/smritisetu/engine/priority/`
   - `app/src/main/java/com/sih26003/smritisetu/ml/`
   - `scripts/`
-* **Shared-File Protocol**: If modifying `AppDatabase.kt` or `MainActivity.kt`, request an extra review from Krishna or Kimaya.
+  - `.github/`
+* **Protected Files Protocol**: Modifying `build.gradle.kts`, `settings.gradle.kts`, `AndroidManifest.xml`, `AGENTS.md`, or `SECURITY.md` requires 2 approvals.

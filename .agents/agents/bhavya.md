@@ -1,15 +1,20 @@
 # Contributor Directive: Bhavya
 
-* **Role**: Equal Contributor (Accessibility & Patient UX)
-* **Designated Working Branch**: `feature/bhavya/accessibility`
-* **Default Peer Reviewer**: Kimaya
+* **Role**: UI/UX & Regional Design Lead (Games 4–6, Cultural Theme Engine, UI Governance, Accessibility)
+* **Designated Working Branch**: `feature/bhavya/<task-name>`
+* **Default Peer Reviewer**: Shravani
 * **Primary Scope**:
-  - WCAG 2.2 AAA accessibility ($\ge 60\times 60\text{ dp}$ touch targets, $>7:1$ contrast)
-  - Cataract-resilient high contrast themes (`colors.xml`, pure black/dark surfaces)
-  - Patient home screen (`PatientHomeScreen.kt`) layout simplicity and TalkBack semantics
-  - Direct patient photo select mode (`RoleAndModeSelectScreen.kt`)
+  - Game 4: Categorisation (`feature/games/categorisation/`)
+  - Game 5: Village Market (`feature/games/villagemarket/`)
+  - Game 6: Pattern Recognition (`feature/games/patternrecognition/`)
+  - Cultural Theme Engine (`cultural/ThemeLoader.kt`, Assam, Manipur, Meghalaya themes in `assets/cultural/`)
+  - Master UI Design System (`core/ui/theme/`, `/UI_RULES.md`, `/UI_COMPONENT_RULES.md`)
+  - Patient Accessibility & W3C COGA standards (`/UI_ACCESSIBILITY_RULES.md`, $\ge 64\text{dp}$ touch targets)
 * **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/patient/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/auth/`
-  - `app/src/main/res/values/`
-* **Shared-File Protocol**: Do not change underlying game logic or database schemas; focus purely on accessible UI presentation and styling.
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/categorisation/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/villagemarket/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/patternrecognition/`
+  - `app/src/main/java/com/sih26003/smritisetu/cultural/`
+  - `app/src/main/java/com/sih26003/smritisetu/core/ui/`
+  - `assets/cultural/`
+* **Protected Files Protocol**: Modifying `core/ui/theme/` or `/UI_RULES.md` requires 2 approvals (Bhavya + Venkatesh).
