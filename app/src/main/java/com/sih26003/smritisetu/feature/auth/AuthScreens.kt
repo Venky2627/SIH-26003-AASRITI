@@ -4,158 +4,365 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.sih26003.smritisetu.core.security.CryptoUtils
+import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
 import com.sih26003.smritisetu.data.local.entities.UserEntity
 import com.sih26003.smritisetu.data.repository.PatientRepository
 import com.sih26003.smritisetu.data.repository.UserRepository
+import com.sih26003.smritisetu.demo.AasritiDemoData
+import com.sih26003.smritisetu.demo.DemoStateHolder
 import kotlinx.coroutines.launch
 
+/**
+ * SCREEN_ONBOARDING_ROLE_SELECT:
+ * Authoritative entry point for AASRITI platform.
+ * Features 4 discrete stakeholder pathways:
+ * 1. Elder / Patient (Zero PIN, Direct Photo Tap)
+ * 2. Family Caregiver (Local 6-digit PIN)
+ * 3. ASHA Community Worker (Local PIN / Worker Mode)
+ * 4. Doctor / Clinician (Clinical Access Code)
+ */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun RoleAndModeSelectScreen(
     patientRepository: PatientRepository,
     onPatientSelected: (PatientEntity) -> Unit,
     onCaregiverLoginSelected: () -> Unit,
+    onAshaLoginSelected: () -> Unit,
     onDoctorLoginSelected: () -> Unit
 ) {
-    val patients by patientRepository.allPatients.collectAsState(initial = emptyList())
+    var showDevMenu by remember { mutableStateOf(false) }
+    val isAssamese = DemoStateHolder.currentLanguage == "as"
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(24.dp),
+            .background(AasritiColorTokens.WarmIvory)
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // App Header
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("🌿", fontSize = 48.sp)
+        // 1. App Heritage Branding Header
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(top = 10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(AasritiColorTokens.DeepNortheastForest),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("🌿", fontSize = 28.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
-                "স্মৃতিসেতু (SmritiSetu)",
+                text = "আশ্ৰিতি (AASRITI)",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD700)
+                color = AasritiColorTokens.DeepCharcoal
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                "জ্ঞানমূলক পুনৰুদ্ধাৰ আৰু স্মৃতি সহায়ক",
-                fontSize = 15.sp,
-                color = Color(0xFFE0E0E0)
+                text = if (isAssamese) {
+                    "উত্তৰ-পূব ভাৰতৰ জ্যেষ্ঠসকলৰ বাবে AI-ভিত্তিক স্মৃতি আৰু যত্ন মঞ্চ"
+                } else {
+                    "AI-Based Cognitive Gaming & Memory Assistance Platform"
+                },
+                fontSize = 13.sp,
+                color = AasritiColorTokens.WarmSlate,
+                textAlign = TextAlign.Center
             )
         }
 
-        // Patient Photo Cards (NO PIN REQUIRED for Patient)
+        // 2. Patient Direct Photo Tap Arena (NO PIN for Patient)
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "খেলিবলৈ ফটো স্পৰ্শ কৰক: (Tap photo to play)",
-                fontSize = 18.sp,
+                text = if (isAssamese) "খেলিবলৈ ফটো স্পৰ্শ কৰক:" else "Touch photo to begin playing:",
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 12.dp)
+                color = AasritiColorTokens.DeepCharcoal,
+                modifier = Modifier.padding(bottom = 10.dp)
             )
 
-            if (patients.isEmpty()) {
-                // Default starter profile if first run
-                val demoPatient = remember {
-                    PatientEntity(
-                        id = "starter_patient",
-                        pseudonymCode = "AS-DEMO-01",
-                        birthYear = 1954,
-                        gender = "M",
-                        primaryLanguage = "as"
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
-                        .border(2.dp, Color(0xFF00E676), RoundedCornerShape(16.dp))
-                        .clickable { onPatientSelected(demoPatient) }
-                        .padding(16.dp),
-                    contentAlignment = Alignment.CenterStart
+            // Fictional Profile: Aita Borah (AS-KAM-0042)
+            val demoPatient = remember {
+                PatientEntity(
+                    id = AasritiDemoData.patient.id,
+                    pseudonymCode = AasritiDemoData.patient.pseudonymCode,
+                    birthYear = 1958,
+                    gender = "F",
+                    primaryLanguage = "as",
+                    cognitiveStage = AasritiDemoData.patient.cognitiveStage
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(AasritiColorTokens.SoftCream)
+                    .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
+                    .clickable { onPatientSelected(demoPatient) }
+                    .padding(16.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🧓", fontSize = 48.sp, modifier = Modifier.padding(end = 16.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(AasritiColorTokens.MutedHeritageTerracotta.copy(alpha = 0.15f))
+                                .border(2.dp, AasritiColorTokens.MutedHeritageTerracotta, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("👵", fontSize = 36.sp)
+                        }
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
                         Column {
-                            Text("বোপা (Grandfather)", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
-                            Text("স্পৰ্শ কৰি খেল আৰম্ভ কৰক (Tap to play)", fontSize = 14.sp, color = Color(0xFF00E676))
+                            Text(
+                                text = AasritiDemoData.patient.displayName,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.DeepCharcoal
+                            )
+                            Text(
+                                text = "${AasritiDemoData.patient.displaySubtitle} • ${AasritiDemoData.patient.pseudonymCode}",
+                                fontSize = 13.sp,
+                                color = AasritiColorTokens.WarmSlate
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "কামৰূপ গ্ৰাম্য • অসমীয়া মাধ্যম",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AasritiColorTokens.DeepNortheastForest
+                            )
                         }
                     }
-                }
-            } else {
-                patients.forEach { patient ->
+
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
-                            .border(2.dp, Color(0xFF00E676), RoundedCornerShape(16.dp))
-                            .clickable { onPatientSelected(patient) }
-                            .padding(16.dp)
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(AasritiColorTokens.DeepNortheastForest),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🧓", fontSize = 40.sp, modifier = Modifier.padding(end = 16.dp))
-                            Column {
-                                Text(patient.pseudonymCode, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
-                                Text("মাতৃভাষা: ${patient.primaryLanguage} • স্তৰ: ${patient.cognitiveStage}", fontSize = 13.sp, color = Color.White)
-                            }
-                        }
+                        Text("➔", color = AasritiColorTokens.WarmIvory, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
-        // Caregiver & Doctor Administration Entry Points (PIN Protected)
-        Column(modifier = Modifier.fillMaxWidth()) {
+        // 3. Administrative / Caregiver / Clinician Role Pathways
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Caregiver Mode Button
             Button(
                 onClick = onCaregiverLoginSelected,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
-                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .border(1.5.dp, Color(0xFF64B5F6), RoundedCornerShape(14.dp))
+                    .height(60.dp)
             ) {
-                Text("🤝 যত্ন লওঁতাৰ প্ৰৱেশ (Caregiver PIN Mode)", fontSize = 16.sp, color = Color(0xFF64B5F6), fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isAssamese) "🤝 যত্ন লওঁতাৰ প্ৰৱেশ (Caregiver PIN)" else "🤝 Family Caregiver Mode",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+                    Text("🔒 PIN", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
+                }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
+            // ASHA Community Worker Mode Button
             Button(
-                onClick = onDoctorLoginSelected,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
-                shape = RoundedCornerShape(14.dp),
+                onClick = onAshaLoginSelected,
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .border(1.5.dp, Color(0xFFFFB74D), RoundedCornerShape(14.dp))
+                    .height(60.dp)
             ) {
-                Text("🩺 চিকিৎসক / আশা কৰ্মী (Doctor Access)", fontSize = 16.sp, color = Color(0xFFFFB74D), fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isAssamese) "🏡 আশা কৰ্মীৰ ৰষ্টাৰ (ASHA Worker)" else "🏡 ASHA Community Roster",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
+                    Text("১৪ গৰাকী", fontSize = 13.sp, color = AasritiColorTokens.DeepNortheastForest)
+                }
+            }
+
+            // Doctor Access Button
+            Button(
+                onClick = onDoctorLoginSelected,
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isAssamese) "🩺 চিকিৎসকৰ পৰিদৰ্শন (Doctor Access)" else "🩺 Clinician Longitudinal Signals",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.MutedHeritageTerracotta
+                    )
+                    Text("ক'ড", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
+                }
+            }
+        }
+
+        // 4. Subtle Footer with Discreet Developer / Demo Reset Trigger
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "AASRITI • SIH-26003 • Kamrup Rural Pilot",
+                fontSize = 12.sp,
+                color = AasritiColorTokens.WarmSlate.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .clickable { showDevMenu = true }
+                    .padding(8.dp)
+            )
+        }
+    }
+
+    // Discreet Demo Controls Modal (Keeps video recording clean)
+    if (showDevMenu) {
+        Dialog(onDismissRequest = { showDevMenu = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(AasritiColorTokens.WarmIvory)
+                    .border(2.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
+                    .padding(20.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "প্ৰদৰ্শনী আৰু ভাষা নিয়ন্ত্ৰণ (Demo Settings)",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Language Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("ভাষা (Language):", fontSize = 15.sp, color = AasritiColorTokens.DeepCharcoal)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { DemoStateHolder.currentLanguage = "as" },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (DemoStateHolder.currentLanguage == "as") AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface
+                                )
+                            ) {
+                                Text("অসমীয়া", color = if (DemoStateHolder.currentLanguage == "as") AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal)
+                            }
+                            Button(
+                                onClick = { DemoStateHolder.currentLanguage = "en" },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (DemoStateHolder.currentLanguage == "en") AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface
+                                )
+                            ) {
+                                Text("English", color = if (DemoStateHolder.currentLanguage == "en") AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Reset Demo State Button
+                    Button(
+                        onClick = {
+                            DemoStateHolder.resetAll()
+                            showDevMenu = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepCranberryEmergency),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("সকলো প্ৰদৰ্শন ৰিছেট কৰক (Reset All Demo State)", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { showDevMenu = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.WarmSunkenSurface),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("বন্ধ কৰক (Close)", color = AasritiColorTokens.DeepCharcoal)
+                    }
+                }
             }
         }
     }
 }
 
+/**
+ * SCREEN_AUTH_LOCAL_PIN:
+ * Offline local PIN entry screen for Caregiver and Doctor roles.
+ */
 @Composable
 fun PinAuthScreen(
     role: String, // "CAREGIVER" or "DOCTOR"
@@ -167,6 +374,7 @@ fun PinAuthScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isNewSetup by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val isAssamese = DemoStateHolder.currentLanguage == "as"
 
     LaunchedEffect(role) {
         val exists = userRepository.hasUser(role)
@@ -176,7 +384,7 @@ fun PinAuthScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -184,10 +392,16 @@ fun PinAuthScreen(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isAssamese) "← উভতি যাওক" else "← Back",
+                    color = AasritiColorTokens.DeepCharcoal,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -196,20 +410,31 @@ fun PinAuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                if (role == "CAREGIVER") "🤝 যত্ন লওঁতাৰ পিন (Caregiver PIN)" else "🩺 চিকিৎসকৰ পিন (Doctor PIN)",
+                text = if (role == "CAREGIVER") {
+                    if (isAssamese) "🤝 যত্ন লওঁতাৰ পিন (Caregiver PIN)" else "🤝 Caregiver Local PIN"
+                } else {
+                    if (isAssamese) "🩺 চিকিৎসকৰ পিন (Doctor PIN)" else "🩺 Doctor Local PIN"
+                },
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD700),
+                color = AasritiColorTokens.DeepCharcoal,
                 textAlign = TextAlign.Center
             )
+
             Spacer(modifier = Modifier.height(10.dp))
+
             Text(
-                if (isNewSetup) "প্ৰথমবাৰৰ বাবে ৬-অংকৰ পিন এটা নিৰ্ধাৰণ কৰক।" else "প্ৰৱেশ কৰিবলৈ আপোনাৰ ৬-অংকৰ পিন দিয়ক।",
-                fontSize = 16.sp,
-                color = Color(0xFFE0E0E0),
+                text = if (isNewSetup) {
+                    if (isAssamese) "প্ৰথমবাৰৰ বাবে ৬-অংকৰ পিন এটা নিৰ্ধাৰণ কৰক (বা ১২৩৪৫৬ লিখক)।" else "Set a 6-digit local PIN (or enter 123456)."
+                } else {
+                    if (isAssamese) "প্ৰৱেশ কৰিবলৈ আপোনাৰ ৬-অংকৰ পিন দিয়ক।" else "Enter your 6-digit PIN to access care tools."
+                },
+                fontSize = 15.sp,
+                color = AasritiColorTokens.WarmSlate,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(28.dp))
 
             OutlinedTextField(
                 value = enteredPin,
@@ -224,26 +449,35 @@ fun PinAuthScreen(
                     .fillMaxWidth()
                     .height(68.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFFD700),
-                    unfocusedBorderColor = Color(0xFF424242),
-                    focusedTextColor = Color(0xFFFFD700),
-                    unfocusedTextColor = Color(0xFFFFD700),
-                    cursorColor = Color(0xFFFFD700)
+                    focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                    unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder,
+                    focusedTextColor = AasritiColorTokens.DeepCharcoal,
+                    unfocusedTextColor = AasritiColorTokens.DeepCharcoal,
+                    cursorColor = AasritiColorTokens.DeepNortheastForest
                 ),
-                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 24.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 26.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 8.sp
+                ),
                 singleLine = true,
-                placeholder = { Text("••••••", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = Color(0xFF757575)) }
+                placeholder = {
+                    Text("••••••", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = AasritiColorTokens.WarmSlate)
+                }
             )
 
             errorMessage?.let {
                 Spacer(modifier = Modifier.height(10.dp))
-                Text("💡 $it", color = Color(0xFFFFA000), fontSize = 14.sp)
+                Text("💡 $it", color = AasritiColorTokens.WarmAmberWarning, fontSize = 14.sp)
             }
         }
 
+        // Submit Button
         Button(
             onClick = {
-                if (enteredPin.length == 6) {
+                // Fictional SIH demo shortcut: "123456" always succeeds
+                if (enteredPin == "123456" || enteredPin.length == 6) {
                     val hash = CryptoUtils.hashPin(enteredPin)
                     scope.launch {
                         if (isNewSetup) {
@@ -257,24 +491,29 @@ fun PinAuthScreen(
                             onSuccess()
                         } else {
                             val user = userRepository.authenticatePin(hash)
-                            if (user != null) {
+                            if (user != null || enteredPin == "123456") {
                                 onSuccess()
                             } else {
-                                errorMessage = "পিনটো ভুল হৈছে। পুনৰ চেষ্টা কৰক। (Invalid PIN)"
+                                errorMessage = if (isAssamese) "পিনটো ভুল হৈছে। পুনৰ চেষ্টা কৰক।" else "Invalid PIN. Try again."
                             }
                         }
                     }
                 } else {
-                    errorMessage = "অনুগ্ৰহ কৰি ৬-অংকৰ পিন লিখক। (Enter 6 digits)"
+                    errorMessage = if (isAssamese) "অনুগ্ৰহ কৰি ৬-অংকৰ পিন লিখক।" else "Please enter 6 digits."
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
         ) {
-            Text(if (isNewSetup) "পিন সংৰক্ষণ কৰক (Save PIN) ➔" else "প্ৰৱেশ কৰক (Enter) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+            Text(
+                text = if (isNewSetup) "পিন সংৰক্ষণ কৰক (Save PIN) ➔" else "প্ৰৱেশ কৰক (Enter) ➔",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = AasritiColorTokens.WarmIvory
+            )
         }
     }
 }
