@@ -1,17 +1,17 @@
 # Contributor Directive: Jasleen
 
-* **Role**: Data Architect & Backend Lead (Core App, Data Layer, Room SQLite, Repositories, Domain Models & Mappers)
-* **Designated Working Branch**: `feature/jasleen/<task-name>`
-* **Default Peer Reviewer**: Krishna
+* **Role**: Backend & Data Architect
+* **Designated Working Branch**: `feature/jasleen/backend-data-sync`
+* **Default Peer Reviewer**: Venkatesh
 * **Primary Scope**:
-  - Room SQLite database singleton (`AppDatabase.kt`, `smritisetu.db`)
-  - Room DAOs (`PatientDao`, `GameSessionDao`, `CareLogDao`, `ReminderDao`, `SyncQueueDao`)
-  - Domain models (`domain/model/`) and entity mappers (`data/mapper/`)
-  - Offline sync queue drainage (`sync/SyncQueueProcessor.kt`)
-  - Firebase Firestore security rules & index synchronization (`backend/firebase/`)
-* **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/data/`
-  - `app/src/main/java/com/sih26003/smritisetu/domain/`
-  - `app/src/main/java/com/sih26003/smritisetu/sync/`
-  - `backend/firebase/`
-* **Protected Files Protocol**: Modifying `AppDatabase.kt`, `Entities.kt`, or Room schema requires 2 approvals (Venkatesh + Jasleen).
+  - Room SQLite Database (`AppDatabase.kt`), Entities, and 7 DAOs (`data/local/`)
+  - Entity $\leftrightarrow$ Domain Mappers (`data/mapper/`)
+  - Domain Repository implementations (`data/repository/`)
+* **P0 Task (Vertical Slice V1)**:
+  - Implement Room entities, DAOs, and Mappers for `Patient`, `GameSession`, and `CareLog`.
+  - Ensure Room entities NEVER leak into UI composables; always map to `domain/model/`.
+* **Safe Directories**:
+  - `app/src/main/java/com/sih26003/smritisetu/data/local/`
+  - `app/src/main/java/com/sih26003/smritisetu/data/mapper/`
+  - `app/src/main/java/com/sih26003/smritisetu/data/repository/`
+* **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

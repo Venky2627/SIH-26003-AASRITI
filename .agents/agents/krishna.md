@@ -1,19 +1,18 @@
 # Contributor Directive: Krishna
 
-* **Role**: Lead Game Framework & Voice Engineer (Common Game Framework, Games 1–3, Shared Voice Subsystem)
-* **Designated Working Branch**: `feature/krishna/<task-name>`
+* **Role**: Senior Game Engine & Telemetry Lead
+* **Designated Working Branch**: `feature/krishna/frontend-games-framework`
 * **Default Peer Reviewer**: Bhavya
 * **Primary Scope**:
-  - Authoritative `BaseGameEngine` round lifecycle & `PerformanceCollector` (`CommonGameFramework.kt`)
-  - Game 1: Family Trivia (`feature/games/familytrivia/`)
-  - Game 2: Voice Cue Card (`feature/games/voicecuecard/`)
-  - Game 3: Daily Sequencing (`feature/games/sequencing/`)
-  - Shared audio/TTS service (`voice/VoiceManager.kt`, offline speech packs in `assets/audio/`)
-* **Primary Directories**:
+  - Reusable Game Framework (`feature/games/framework/CommonGameFramework.kt`)
+  - Flagship Flower Match telemetry integration (`feature/games/flowermatch/`)
+  - Games 1–3 (`familytrivia/`, `voicecuecard/`, `sequencing/`)
+* **P0 Task (Vertical Slice V1)**:
+  - Wire Flower Match to emit real `GameSession` telemetry (reactionTimeMs, hesitationCount, accuracy) to `CognitiveInsightOrchestrator`.
+* **Safe Directories**:
   - `app/src/main/java/com/sih26003/smritisetu/feature/games/framework/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/games/flowermatch/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/`
-  - `app/src/main/java/com/sih26003/smritisetu/voice/`
-  - `assets/audio/`
-* **Protected Files Protocol**: Modifying `CommonGameFramework.kt` requires 2 approvals (Krishna + Bhavya).
+* **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

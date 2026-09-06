@@ -1,66 +1,47 @@
 # AASRITI (SIH-26003) — Task Board
+## Phase 1: Vertical Slice Execution
 
 > **STATUS CODES**: `NOT_STARTED` | `IN_PROGRESS` | `BLOCKED` | `REVIEW` | `DONE`  
-> **PRIORITIZATION**: **P0** = Immediate / Core Vertical Slice • **P1** = Regional Differentiators • **P2** = Polish & Clinical Export
+> **PRIORITIZATION**: **P0** = Vertical Slice V1 (The Golden Path) • **P1** = Regional Depth & Multi-Game • **P2** = Polish & Release Tag
 
 ---
 
-## 🎯 P0 — ARCHITECTURE FREEZE & PPT READINESS (Deadline: September 5)
+## 🎯 PHASE 0 — ARCHITECTURE FREEZE & CONTRACTS (COMPLETE ✅)
 
-| ID | Task Description | Owner | Reviewer | Status | Dependency |
+| ID | Task Description | Owner | Reviewer | Status | Deliverable |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **ARCH-01** | Freeze Feature-First + Clean Architecture blueprint and directory structure | Venkatesh | Jasleen | `DONE` | None |
-| **ARCH-02** | Formulate exact Entity vs Domain Model mapping to resolve model ambiguity | Jasleen | Venkatesh | `DONE` | ARCH-01 |
-| **ARCH-03** | Specify 4 distinct role workflows (Patient, Caregiver, ASHA, Doctor) | Shravani | Kimaya | `DONE` | ARCH-01 |
-| **ARCH-04** | Formalize 6-Game Framework contracts (`GameDefinition`, `GameSession`) | Krishna | Bhavya | `DONE` | ARCH-01 |
-| **ARCH-05** | Document explainable Adaptive Engine (Decision Tree) and Priority Engine rules | Venkatesh | Shravani | `DONE` | ARCH-04 |
-| **ARCH-06** | Specify Cultural Theme Engine (Assam, Manipur, Meghalaya) independent of language | Bhavya | Krishna | `DONE` | ARCH-01 |
-| **ARCH-07** | Author PPT Technical Architecture slide deck and system diagrams | Venkatesh | All | `IN_PROGRESS` | ARCH-01–06 |
-| **ARCH-08** | Write SIH-26003 Problem Statement Traceability Matrix (`docs/PS_TRACEABILITY.md`) | Kimaya | Venkatesh | `DONE` | ARCH-03 |
+| **P0-01** | Pure Domain Models (`Patient`, `GameSession`, `Reminder`, `CareLog`, `TodayPriority`) | Jasleen / Venkatesh | All | `DONE` | `domain/model/DomainModels.kt` |
+| **P0-02** | Domain Repository Interfaces (`DomainPatientRepository`, `DomainGameRepository`, etc.) | Jasleen | Krishna | `DONE` | `domain/repository/DomainRepositories.kt` |
+| **P0-03** | Core Intelligence Engines (`AdaptiveEngine`, `PriorityEngine`, `TrendEngine`) | Venkatesh | Jasleen | `DONE` | `engine/adaptive/`, `engine/priority/`, `engine/trend/` |
+| **P0-04** | Central Navigation Routes Contract | Venkatesh | All | `DONE` | `navigation/AppRoutes.kt` |
+| **P0-05** | Shared Mock Provider for Unblocked UI | Venkatesh | All | `DONE` | `demo/AasritiMockProvider.kt` |
+| **P0-06** | Authoritative Integration Bible & Vibecoding Brief | Venkatesh | All | `DONE` | `docs/INTEGRATION_BIBLE.md`, `docs/TEAM_VIBECODING_BRIEF.md` |
 
 ---
 
-## 🚀 P0 — CORE VERTICAL SLICE (Post-September 5 First Milestone)
+## 🚀 PHASE 1 — THE GOLDEN PATH (VERTICAL SLICE V1)
 
-*Objective*: Connect the foundational loop end-to-end:
-$$\text{Caregiver Creates Patient} \rightarrow \text{Patient Plays 1 Game} \rightarrow \text{Telemetry Saved} \rightarrow \text{Adaptive Engine Adjusts} \rightarrow \text{Caregiver Logs Event} \rightarrow \text{Priority Engine Evaluates} \rightarrow \text{Doctor Views Trend}$$
+*Goal*: Complete the single end-to-end feedback loop:
+$$\text{Elder Plays Flower Match} \rightarrow \text{Telemetry} \rightarrow \text{CognitiveInsightOrchestrator} \rightarrow \text{Adaptive Scaling} \rightarrow \text{Caregiver Priority Card} \rightarrow \text{Doctor Trend Curve}$$
 
 | ID | Task Description | Owner | Reviewer | Status | Dependency |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **CORE-01** | Implement `domain/model/` data classes (`Patient`, `GameSession`, `CareLog`, `Reminder`) | Jasleen | Krishna | `NOT_STARTED` | ARCH-02 |
-| **CORE-02** | Implement `data/mapper/` extension functions (`toDomain()`, `toEntity()`) | Jasleen | Venkatesh | `NOT_STARTED` | CORE-01 |
-| **CORE-03** | Wire `feature/patient/` home screen directly to `domain/model/` | Bhavya | Jasleen | `NOT_STARTED` | CORE-01 |
-| **CORE-04** | Execute Family Trivia game round loop and save `GameSession` via Repository | Krishna | Bhavya | `NOT_STARTED` | CORE-02 |
-| **CORE-05** | Evaluate `DecisionTreeEngine` offline inference and update next round difficulty | Venkatesh | Jasleen | `NOT_STARTED` | CORE-04 |
-| **CORE-06** | Build Caregiver Quick Log modal (Medication, Appetite, Sleep, Fall) | Shravani | Bhavya | `NOT_STARTED` | CORE-01 |
-| **CORE-07** | Implement `PriorityEngine` deterministic evaluation (`Normal`, `Watch`, `Priority`, `Urgent`) | Venkatesh | Shravani | `NOT_STARTED` | CORE-06 |
-| **CORE-08** | Build Doctor Patient Snapshot screen displaying 7-day reaction time and error trends | Kimaya | Venkatesh | `NOT_STARTED` | CORE-05, CORE-07 |
-| **CORE-09** | Verify 100% offline functionality in Airplane Mode for entire vertical slice | All | Venkatesh | `NOT_STARTED` | CORE-01–08 |
+| **SLICE-01** | Implement `CognitiveInsightOrchestrator` uniting Adaptive, Priority, and Trend engines | Venkatesh | Jasleen | `IN_PROGRESS` | P0-03 |
+| **SLICE-02** | Wire Flower Match to emit `GameSession` telemetry to Orchestrator | Krishna | Bhavya | `NOT_STARTED` | SLICE-01 |
+| **SLICE-03** | Implement Room SQLite entities, DAOs, and Mappers for `Patient`, `GameSession`, `CareLog` | Jasleen | Venkatesh | `NOT_STARTED` | P0-01 |
+| **SLICE-04** | Connect Caregiver Dashboard Today's Priority Card directly to `PriorityEngine` output | Shravani | Kimaya | `NOT_STARTED` | SLICE-01 |
+| **SLICE-05** | Connect Doctor Portal to `TrendEngine` output with 7 / 30 / 90-day window selector | Kimaya | Venkatesh | `NOT_STARTED` | SLICE-01 |
+| **SLICE-06** | Align Game 4 (Categorisation) with `AasritiColorTokens` and `AdaptiveEngine` difficulty level | Bhavya | Krishna | `NOT_STARTED` | SLICE-01 |
+| **SLICE-07** | Checkpoint 1 & 2 integration verification (`./gradlew testDebugUnitTest` + APK) | All | Venkatesh | `NOT_STARTED` | SLICE-01–06 |
 
 ---
 
-## 🌟 P1 — DIFFERENTIATORS & REGIONAL DEPTH (Post-September 5 Second Milestone)
+## 🌟 PHASE 2 — EXPANSION & MULTI-GAME DEPTH (Post-Vertical Slice)
 
 | ID | Task Description | Owner | Reviewer | Status | Dependency |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **DIFF-01** | Deepen Games 2 & 3 (Voice Cue Card with 5s fallback & Daily Sequencing) | Krishna | Bhavya | `NOT_STARTED` | CORE-04 |
-| **DIFF-02** | Deepen Games 4, 5 & 6 (Categorisation, Village Market, Pattern/Rotation) | Bhavya | Krishna | `NOT_STARTED` | CORE-04 |
-| **DIFF-03** | Implement Cultural Theme Pack loader (`AssamTheme`, `ManipurTheme`, `MeghalayaTheme`) | Bhavya | Shravani | `NOT_STARTED` | ARCH-06 |
-| **DIFF-04** | Implement ASHA Worker shared-device multi-patient switching workflow | Shravani | Kimaya | `NOT_STARTED` | CORE-01 |
-| **DIFF-05** | Implement Memory Album photo and relationship viewer with local audio clips | Shravani | Bhavya | `NOT_STARTED` | CORE-01 |
-| **DIFF-06** | Implement Emergency Toolkit (Emergency Call Intent, Patient Missing Card, Fall Triage) | Shravani | Kimaya | `NOT_STARTED` | CORE-06 |
-| **DIFF-07** | Implement Doctor 30-day and 90-day longitudinal trend curves | Kimaya | Venkatesh | `NOT_STARTED` | CORE-08 |
-| **DIFF-08** | Implement explainable Doctor Referral Prompt logic ("Consider clinical review") | Kimaya | Venkatesh | `NOT_STARTED` | CORE-08 |
-| **DIFF-09** | Build durable `SyncQueueProcessor` with network reconnect listener | Venkatesh | Jasleen | `NOT_STARTED` | CORE-02 |
-
----
-
-## 🎨 P2 — POLISH, MULTI-LANGUAGE & CLINICAL EXPORT (Pre-Grand Finale)
-
-| ID | Task Description | Owner | Reviewer | Status | Dependency |
-| :--- | :--- | :--- | :--- | :---: | :--- |
-| **POL-01** | Multi-lingual audio prompt expansion (Assamese, Manipuri, Bodo, Hindi, English) | Krishna | Bhavya | `NOT_STARTED` | DIFF-01 |
-| **POL-02** | Generate 1-page Clinician PDF Report using Android `PdfDocument` | Kimaya | Venkatesh | `NOT_STARTED` | DIFF-07 |
-| **POL-03** | WCAG 2.2 AAA accessibility audit ($\ge 60\times 60\text{ dp}$ targets, $>7:1$ contrast) | Bhavya | All | `NOT_STARTED` | DIFF-02 |
-| **POL-04** | Firebase Storage synchronization for Memory Album photo assets | Venkatesh | Shravani | `NOT_STARTED` | DIFF-05, DIFF-09 |
-| **POL-05** | End-to-end integration and rehearsal of the 16-step SIH Grand Finale demo | All | Venkatesh | `NOT_STARTED` | All P0–P2 |
+| **EXP-01** | Deepen Games 1–3 (Family Trivia, Voice Cue Card, Daily Sequencing) | Krishna | Bhavya | `NOT_STARTED` | SLICE-02 |
+| **EXP-02** | Deepen Games 5 & 6 (Village Market, Pattern Recognition) | Bhavya | Krishna | `NOT_STARTED` | SLICE-06 |
+| **EXP-03** | Connect ASHA 14-elder community roster to `PriorityEngine` triage status | Shravani | Kimaya | `NOT_STARTED` | SLICE-04 |
+| **EXP-04** | Connect Memory Garden and Care Circle telephony to domain repositories | Kimaya | Venkatesh | `NOT_STARTED` | SLICE-05 |
+| **EXP-05** | Wire Room SQLite persistence to `DomainRepositories` | Jasleen | Venkatesh | `NOT_STARTED` | SLICE-03 |

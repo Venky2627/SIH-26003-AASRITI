@@ -1,19 +1,18 @@
 # Contributor Directive: Shravani
 
-* **Role**: Lead Caregiver & Community Health Engineer (Caregiver Workflows, ASHA Workflows, Reminders Engine, SOS, Memory Album)
-* **Designated Working Branch**: `feature/shravani/<task-name>`
+* **Role**: Caregiver & Community Health Lead
+* **Designated Working Branch**: `feature/shravani/frontend-caregiver-asha`
 * **Default Peer Reviewer**: Kimaya
 * **Primary Scope**:
-  - Caregiver Dashboard & Today's Priority (`feature/caregiver/CaregiverDashboardScreen.kt`)
-  - Fast $<30\text{s}$ Quick Care Log modal (`feature/caregiver/QuickLogDialog.kt`)
-  - ASHA Worker multi-patient community roster & batch sync (`feature/asha/`)
-  - Offline Reminders Engine (`engine/reminder/ReminderScheduler.kt`, AlarmManager, BootReceiver)
-  - Memory Garden photo & audio reminiscence experience (`feature/memoryalbum/`)
-  - Emergency SOS & family triage protocol (`feature/patient/SosScreen.kt`)
-* **Primary Directories**:
+  - Caregiver Dashboard (`feature/caregiver/`)
+  - Today's Priority Card (consuming `PriorityEngine`)
+  - Caregiver Quick Log modal (<30s incident logging)
+  - ASHA Community Worker Module (`feature/asha/`: 14-elder roster, visit log)
+  - Offline Reminders UI (`feature/reminders/`)
+* **P0 Task (Vertical Slice V1)**:
+  - Connect Caregiver Dashboard's "Today's Priority Card" directly to `PriorityEngine.evaluateTodayPriority()`.
+* **Safe Directories**:
   - `app/src/main/java/com/sih26003/smritisetu/feature/caregiver/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/asha/`
-  - `app/src/main/java/com/sih26003/smritisetu/engine/reminder/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/reminders/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/memoryalbum/`
-* **Protected Files Protocol**: Modifying `AndroidManifest.xml` (permissions & receivers) requires 2 approvals (Shravani + Venkatesh).
+* **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

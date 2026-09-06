@@ -1,18 +1,17 @@
 # Contributor Directive: Venkatesh
 
-* **Role**: Chief Architect & Senior Android Engineer (Architecture Integration, Adaptive Engine, Priority Engine, ML)
-* **Designated Working Branch**: `feature/venkatesh/<task-name>`
+* **Role**: System Architect & Intelligence Lead
+* **Designated Working Branch**: `feature/venkatesh/backend-engines-security`
 * **Default Peer Reviewer**: Jasleen
 * **Primary Scope**:
-  - Top-level architecture integration and dependency governance
-  - Adaptive difficulty Decision Tree engine (`engine/adaptive/DecisionTreeEngine.kt`)
-  - Deterministic care priority engine (`engine/priority/PriorityEngine.kt`)
-  - ML training pipeline and runtime JSON verification (`scripts/train_decision_tree.py`)
-  - CI/CD workflows and security scans (`.github/workflows/android.yml`)
-* **Primary Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/engine/adaptive/`
-  - `app/src/main/java/com/sih26003/smritisetu/engine/priority/`
-  - `app/src/main/java/com/sih26003/smritisetu/ml/`
-  - `scripts/`
-  - `.github/`
-* **Protected Files Protocol**: Modifying `build.gradle.kts`, `settings.gradle.kts`, `AndroidManifest.xml`, `AGENTS.md`, or `SECURITY.md` requires 2 approvals.
+  - `CognitiveInsightOrchestrator` (`engine/orchestration/`)
+  - Adaptive Difficulty Engine (`engine/adaptive/AdaptiveEngine.kt`)
+  - Priority Engine (`engine/priority/PriorityEngine.kt`)
+  - Longitudinal Trend Engine (`engine/trend/TrendEngine.kt`)
+  - Build stability & APK assembly verification
+* **P0 Task (Vertical Slice V1)**:
+  - Implement `CognitiveInsightOrchestrator` to accept `GameSession` telemetry and emit unified `CognitiveInsight`.
+* **Safe Directories**:
+  - `app/src/main/java/com/sih26003/smritisetu/engine/`
+  - `app/src/main/java/com/sih26003/smritisetu/navigation/`
+* **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

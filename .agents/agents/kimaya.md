@@ -1,17 +1,18 @@
 # Contributor Directive: Kimaya
 
-* **Role**: Clinical Informatics & Analytics Lead (Doctor Workflows, Analytics Engine, Longitudinal Trends, Clinical Reports)
-* **Designated Working Branch**: `feature/kimaya/<task-name>`
+* **Role**: Elder Companion & Clinical Experience Lead
+* **Designated Working Branch**: `feature/kimaya/frontend-elder-doctor`
 * **Default Peer Reviewer**: Venkatesh
 * **Primary Scope**:
-  - Doctor Access Portal & Patient Snapshot (`feature/doctor/DoctorAccessScreen.kt`)
-  - Longitudinal interaction trend analyzer (`engine/trend/TrendEngine.kt` — 7/30/90-day curves)
-  - Objective telemetry visualization (Reaction latency, error rate, hesitation gaps)
-  - 1-Page High-Contrast Clinical PDF Summary Export (`android.graphics.pdf.PdfDocument`)
-  - SIH MDoNER Traceability & Clinical Validation documentation (`docs/PS_TRACEABILITY.md`)
-* **Primary Directories**:
+  - Elder Companion Home Screen (`feature/patient/PatientHomeScreen.kt`)
+  - Memory Garden Reminiscence Album (`feature/memoryalbum/`)
+  - Care Circle Family Telephony (`feature/patient/CareCircleScreen.kt`)
+  - Patient SOS Protocol (`feature/patient/SosScreen.kt`)
+  - Doctor / Clinician Portal (`feature/doctor/DoctorAccessScreen.kt`)
+* **P0 Task (Vertical Slice V1)**:
+  - Wire Doctor Portal to `TrendEngine` with 7 / 30 / 90-day toggle and ensure Elder Home smoothly launches Flower Match.
+* **Safe Directories**:
+  - `app/src/main/java/com/sih26003/smritisetu/feature/patient/`
+  - `app/src/main/java/com/sih26003/smritisetu/feature/memoryalbum/`
   - `app/src/main/java/com/sih26003/smritisetu/feature/doctor/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/analytics/`
-  - `app/src/main/java/com/sih26003/smritisetu/engine/trend/`
-  - `docs/`
-* **Ethical Guardrail**: All clinical reports and screens strictly measure physical interaction latency; **never** claim to diagnose dementia or compute clinical disease severity scores.
+* **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.
