@@ -89,6 +89,20 @@ fun AshaDashboardScreen(
                     fontSize = 12.sp,
                     color = AasritiColorTokens.WarmSlate
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "100% Offline • Room SQLite Local Source of Truth",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
+                }
             }
         }
 

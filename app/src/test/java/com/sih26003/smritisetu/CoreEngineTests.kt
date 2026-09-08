@@ -65,4 +65,159 @@ class CoreEngineTests {
             assertFalse(g.emoji.isBlank())
         }
     }
+
+    @Test
+    fun testAdaptiveEngineAdjustments() {
+        // High hesitation should ease down difficulty
+        val eased = com.sih26003.smritisetu.engine.adaptive.AdaptiveEngine.evaluateNextRound(
+            currentLevel = 3,
+            accuracy = 0.8f,
+            reactionTimeMs = 3800L,
+            hesitationCount = 2
+        )
+        assertEquals(2, eased.nextLevel)
+        assertEquals("HESITATION_EASED", eased.adjustmentReason)
+
+        // Low accuracy should ease down difficulty
+        val lowAcc = com.sih26003.smritisetu.engine.adaptive.AdaptiveEngine.evaluateNextRound(
+            currentLevel = 2,
+            accuracy = 0.5f,
+            reactionTimeMs = 2100L,
+            hesitationCount = 0
+        )
+        assertEquals(1, lowAcc.nextLevel)
+
+        // Rapid 100% accuracy should step up
+        val steppedUp = com.sih26003.smritisetu.engine.adaptive.AdaptiveEngine.evaluateNextRound(
+            currentLevel = 2,
+            accuracy = 1.0f,
+            reactionTimeMs = 1800L,
+            hesitationCount = 0
+        )
+        assertEquals(3, steppedUp.nextLevel)
+        assertEquals("HIGH_ACCURACY_STEP_UP", steppedUp.adjustmentReason)
+
+        // Normal pace should maintain level
+        val stable = com.sih26003.smritisetu.engine.adaptive.AdaptiveEngine.evaluateNextRound(
+            currentLevel = 2,
+            accuracy = 0.85f,
+            reactionTimeMs = 2600L,
+            hesitationCount = 0
+        )
+        assertEquals(2, stable.nextLevel)
+        assertEquals("STABLE", stable.adjustmentReason)
+    }
+
+    @Test
+    fun testTrendEngine7DayAggregation() {
+        val sessions = listOf(
+            com.sih26003.smritisetu.domain.model.GameSession(
+                id = "s1",
+                patientId = "AS-KAM-0042",
+                gameId = "FLOWER_MATCH",
+                difficultyLevel = 1,
+                accuracy = 1.0f,
+                reactionTimeMs = 2000L,
+                hesitationCount = 1,
+                errorCount = 0,
+                durationMs = 15000L,
+                timestamp = System.currentTimeMillis()
+            ),
+            com.sih26003.smritisetu.domain.model.GameSession(
+                id = "s2",
+                patientId = "AS-KAM-0042",
+                gameId = "FLOWER_MATCH",
+                difficultyLevel = 2,
+                accuracy = 1.0f,
+                reactionTimeMs = 2400L,
+                hesitationCount = 2,
+                errorCount = 0,
+                durationMs = 18000L,
+                timestamp = System.currentTimeMillis()
+            )
+        )
+
+        val trend = com.sih26003.smritisetu.engine.trend.TrendEngine.compute7DaySignals("AS-KAM-0042", sessions)
+        assertEquals("AS-KAM-0042", trend.patientId)
+        assertEquals(2200L, trend.averageReactionTimeMs)
+        assertEquals(3, trend.totalHesitationGaps)
+        assertEquals(7, trend.dailyPoints.size)
+        assertTrue(trend.explainableSummary.isNotEmpty())
+        assertFalse(trend.explainableSummary.any { it.contains("Diagnosis") })
+    }
+
+    @Test
+    fun testPriorityEngineTriageAlerts() {
+        val testPatient = com.sih26003.smritisetu.domain.model.Patient(
+            id = "AS-KAM-0042",
+            pseudonymCode = "AS-KAM-0042",
+            displayName = "আইতা বৰা (Aita Borah)",
+            displaySubtitle = "৮২ বছৰীয়া",
+            birthYear = 1958,
+            gender = "F",
+            villageLocation = "হাজো, কামৰূপ",
+            primaryLanguage = "as",
+            cognitiveStage = "MCI"
+        )
+
+        val doneReminders = listOf(
+            com.sih26003.smritisetu.domain.model.Reminder(
+                id = "r1",
+                patientId = testPatient.id,
+                titleIndic = "ঔষধ",
+                titleEn = "Medicine",
+                timeLabel = "08:00 AM",
+                isMedicine = true,
+                isCompleted = true
+            )
+        )
+
+        // 1. Normal state
+        val normalPriority = com.sih26003.smritisetu.engine.priority.PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = doneReminders,
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+        assertEquals("NORMAL", normalPriority.severity)
+
+        // 2. Missed medicine -> WATCH
+        val pendingReminders = listOf(
+            com.sih26003.smritisetu.domain.model.Reminder(
+                id = "r1",
+                patientId = testPatient.id,
+                titleIndic = "ঔষধ",
+                titleEn = "Medicine",
+                timeLabel = "08:00 AM",
+                isMedicine = true,
+                isCompleted = false
+            )
+        )
+        val watchPriority = com.sih26003.smritisetu.engine.priority.PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = pendingReminders,
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+        assertEquals("WATCH", watchPriority.severity)
+
+        // 3. Fall logged -> PRIORITY
+        val fallLog = listOf(
+            com.sih26003.smritisetu.domain.model.CareLog(
+                id = "log1",
+                patientId = testPatient.id,
+                authorRole = "CAREGIVER",
+                category = "FALL",
+                severity = "HIGH",
+                notes = "Mild bedside slip"
+            )
+        )
+        val fallPriority = com.sih26003.smritisetu.engine.priority.PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = doneReminders,
+            recentSessions = emptyList(),
+            recentLogs = fallLog
+        )
+        assertEquals("PRIORITY", fallPriority.severity)
+    }
 }
