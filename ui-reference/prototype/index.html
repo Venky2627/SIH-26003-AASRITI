@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AASRITI — Cognitive Care & Clinical Companion Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/store.js"></script>
+  <script src="js/nav.js"></script>
+</head>
+<body>
+
+  <!-- Top Tester Bar & Navigation Control -->
+  <header class="shell-header">
+    <div class="shell-brand">
+      <div class="shell-logo-badge">A</div>
+      <div>
+        <div class="shell-title">AASRITI</div>
+      </div>
+      <div class="shell-screen-tag" id="screenBadge">Screen 1: Open / Welcome</div>
+    </div>
+
+    <div class="shell-controls">
+      <!-- Screen Quick Jump -->
+      <select id="screenSelect" class="shell-select" aria-label="Jump to Screen">
+        <optgroup label="Onboarding & Access">
+          <option value="1">Screen 1 — Open / Welcome</option>
+          <option value="2">Screen 2 — Cultural Theme Selection</option>
+          <option value="4">Screen 4 — Language Selection</option>
+          <option value="5">Screen 5 — Accessibility / Personalisation</option>
+          <option value="6">Screen 6 — Consent & Safety Assent</option>
+        </optgroup>
+        <optgroup label="Elder / Patient Experience">
+          <option value="7">Screen 7 — Patient Home</option>
+          <option value="8">Screen 8 — Family Trivia</option>
+          <option value="9">Screen 9 — Voice Cue Card</option>
+          <option value="10">Screen 10 — Sequencing</option>
+          <option value="11">Screen 11 — Categorisation</option>
+          <option value="12">Screen 12 — Village Market</option>
+          <option value="13">Screen 13 — Pattern Matching</option>
+          <option value="14">Screen 14 — Shared Game Feedback</option>
+          <option value="15">Screen 15 — Memory Album</option>
+          <option value="16">Screen 16 — SOS Confirm / Call Path</option>
+          <option value="17">Screen 17 — Patient Reminder State</option>
+        </optgroup>
+        <optgroup label="Caregiver & ASHA Frontline">
+          <option value="18">Screen 18 — Caregiver Dashboard</option>
+          <option value="19">Screen 19 — Patient Switching</option>
+          <option value="20">Screen 20 — Quick Log</option>
+          <option value="21">Screen 21 — Today's Priority</option>
+          <option value="22">Screen 22 — Reminders</option>
+          <option value="23">Screen 23 — Memory & Media</option>
+          <option value="24">Screen 24 — Doctor Link / Access</option>
+          <option value="25">Screen 25 — SOS Follow-up</option>
+          <option value="26a">Screen 26a — ASHA Field Visit</option>
+          <option value="26b">Screen 26b — ASHA Assigned-Patient Workflow</option>
+        </optgroup>
+        <optgroup label="Doctor & Clinical Portal">
+          <option value="27">Screen 27 — My Patients</option>
+          <option value="28">Screen 28 — Patient Snapshot</option>
+          <option value="29">Screen 29 — Since Last Visit</option>
+          <option value="30">Screen 30 — Trends</option>
+          <option value="31">Screen 31 — Clinical Assessments</option>
+          <option value="32">Screen 32 — Medication & Caregiver Summary</option>
+          <option value="33">Screen 33 — Care Plan & Follow-up</option>
+          <option value="34">Screen 34 — PDF Export / Clinician Summary</option>
+        </optgroup>
+      </select>
+
+      <!-- Viewport Mode Toggle -->
+      <button class="shell-btn" id="toggleViewportBtn" title="Toggle device frame or full width">
+        <span class="material-symbols-outlined" style="font-size: 18px;">smartphone</span>
+        <span id="viewportModeText">Frame</span>
+      </button>
+
+      <!-- Reset Mock State -->
+      <button class="shell-btn" id="resetStateBtn" title="Reset all demo state to defaults">
+        <span class="material-symbols-outlined" style="font-size: 18px;">restart_alt</span>
+        <span>Reset State</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Prototype Stage -->
+  <main class="prototype-stage" id="stage">
+    <div class="device-frame" id="deviceFrame">
+      <div class="device-speaker-notch">
+        <div class="device-speaker-hole"></div>
+      </div>
+      <iframe id="app-viewport" src="screens/screen1.html" title="AASRITI Prototype Viewport"></iframe>
+    </div>
+  </main>
+
+  <script>
+    const iframe = document.getElementById('app-viewport');
+    const screenSelect = document.getElementById('screenSelect');
+    const screenBadge = document.getElementById('screenBadge');
+    const stage = document.getElementById('stage');
+    const toggleViewportBtn = document.getElementById('toggleViewportBtn');
+    const resetStateBtn = document.getElementById('resetStateBtn');
+
+    // Update Shell Header Info
+    function updateShellScreenInfo(screenId, subView) {
+      const meta = window.AASRITI_SCREENS[screenId];
+      if (meta) {
+        let label = `Screen ${screenId}: ${meta.title}`;
+        if (screenId === 26) {
+          label = subView === 'assigned-patient' 
+            ? 'Screen 26b: ASHA Assigned-Patient Workflow' 
+            : 'Screen 26a: ASHA Field Visit';
+        }
+        screenBadge.textContent = label;
+        
+        // Update select value
+        let val = screenId.toString();
+        if (screenId === 26) val = subView === 'assigned-patient' ? '26b' : '26a';
+        screenSelect.value = val;
+      }
+    }
+    window.updateShellScreenInfo = updateShellScreenInfo;
+
+    // Load Screen by ID
+    function loadScreen(screenId, subView = null) {
+      let num = parseInt(screenId, 10);
+      if (typeof screenId === 'string') {
+        if (screenId.includes('26a')) { num = 26; subView = 'field-visit'; }
+        if (screenId.includes('26b')) { num = 26; subView = 'assigned-patient'; }
+      }
+
+      if (num === 3) num = 1; // Eliminated screen 3 fallback
+
+      const meta = window.AASRITI_SCREENS[num];
+      if (!meta) return;
+
+      let file = meta.file;
+      if (num === 26 && subView === 'assigned-patient') {
+        file = meta.altFile;
+      }
+
+      const targetSrc = 'screens/' + file;
+      if (iframe.contentWindow.location.pathname.endsWith(file) === false) {
+        iframe.src = targetSrc;
+      }
+
+      window.location.hash = '#screen-' + num + (subView ? '-' + subView : '');
+      updateShellScreenInfo(num, subView);
+    }
+
+    // Hash-based router listener
+    function parseHash() {
+      const hash = window.location.hash || '#screen-1';
+      const parts = hash.replace('#screen-', '').split('-');
+      const screenId = parts[0] || '1';
+      const subView = parts[1] || null;
+      loadScreen(screenId, subView);
+    }
+
+    window.addEventListener('hashchange', parseHash);
+
+    // Dropdown change listener
+    screenSelect.addEventListener('change', (e) => {
+      loadScreen(e.target.value);
+    });
+
+    // Message listener from iframe
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'AASRITI_NAVIGATE') {
+        const screenId = event.data.screenId;
+        const subView = event.data.subView;
+        loadScreen(screenId, subView);
+      }
+    });
+
+    // Viewport Toggle (Device Frame vs Fullscreen)
+    let isFullscreen = false;
+    toggleViewportBtn.addEventListener('click', () => {
+      isFullscreen = !isFullscreen;
+      stage.classList.toggle('fullscreen-mode', isFullscreen);
+      document.getElementById('viewportModeText').textContent = isFullscreen ? 'Full' : 'Frame';
+      const icon = toggleViewportBtn.querySelector('.material-symbols-outlined');
+      icon.textContent = isFullscreen ? 'fullscreen_exit' : 'smartphone';
+    });
+
+    // Reset Demo State
+    resetStateBtn.addEventListener('click', () => {
+      if (window.AasritiStore) {
+        window.AasritiStore.reset();
+      }
+      showToast('Demo state reset to initial defaults', 'success');
+      loadScreen(1);
+    });
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!window.location.hash) {
+        window.location.hash = '#screen-1';
+      } else {
+        parseHash();
+      }
+    });
+  </script>
+</body>
+</html>

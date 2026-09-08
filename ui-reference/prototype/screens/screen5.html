@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline-variant": "#ddbfc2", "tertiary-fixed": "#d6e8cd", "on-secondary-fixed": "#2b1700", "secondary-container": "#fdb967", "secondary-fixed": "#ffddb9", "surface-container-highest": "#ffdbcd", "primary-container": "#720227", "surface-container": "#ffe9e2", "tertiary-fixed-dim": "#baccb2", "on-primary": "#ffffff", "inverse-primary": "#ffb2bb", "error-container": "#ffdad6", "on-tertiary": "#ffffff", "on-tertiary-fixed-variant": "#3c4b37", "inverse-on-surface": "#ffede7", "secondary": "#865304", "on-primary-container": "#fd728b", "on-primary-fixed": "#400012", "primary-fixed-dim": "#ffb2bb", "on-primary-fixed-variant": "#891836", "surface-container-high": "#ffe2d8", "on-secondary": "#ffffff", "primary": "#4b0016", "background": "#fff8f6", "on-secondary-container": "#764800", "on-background": "#2a170f", "surface-variant": "#ffdbcd", "tertiary": "#172514", "on-surface-variant": "#574144", "primary-fixed": "#ffd9dd", "outline": "#8a7173", "surface": "#fff8f6", "inverse-surface": "#412b22", "secondary-fixed-dim": "#fdb967", "on-tertiary-fixed": "#111f0e", "surface-tint": "#a9324c", "on-error-container": "#93000a", "on-surface": "#2a170f", "on-secondary-fixed-variant": "#663e00", "tertiary-container": "#2c3b28", "surface-bright": "#fff8f6", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", "on-tertiary-container": "#94a58d", "surface-dim": "#f6d2c5", "error": "#ba1a1a", "surface-container-low": "#fff1ec" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-mobile": "1rem", "margin-tablet": "2.5rem", "space-xl": "2rem", "space-2xl": "3rem", "gutter-desktop": "2rem", "margin-mobile": "1.25rem", "space-xs": "0.5rem", "space-sm": "0.75rem", "margin-desktop": "4rem", "gutter-tablet": "1.5rem", "space-3xl": "4rem", "space-lg": "1.5rem", "space-xxs": "0.25rem", "space-md": "1rem" }, "fontFamily": { "label-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "body-sm": ["Literata"], "body-md": ["Literata"], "title-md": ["Plus Jakarta Sans"], "body-lg": ["Literata"], "display-lg": ["Literata"], "headline-lg": ["Literata"], "title-lg": ["Literata"], "headline-md": ["Literata"], "headline-sm": ["Literata"], "headline-lg-mobile": ["Literata"], "display-lg-mobile": ["Literata"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.03em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-sm": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "title-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "44px", "fontWeight": "600" }], "title-lg": ["22px", { "lineHeight": "30px", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "34px", "fontWeight": "500" }], "headline-sm": ["20px", { "lineHeight": "30px", "fontWeight": "500" }], "headline-lg-mobile": ["26px", { "lineHeight": "36px", "fontWeight": "600" }], "display-lg-mobile": ["30px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <script src="../js/store.js"></script>
+<script src="../js/nav.js"></script>
+</head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(43,24,16,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><button aria-label="Go back" class="w-11 h-11 -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[26px]">arrow_back_ios_new</span></button><h1 class="font-title-md text-title-md text-on-surface truncate text-center flex-1 mx-space-xs">Settings</h1><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1WapgUzswLNTCBP1iZ_cglXt3z5v1LGhKfJvNpMnaJjU44sLtdH93ZR6Bp5WE2ToCJZj2_BJT-LQbCiVopuhkNB_AL7jsVXvxG2jUPD5oXOBAbo6_uVWDTBIohVTEYW50B8wATumMzzFc-TclX-9XUDgcOm35H3tDinmm9B7JlxedDS_z9r38S9ED1uHBmDE-ooSNLFb7l1MH8P6U5UIUQu2DQgXzbFrUazxs5JRaTMMO9KqbL16vEYRNJ7AARt_g2YZHVToyd3cQ"></div></header><main class="flex-1 flex flex-col w-full bg-surface pt-16 pb-safe"><div class="flex flex-col w-full">
+<!-- Audio Narration Banner / Friendly Companion Cue -->
+
+<!-- Clinician Context Storyplate (Dr. Barua summary card) -->
+
+<!-- Accessibility Preferences / Interactive Touch Plates -->
+<section class="px-margin-mobile pb-space-lg flex flex-col gap-space-sm">
+
+<!-- 1. Text Size Selection -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[28px]">format_size</span>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Text Size</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Choose your reading comfort</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container px-2.5 py-1 rounded-full text-on-surface" id="textBadge">Extra Large</span>
+</div>
+<!-- Tactile Pills (Min 60px target height) -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xxs">
+<button class="h-[62px] rounded-xl flex items-center justify-center gap-2 bg-surface-container text-on-surface transition-all active:scale-[0.98]" id="sizeLargeBtn" onclick="setTextSize('large')">
+<span class="font-title-md text-title-md font-bold">A</span>
+<span class="font-label-md text-label-md">Large</span>
+</button>
+<button class="h-[62px] rounded-xl flex items-center justify-center gap-2 bg-primary text-on-primary shadow-md transition-all active:scale-[0.98]" id="sizeExtraLargeBtn" onclick="setTextSize('xlarge')">
+<span class="font-headline-sm text-headline-sm font-bold">AA</span>
+<span class="font-label-md text-label-md">Extra Large</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+</div>
+<!-- Preview strip -->
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<p class="font-headline-sm text-headline-sm text-on-surface text-center" id="previewParagraph">
+          “Namaskar. Your routine is warm, clear, and ready.”
+        </p>
+</div>
+</div>
+<!-- 2. Voice Assistance Switch -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between min-h-[76px] gap-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[26px]">record_voice_over</span>
+</div>
+<div class="min-w-0">
+<h3 class="font-title-md text-title-md text-on-surface truncate">Voice</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Speaks every prompt aloud</p>
+</div>
+</div>
+<button aria-label="Toggle Voice Assistance" class="w-[80px] h-[48px] rounded-full bg-primary flex items-center px-1 transition-colors relative shadow-sm shrink-0" id="voiceToggleBtn" onclick="toggleVoice()"><span class="w-10 h-10 rounded-full bg-on-primary flex items-center justify-center text-primary shadow transform translate-x-[32px] transition-transform" id="voiceThumb"><span class="material-symbols-outlined text-[22px]">volume_up</span></span></button>
+</div>
+<!-- 3. High Clarity Mode -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between min-h-[76px] gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><div class="w-12 h-12 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[26px]">visibility</span></div><div class="min-w-0"><h3 class="font-title-md text-title-md text-on-surface truncate">High Clarity</h3></div></div><button aria-label="Toggle High Clarity Mode" class="w-[80px] h-[48px] rounded-full bg-primary flex items-center px-1 transition-colors relative shadow-sm shrink-0" id="clarityToggleBtn" onclick="toggleClarity()"><span class="w-10 h-10 rounded-full bg-on-primary flex items-center justify-center text-primary shadow transform translate-x-[32px] transition-transform" id="clarityThumb"><span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">check</span></span></button></div>
+</section>
+<!-- Botanical Storybook Memory Illustration -->
+
+<!-- Sticky/Docked Bottom Action Area (Min 60px touch targets, accessible rhythm) -->
+<footer class="mt-auto px-margin-mobile pb-space-lg flex flex-col gap-space-xs"><button class="w-full h-[62px] rounded-xl bg-primary text-on-primary flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all" onclick="confirmSettings()"><span class="material-symbols-outlined text-[26px]">done</span><span class="font-title-md text-title-md">Confirm</span></button><button class="w-full h-[58px] rounded-xl bg-surface-container text-on-surface flex items-center justify-center gap-2 active:bg-surface-container-high transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span><span class="font-label-lg text-label-lg">Back</span></button></footer>
+</div>
+<script>
+  let isVoiceOn = true;
+  let isClarityOn = true;
+  let currentTextSize = 'xlarge';
+
+  function setTextSize(size) {
+    currentTextSize = size;
+    const btnLarge = document.getElementById('sizeLargeBtn');
+    const btnXLarge = document.getElementById('sizeExtraLargeBtn');
+    const badge = document.getElementById('textBadge');
+    const preview = document.getElementById('previewParagraph');
+
+    if (size === 'large') {
+      btnLarge.className = "h-[62px] rounded-xl flex items-center justify-center gap-2 bg-primary text-on-primary shadow-md transition-all active:scale-[0.98]";
+      btnLarge.innerHTML = '<span class="font-title-md text-title-md font-bold">A</span><span class="font-label-md text-label-md">Large</span><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: \'FILL\' 1;">check_circle</span>';
+      
+      btnXLarge.className = "h-[62px] rounded-xl flex items-center justify-center gap-2 bg-surface-container text-on-surface transition-all active:scale-[0.98]";
+      btnXLarge.innerHTML = '<span class="font-headline-sm text-headline-sm font-bold">AA</span><span class="font-label-md text-label-md">Extra Large</span>';
+      
+      badge.textContent = "Large";
+      preview.className = "font-title-md text-title-md text-on-surface text-center";
+    } else {
+      btnXLarge.className = "h-[62px] rounded-xl flex items-center justify-center gap-2 bg-primary text-on-primary shadow-md transition-all active:scale-[0.98]";
+      btnXLarge.innerHTML = '<span class="font-headline-sm text-headline-sm font-bold">AA</span><span class="font-label-md text-label-md">Extra Large</span><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: \'FILL\' 1;">check_circle</span>';
+      
+      btnLarge.className = "h-[62px] rounded-xl flex items-center justify-center gap-2 bg-surface-container text-on-surface transition-all active:scale-[0.98]";
+      btnLarge.innerHTML = '<span class="font-title-md text-title-md font-bold">A</span><span class="font-label-md text-label-md">Large</span>';
+      
+      badge.textContent = "Extra Large";
+      preview.className = "font-headline-sm text-headline-sm text-on-surface text-center";
+    }
+  }
+
+  function toggleVoice() {
+    isVoiceOn = !isVoiceOn;
+    const btn = document.getElementById('voiceToggleBtn');
+    const thumb = document.getElementById('voiceThumb');
+    if (isVoiceOn) {
+      btn.classList.remove('bg-outline-variant');
+      btn.classList.add('bg-primary');
+      thumb.classList.remove('translate-x-0');
+      thumb.classList.add('translate-x-[32px]');
+      thumb.innerHTML = '<span class="material-symbols-outlined text-[22px]">volume_up</span>';
+    } else {
+      btn.classList.remove('bg-primary');
+      btn.classList.add('bg-outline-variant');
+      thumb.classList.remove('translate-x-[32px]');
+      thumb.classList.add('translate-x-0');
+      thumb.innerHTML = '<span class="material-symbols-outlined text-[22px]">volume_off</span>';
+    }
+  }
+
+  function toggleClarity() {
+    isClarityOn = !isClarityOn;
+    const btn = document.getElementById('clarityToggleBtn');
+    const thumb = document.getElementById('clarityThumb');
+    if (isClarityOn) {
+      btn.classList.remove('bg-outline-variant');
+      btn.classList.add('bg-primary');
+      thumb.classList.remove('translate-x-0');
+      thumb.classList.add('translate-x-[32px]');
+      thumb.innerHTML = '<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: \'FILL\' 1;">check</span>';
+    } else {
+      btn.classList.remove('bg-primary');
+      btn.classList.add('bg-outline-variant');
+      thumb.classList.remove('translate-x-[32px]');
+      thumb.classList.add('translate-x-0');
+      thumb.innerHTML = '<span class="material-symbols-outlined text-[22px]">close</span>';
+    }
+  }
+
+  function playNarrationAudio() {
+    const textCue = document.getElementById('audioCueText');
+    const speaker = document.getElementById('speakerIcon');
+    if (textCue) {
+      textCue.textContent = "Speaking: AASRITI settings are tuned for your ease.";
+      speaker.classList.add('animate-pulse');
+      setTimeout(() => {
+        textCue.textContent = "Tap to hear gentle instructions";
+        speaker.classList.remove('animate-pulse');
+      }, 3500);
+    }
+  }
+
+  function confirmSettings() {
+    const textCue = document.getElementById('audioCueText');
+    if (textCue) {
+      textCue.textContent = "Settings saved with care. Moving forward...";
+    }
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 400);
+  }
+
+  document.getElementById('narrationToggleBtn')?.addEventListener('click', playNarrationAudio);
+</script></main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Header back button
+  var headerBack = document.querySelector('header button');
+  if (headerBack) {
+    headerBack.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      window.navigateToScreen(4);
+    });
+  }
+  // Footer buttons
+  document.querySelectorAll('footer button').forEach(function(btn) {
+    var txt = btn.textContent.trim();
+    if (txt.includes('Confirm') || txt.includes('confirm') || txt.includes('Save')) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        window.navigateToScreen(6);
+      });
+    } else if (txt.includes('Back') || txt.includes('back')) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        window.navigateToScreen(4);
+      });
+    }
+  });
+  // Override confirmSettings
+  window.confirmSettings = function() { window.navigateToScreen(6); };
+});
+</script>
+</body></html>

@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-surface": "#2a170f", "secondary": "#865304", "surface-container-low": "#fff1ec", "surface-dim": "#f6d2c5", "on-surface-variant": "#574144", "tertiary-fixed-dim": "#baccb2", "on-tertiary-fixed": "#111f0e", "surface-variant": "#ffdbcd", "inverse-primary": "#ffb2bb", "on-secondary-container": "#764800", "on-secondary-fixed": "#2b1700", "on-tertiary-container": "#94a58d", "surface-container": "#ffe9e2", "on-primary-fixed-variant": "#891836", "on-primary-container": "#fd728b", "on-background": "#2a170f", "inverse-on-surface": "#ffede7", "surface": "#fff8f6", "on-error-container": "#93000a", "error": "#ba1a1a", "outline-variant": "#ddbfc2", "background": "#fff8f6", "surface-container-highest": "#ffdbcd", "primary-fixed": "#ffd9dd", "surface-container-lowest": "#ffffff", "primary": "#4b0016", "error-container": "#ffdad6", "tertiary": "#172514", "secondary-fixed": "#ffddb9", "on-error": "#ffffff", "surface-container-high": "#ffe2d8", "outline": "#8a7173", "on-primary-fixed": "#400012", "primary-container": "#720227", "on-tertiary-fixed-variant": "#3c4b37", "secondary-container": "#fdb967", "surface-bright": "#fff8f6", "on-secondary-fixed-variant": "#663e00", "surface-tint": "#a9324c", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "primary-fixed-dim": "#ffb2bb", "tertiary-container": "#2c3b28", "secondary-fixed-dim": "#fdb967", "tertiary-fixed": "#d6e8cd", "inverse-surface": "#412b22", "on-secondary": "#ffffff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-lg": "1.5rem", "margin-tablet": "2.5rem", "margin-desktop": "4rem", "margin-mobile": "1.25rem", "space-sm": "0.75rem", "space-md": "1rem", "space-xs": "0.5rem", "space-xl": "2rem", "space-3xl": "4rem", "space-xxs": "0.25rem", "gutter-mobile": "1rem", "space-2xl": "3rem", "gutter-desktop": "2rem", "gutter-tablet": "1.5rem" }, fontFamily: { "headline-md": ["Literata"], "label-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Literata"], "body-sm": ["Literata"], "body-lg": ["Literata"], "display-lg-mobile": ["Literata"], "body-md": ["Literata"], "headline-lg": ["Literata"], "label-sm": ["Plus Jakarta Sans"], "title-lg": ["Literata"], "headline-sm": ["Literata"], "title-md": ["Plus Jakarta Sans"], "display-lg": ["Literata"] }, fontSize: { "headline-md": ["24px", { "lineHeight": "34px", "fontWeight": "500" }], "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.03em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "36px", "fontWeight": "600" }], "body-sm": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "400" }], "display-lg-mobile": ["30px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "headline-lg": ["32px", { "lineHeight": "44px", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "700" }], "title-lg": ["22px", { "lineHeight": "30px", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "30px", "fontWeight": "500" }], "title-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#fff8f6;color:#2a170f;-webkit-tap-highlight-color:transparent;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <script src="../js/store.js"></script>
+<script src="../js/nav.js"></script>
+</head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col"><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_4px_16px_-2px_rgba(43,24,16,0.06)] pt-safe"><div class="h-20 px-space-md flex flex-col justify-center gap-space-xxs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary-container shadow-[0_2px_6px_-1px_rgba(43,24,16,0.08)]"><span class="material-symbols-outlined text-[22px]">cyclone</span></div><div><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight leading-none block">AASRITI</span><span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-widest leading-none">Care Companion</span></div></div><div class="flex items-center gap-space-xs"><button class="h-9 px-space-xs rounded-full bg-surface-container-high flex items-center gap-space-xxs text-on-surface shadow-[inset_0_1px_2px_rgba(43,24,16,0.08)]" type="button"><span class="material-symbols-outlined text-secondary text-[18px]">face_4</span><span class="font-label-sm text-label-sm">Aita (Mother)</span><span class="material-symbols-outlined text-outline text-[16px]">expand_more</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_2px_6px_-1px_rgba(43,24,16,0.12)]" src="https://lh3.googleusercontent.com/aida/AEtjO1WapgUzswLNTCBP1iZ_cglXt3z5v1LGhKfJvNpMnaJjU44sLtdH93ZR6Bp5WE2ToCJZj2_BJT-LQbCiVopuhkNB_AL7jsVXvxG2jUPD5oXOBAbo6_uVWDTBIohVTEYW50B8wATumMzzFc-TclX-9XUDgcOm35H3tDinmm9B7JlxedDS_z9r38S9ED1uHBmDE-ooSNLFb7l1MH8P6U5UIUQu2DQgXzbFrUazxs5JRaTMMO9KqbL16vEYRNJ7AARt_g2YZHVToyd3cQ"></div></div><div class="flex items-center justify-between px-space-xxs"><h1 class="font-title-lg text-title-lg text-on-surface tracking-tight truncate">Memory Album</h1><div class="inline-flex items-center gap-1.5 px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed shadow-[0_1px_4px_rgba(43,24,16,0.05)]"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span><span class="font-label-sm text-[11px]">Saved Locally</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-20 pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full pb-10 space-y-space-lg">
+<!-- Storybook Context Banner -->
+
+<!-- 1. Active Family Story Card: Framed Botanical/Parchment Photograph -->
+<section class="flex flex-col bg-surface-container-lowest rounded-xl shadow-[0_4px_16px_-2px_rgba(43,24,16,0.07)] overflow-hidden">
+<div class="relative p-space-sm pb-0">
+<div class="relative rounded-lg overflow-hidden aspect-[16/10] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A warm, nostalgic vintage photograph of a misty Assam tea garden at dawn, lush emerald tea shrubs, sunrays filtering through foliage, a smiling young woman holding warm brass tea glasses, warm terracotta and earthy tones, archival storybook quality with soft grainy film texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADUP7Qp_xqU4YW0J6QLQHKjLrY5OcWpeCD7S9qXq1p6c_A-OYTI42CE5theiyKlGPqz2H6h1dpXooBVC_Vco891pDY0E6yqKNHFZz-LyV8ln2B8uCouTNKKQB0T4OScWOoi4BtIhB1AMmbfBudGGuk6PvZyDIbdDOkIvMoBePbExHwCnM1SdGLTXrHFBWC9Pe4uJ7YBeKAeJRIRN-kPYf1pIXO0JHs462_JSGtc3DDBNOwb7c5xfFL">
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/60 via-transparent to-transparent"></div>
+<!-- Story Tag Chip -->
+<div class="absolute top-space-xs left-space-xs flex items-center gap-1.5 px-space-xs py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[16px]">local_florist</span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary">Assam Tea Garden</span>
+</div>
+<!-- Audio Memory Play Overlay Badge -->
+<button aria-label="Listen to memory soundscape" class="absolute bottom-space-xs right-space-xs flex items-center gap-2 px-space-sm py-1.5 rounded-full bg-primary-container text-on-primary shadow-md active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+<span class="font-label-sm text-label-sm">Hear Aita's Memory</span>
+</button>
+</div>
+</div>
+<!-- Story Description Panel -->
+<div class="p-space-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Priya's Visit</h2><button class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-full bg-surface-container-high text-primary-container font-label-md hover:bg-surface-container transition-colors shadow-sm active:scale-95" type="button"><span class="material-symbols-outlined text-[18px]">edit_note</span><span class="">+ Add memory</span></button></div></div>
+</section>
+<!-- 2. Voice Story Recorder Section -->
+<section class="flex flex-col bg-surface-container-low rounded-xl p-space-lg shadow-[0_4px_16px_-2px_rgba(43,24,16,0.05)] space-y-space-md">
+<div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-primary-container"><span class="material-symbols-outlined text-[22px]">mic</span></div><h3 class="font-title-md text-title-md text-on-surface">Record Voice Note</h3></div></div>
+<!-- Guiding Prompt Card -->
+
+<!-- Recorder Visualizer & Controls -->
+
+</section>
+<!-- 3. Media Upload & Prompt Options -->
+<section class="flex flex-col space-y-space-md">
+
+<!-- Tactile Tag Chips -->
+
+<!-- Secondary Action: Add Family Photo Button -->
+<button class="w-full min-h-[56px] py-space-sm px-space-md rounded-xl bg-surface-container-low hover:bg-surface-container text-primary-container font-title-md text-title-md flex items-center justify-center gap-space-xs shadow-[0_2px_8px_rgba(43,24,16,0.06)] active:scale-[0.99] transition-all cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[24px]">add_photo_alternate</span>
+<span class="">+ Add Family Photo</span>
+</button>
+</section>
+<!-- Recent Keepsakes Gallery Scroll -->
+
+<!-- 4. Primary Save Action: Large tactile letterpress button -->
+<div class="pt-space-xs pb-space-xs">
+<button class="w-full min-h-[56px] py-space-md px-space-lg rounded-xl bg-primary-container text-on-primary font-title-md text-title-md shadow-[0_6px_20px_rgba(114,2,39,0.25)] flex items-center justify-center gap-space-sm active:translate-y-0.5 active:shadow-[0_2px_8px_rgba(114,2,39,0.3)] transition-all cursor-pointer" id="saveAlbumBtn" type="button">
+<span class="material-symbols-outlined text-[24px]">bookmark_add</span>
+<span class="">Save to Memory Album</span>
+</button>
+</div>
+<!-- Toast Notification Feedback (Hidden by Default) -->
+<div class="fixed bottom-24 inset-x-margin-mobile max-w-sm mx-auto bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-xl shadow-xl flex items-center justify-between transition-all duration-300 transform translate-y-12 opacity-0 pointer-events-none z-50" id="saveToast">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary-container text-[20px]">check_circle</span>
+<span class="font-label-md text-label-md">Preserved in Memory Album!</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Record toggle micro-interaction
+    const recBtn = document.getElementById('recordToggleBtn');
+    const recIcon = document.getElementById('recIcon');
+    const recLabel = document.getElementById('recLabel');
+    let isRecording = true;
+
+    if (recBtn) {
+      recBtn.addEventListener('click', function() {
+        isRecording = !isRecording;
+        if (isRecording) {
+          recIcon.textContent = 'mic';
+          recLabel.textContent = 'Recording';
+          recBtn.classList.remove('bg-secondary');
+          recBtn.classList.add('bg-primary-container');
+        } else {
+          recIcon.textContent = 'pause';
+          recLabel.textContent = 'Paused';
+          recBtn.classList.remove('bg-primary-container');
+          recBtn.classList.add('bg-secondary');
+        }
+      });
+    }
+
+    // Interactive tag chips
+    const tagButtons = document.querySelectorAll('#tagList .tag-chip');
+    tagButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const isSelected = this.classList.contains('bg-surface-container-high');
+        if (isSelected) {
+          this.classList.remove('bg-surface-container-high', 'text-primary-container');
+          this.classList.add('bg-surface-container-lowest', 'text-on-surface-variant');
+        } else {
+          this.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant');
+          this.classList.add('bg-surface-container-high', 'text-primary-container');
+        }
+      });
+    });
+
+    // Save action feedback
+    const saveBtn = document.getElementById('saveAlbumBtn');
+    const toast = document.getElementById('saveToast');
+    if (saveBtn && toast) {
+      saveBtn.addEventListener('click', function() {
+        toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        }, 3200);
+      });
+    }
+
+    // Highlight Care Circle navigation tab dynamically
+    const navItems = document.querySelectorAll('nav a[data-path="care-circle"]');
+    navItems.forEach(item => {
+      item.classList.remove('text-on-surface-variant');
+      item.classList.add('text-primary-container', 'font-semibold', 'scale-105');
+    });
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-4px_20px_-2px_rgba(43,24,16,0.08)]" data-active-classes="text-primary-container font-semibold scale-105"><div class="flex justify-around items-center h-20 px-space-xs max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[26px]">hevc</span><span class="font-label-sm text-label-sm">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="daily-log" href="#"><span class="material-symbols-outlined text-[26px]">menu_book</span><span class="font-label-sm text-label-sm">Log</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] transition-all text-primary-container font-semibold scale-105" data-path="routine-reminders" href="#"><span class="material-symbols-outlined text-[26px]">notifications_active</span><span class="font-label-sm text-label-sm">Reminders</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="care-circle" href="#"><span class="material-symbols-outlined text-[26px]">diversity_1</span><span class="font-label-sm text-label-sm">Care Circle</span></a></div></nav>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('button').forEach(function(btn) {
+    var txt = btn.textContent.trim();
+    if (txt.includes('Album') || txt.includes('Save to')) {
+      btn.addEventListener('click', function() {
+        window.showToast('Memory saved to Album', 'success');
+        setTimeout(function() { window.navigateToScreen(15); }, 400);
+      });
+    } else if (txt.includes('Photo') || txt.includes('Voice') || txt.includes('Add')) {
+      btn.addEventListener('click', function() { window.showToast('Media captured', 'info'); });
+    } else if (txt.includes('Back') || txt.includes('Home')) {
+      btn.addEventListener('click', function() { window.navigateToScreen(18); });
+    }
+  });
+  var hback = document.querySelector('header button, [aria-label="Go back"]');
+  if (hback) hback.addEventListener('click', function() { window.navigateToScreen(18); });
+});
+</script>
+</body></html>
