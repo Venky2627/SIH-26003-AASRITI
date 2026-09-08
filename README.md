@@ -35,11 +35,8 @@ In rural North Eastern India, elderly individuals facing Mild Cognitive Impairme
 ### Quick Start:
 ```bash
 # 1. Clone repository
-git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git AASRITI
-cd AASRITI
-
-# 2. Copy environment template (optional)
-cp .env.example .env
+git clone https://github.com/Venky2627/SIH-26003-AASRITI.git
+cd SIH-26003-AASRITI
 
 # 3. Verify ML Decision Tree export (optional)
 python scripts/train_decision_tree.py

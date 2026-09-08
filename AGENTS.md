@@ -38,7 +38,7 @@ Every AI coding assistant entering this repository **MUST** execute and adhere t
 
 Whenever Antigravity is opened in this repository, it must begin by determining:
 * **Repository Name**: AASRITI (`AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER`)
-* **Remote Origin**: `https://github.com/TeamNameSIH/...`
+* **Remote Origin**: `https://github.com/Venky2627/SIH-26003-AASRITI.git`
 * **Current Branch & Git Status**: Branch name, clean/dirty working tree, uncommitted files.
 * **Technology Stack**: Native Android (Kotlin 1.9+, Jetpack Compose, Room SQLite, Scikit-Learn Decision Tree JSON runtime).
 * **Governance Status**: Verify that `/UI_RULES.md`, `/UI_SCREEN_SPEC.md`, `/SECURITY.md`, and `/docs/ARCHITECTURE.md` are loaded.

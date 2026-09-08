@@ -19,8 +19,8 @@ Every contribution to AASRITI — whether frontend UI, backend sync, database mi
 ### Stage 1: CLONE
 Clone the official repository to your machine:
 ```bash
-git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git AASRITI
-cd AASRITI
+git clone https://github.com/Venky2627/SIH-26003-AASRITI.git
+cd SIH-26003-AASRITI
 ```
 
 ### Stage 2: RUN

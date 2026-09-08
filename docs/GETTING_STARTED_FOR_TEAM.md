@@ -20,8 +20,8 @@
 ### Step 1: CLONE THE REPOSITORY
 Open your terminal (PowerShell or Bash) and clone the repo to your local machine:
 ```bash
-git clone https://github.com/TeamNameSIH/AI-Based-Cognitive-Gaming-Platform-for-Elderly-Dementia-Patients-in-NER.git AASRITI
-cd AASRITI
+git clone https://github.com/Venky2627/SIH-26003-AASRITI.git
+cd SIH-26003-AASRITI
 ```
 
 ---
