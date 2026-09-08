@@ -1,104 +1,180 @@
-# AASRITI CONTRIBUTOR & ENGINEERING WORKFLOW GUIDE
-## `/CONTRIBUTING.md` — The Standard Development Operating System
+# AASRITI — CONTRIBUTING WORKFLOW
 
-> **WELCOME TO AASRITI (SIH-26003)**  
-> **CORE ENGINEERING PRINCIPLE**: **"Hard to break, simple to contribute. The Git repository is the single source of truth."**
+## Repository Branch Model
+
+- **`main`**:
+  Stable/protected release branch.
+  Never directly commit casually.
+
+- **`develop`**:
+  Shared integration branch.
+  All contributors synchronize from here.
+
+- **`feature/` branches**:
+  Individual contributor work (`feature/<member>/<task-name>`).
 
 ---
 
-## 🌟 1. THE 11-STAGE DEVELOPMENT LIFECYCLE
+## Starting Work
 
-Every contribution to AASRITI — whether frontend UI, backend sync, database migration, ML logic, security rule, or documentation — follows this exact predictable lifecycle:
+Every contributor must first check repository state:
 
-```
-1. CLONE ──► 2. RUN ──► 3. BRANCH ──► 4. WORK ──► 5. TEST ──► 6. COMMIT
-                                                                  │
-11. MERGE ◄── 10. APPROVE ◄── 9. REVIEW ◄── 8. CI ◄── 7. PUSH & PR ◄┘
-```
-
-### Stage 1: CLONE
-Clone the official repository to your machine:
-```bash
-git clone https://github.com/Venky2627/SIH-26003-AASRITI.git
-cd SIH-26003-AASRITI
+```powershell
+git status
+git branch --show-current
 ```
 
-### Stage 2: RUN
-Open the project in Android Studio (Jellyfish / Iguana / Hedgehog with JDK 17). Build and run on an Android device or emulator (API 34). Confirm that the default `AasritiTheme` loads with `Warm Ivory` backgrounds and large buttons.
+Then synchronize local `develop`:
 
-### Stage 3: BRANCH
-**NEVER WORK DIRECTLY ON `main` OR `develop`.**  
-Create your feature branch off `develop` (or tell Antigravity who you are and what you want to build):
-```bash
+```powershell
 git checkout develop
 git pull origin develop
-git checkout -b feature/<member>/<task-name>
-# Examples:
-# git checkout -b feature/kimaya/memory-garden
-# git checkout -b feature/venkatesh/priority-engine
-# git checkout -b fix/shravani/reminder-alarm
 ```
 
-### Stage 4: WORK (REUSE EXISTING PATTERNS)
-- **UI Changes**: Read [`/UI_RULES.md`](file:///UI_RULES.md) and [`/UI_COMPONENT_RULES.md`](file:///UI_COMPONENT_RULES.md). Reuse `AasritiColorTokens`, `AasritiTypography`, and `AasritiSpacing`.
-- **Backend / Database Changes**: Read [`/docs/ARCHITECTURE.md`](file:///docs/ARCHITECTURE.md) and [`/SECURITY.md`](file:///SECURITY.md). Room SQLite is the source of truth.
-- **Patient Views**: Keep density VERY LOW. No scoreboards, no dashboards, touch targets $\ge 64\text{dp}$.
+Then switch to your assigned feature branch:
 
-### Stage 5: TEST
-Run local checks and tests before committing:
-```bash
-# Run unit tests
-./gradlew testDebugUnitTest
-
-# Test offline capability: Turn on Airplane Mode on your test device!
+```powershell
+git checkout feature/YOUR-BRANCH
 ```
 
-### Stage 6: COMMIT
-Make meaningful, clean commits:
-```bash
-git add .
-git commit -m "feat(memory): implement Memory Garden photo viewer with audio voice note"
+Merge the latest integration baseline into your branch:
+
+```powershell
+git merge develop
 ```
 
-### Stage 7: PUSH & OPEN PULL REQUEST
-Push your branch to GitHub:
-```bash
-git push -u origin feature/<member>/<task-name>
-```
-Open a Pull Request targeting `develop`. The template in `.github/pull_request_template.md` will automatically load. Complete the checklist.
-
-### Stage 8: CI (GITHUB ACTIONS)
-Automated GitHub Actions will build the project, run unit tests, check for secret leaks, and verify UI governance file presence. If CI fails, inspect the log, fix locally, and push to the same branch.
-
-### Stage 9: REVIEW
-Your designated peer reviewer conducts code review:
-* **Venkatesh** $\leftrightarrow$ **Jasleen**
-* **Jasleen** $\leftrightarrow$ **Krishna**
-* **Krishna** $\leftrightarrow$ **Bhavya**
-* **Bhavya** $\leftrightarrow$ **Shravani**
-* **Shravani** $\leftrightarrow$ **Kimaya**
-* **Kimaya** $\leftrightarrow$ **Venkatesh**
-
-### Stage 10: APPROVE
-Address feedback. Once the reviewer gives explicit approval (LGTM), the PR is ready.
-
-### Stage 11: MERGE
-Merge via **Squash and Merge** into `develop`. Branch is deleted after successful merge.
+If conflicts exist:
+**Do not blindly resolve.** Understand both sides of the conflict and preserve canonical contracts.
 
 ---
 
-## 🛑 2. PROTECTED BRANCH POLICY
+## Before Opening Antigravity
 
-* **`main` is protected**: Represents production-ready code. Direct pushes are blocked.
-* **`develop` is the integration branch**: Features merge into `develop` via approved PRs.
-* **Protected Files Rule**: Modifying integration files (`MainActivity.kt`, `DementiaDatabase.kt`, `build.gradle.kts`, `AndroidManifest.xml`, `UI_RULES.md`, `SECURITY.md`) strictly requires **2 reviewer approvals**.
+Every contributor must ensure the local repository is cleanly synchronized.
+
+Upon session startup, Antigravity must read:
+
+1. `PROJECT_CONTEXT.md`
+2. `OWNERSHIP.md`
+3. `CONTRIBUTING.md`
+
+and inspect:
+
+```powershell
+git status
+git branch --show-current
+git log -10 --oneline
+```
 
 ---
 
-## 🎯 3. PULL REQUEST-FIRST CULTURE
+## Mandatory Antigravity Startup Protocol
 
-Every meaningful change must pass through a Pull Request. No exceptions for UI, backend, documentation, or security files. Every PR must clearly document:
-1. **What changed**
-2. **Why it changed**
-3. **Systems affected** (Frontend, Database, API, ML, UI, etc.)
-4. **Testing performed** (including offline Airplane Mode verification)
+> **"Do not modify code immediately. First inspect the repository state, read the collaboration documents, identify ownership boundaries, and report your understanding."**
+
+---
+
+## During Work
+
+Follow these 10 core rules strictly:
+
+1. **Work primarily inside assigned ownership** as defined in `OWNERSHIP.md`.
+2. **Do not casually modify shared files** (such as `MainActivity.kt`, `AppDatabase.kt`, or `Entities.kt`).
+3. **Do not redesign architecture** without explicit integration lead approval.
+4. **Do not introduce external dependencies** casually into Gradle.
+5. **Do not introduce cloud requirements** (Firebase, REST APIs, remote AI, or cloud TTS). AASRITI is 100% offline.
+6. **Do not fabricate clinical data** or mock performance metrics.
+7. **Do not change Room schema** without migration planning and integration signoff.
+8. **Do not touch `main`**. Feature work is completed on feature branches and integrated via `develop`.
+9. **Keep commits focused** on single tasks or fixes.
+10. **Do not mix unrelated cleanup** or formatting with feature work.
+
+---
+
+## Before Commit
+
+Run relevant verification. For integration-sensitive changes:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat assembleDebug
+```
+
+Then inspect the exact changes:
+
+```powershell
+git status
+git diff
+```
+
+Review exactly what changed. Remove any accidental whitespace edits or debug logs.
+
+---
+
+## Commit Rules
+
+Use focused conventional commit syntax:
+
+- `feat(scope): description`
+- `fix(scope): description`
+- `docs(scope): description`
+- `test(scope): description`
+- `refactor(scope): description`
+
+Do **NOT** use vague commit messages such as:
+- `"changes"`
+- `"update"`
+- `"final"`
+- `"fix stuff"`
+
+---
+
+## Push Workflow
+
+Stage only the relevant files:
+
+```powershell
+git add specific/file1 specific/file2
+git commit -m "feat(scope): meaningful description"
+git push origin feature/YOUR-BRANCH
+```
+
+**Do not use `git add .`** unless the contributor has explicitly inspected every changed file via `git status` and `git diff`.
+
+---
+
+## Integration Workflow
+
+1. Contributors push their tested feature branch to remote origin.
+2. Integration-sensitive changes must be reviewed against:
+   - `PROJECT_CONTEXT.md`
+   - `OWNERSHIP.md`
+   - Room database contracts & migrations
+   - Canonical patient identity (`"aita_borah_01"`)
+   - Existing `develop` baseline
+3. Do not automatically merge unreviewed large changes into `main`.
+
+---
+
+## After Integration
+
+Before starting another task:
+
+1. Switch to `develop` and pull latest changes:
+   ```powershell
+   git checkout develop
+   git pull origin develop
+   ```
+2. Never assume your local branch is up to date.
+
+---
+
+## AI Handoff Rule
+
+The repository is the single source of truth and shared memory across the team.
+
+When architecture or contracts change materially:
+
+- Update `PROJECT_CONTEXT.md` as part of the same commit or coordinated integration commit.
+- Do not rely on chat messages, informal notes, or previous AI conversation transcripts as the sole source of truth.
