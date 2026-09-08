@@ -122,16 +122,7 @@ fun RoleAndModeSelectScreen(
             )
 
             // Fictional Profile: Aita Borah (AS-KAM-0042)
-            val demoPatient = remember {
-                PatientEntity(
-                    id = AasritiDemoData.patient.id,
-                    pseudonymCode = AasritiDemoData.patient.pseudonymCode,
-                    birthYear = 1958,
-                    gender = "F",
-                    primaryLanguage = "as",
-                    cognitiveStage = AasritiDemoData.patient.cognitiveStage
-                )
-            }
+            val demoPatient = remember { com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient() }
 
             Box(
                 modifier = Modifier

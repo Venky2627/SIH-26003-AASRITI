@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.sih26003.smritisetu.data.local.dao.DoctorAccessDao
 import com.sih26003.smritisetu.data.local.dao.GameSessionDao
 import com.sih26003.smritisetu.data.local.dao.PatientDao
@@ -20,6 +22,28 @@ import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.data.local.entities.ReminderEntity
 import com.sih26003.smritisetu.data.local.entities.SyncQueueEntity
 import com.sih26003.smritisetu.data.local.entities.UserEntity
+
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `care_logs` (
+                `id` TEXT NOT NULL,
+                `patientId` TEXT NOT NULL,
+                `authorRole` TEXT NOT NULL,
+                `category` TEXT NOT NULL,
+                `severity` TEXT NOT NULL,
+                `notes` TEXT NOT NULL,
+                `timestamp` INTEGER NOT NULL,
+                `isSynced` INTEGER NOT NULL,
+                PRIMARY KEY(`id`),
+                FOREIGN KEY(`patientId`) REFERENCES `patients`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_care_logs_patientId` ON `care_logs` (`patientId`)")
+    }
+}
 
 @Database(
     entities = [
@@ -57,7 +81,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smritisetu.db"
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
                 instance

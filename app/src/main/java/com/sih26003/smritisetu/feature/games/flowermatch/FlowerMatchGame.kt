@@ -47,7 +47,7 @@ import kotlin.math.sin
  */
 @Composable
 fun FlowerMatchGameScreen(
-    patientId: String = "AS-KAM-0042",
+    patientId: String = com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID,
     gameRepository: GameRepository? = null,
     decisionTreeEngine: DecisionTreeEngine? = null,
     insightOrchestrator: CognitiveInsightOrchestrator? = null,

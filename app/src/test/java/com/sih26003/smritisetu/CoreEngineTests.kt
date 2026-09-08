@@ -1,6 +1,11 @@
 package com.sih26003.smritisetu
 
 import com.sih26003.smritisetu.core.security.CryptoUtils
+import com.sih26003.smritisetu.data.local.database.MIGRATION_1_2
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
+import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
+import com.sih26003.smritisetu.demo.AasritiDemoData
+import com.sih26003.smritisetu.demo.DemoPatientConfig
 import com.sih26003.smritisetu.feature.games.framework.GameId
 import com.sih26003.smritisetu.feature.games.framework.PerformanceCollector
 import org.junit.Assert.*
@@ -279,6 +284,61 @@ class CoreEngineTests {
         assertEquals("FALL", domainLog.category)
         assertEquals("PRIORITY", domainLog.severity)
         assertEquals(entity.notes, domainLog.notes)
+    }
+
+    @Test
+    fun testCanonicalPatientIdentity() {
+        assertEquals("aita_borah_01", DemoPatientConfig.PATIENT_ID)
+        assertEquals("AS-KAM-0042", DemoPatientConfig.PSEUDONYM_CODE)
+        assertEquals(DemoPatientConfig.PATIENT_ID, AasritiDemoData.patient.id)
+        val canonical = DemoPatientConfig.createCanonicalPatient()
+        assertEquals(DemoPatientConfig.PATIENT_ID, canonical.id)
+        assertEquals(DemoPatientConfig.PSEUDONYM_CODE, canonical.pseudonymCode)
+    }
+
+    @Test
+    fun testSessionPersistenceContractReferencesCanonicalPatient() {
+        val gameSession = GameSessionEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            gameId = "FAMILY_TRIVIA",
+            difficultyLevel = 1,
+            durationMs = 12000L,
+            accuracy = 0.9f,
+            errors = 0,
+            reactionTimeMs = 2200L,
+            hesitationCount = 1,
+            adaptationDecision = 2,
+            completed = true
+        )
+        assertEquals(DemoPatientConfig.PATIENT_ID, gameSession.patientId)
+
+        val careLog = CareLogEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "CAREGIVER",
+            category = "HYDRATION",
+            severity = "NORMAL",
+            notes = "Patient drank full glass of water."
+        )
+        assertEquals(DemoPatientConfig.PATIENT_ID, careLog.patientId)
+    }
+
+    @Test
+    fun testCrossSessionDifficultyResolution() {
+        fun resolveInitialDifficulty(adaptationDecision: Int?): Int {
+            return adaptationDecision?.coerceIn(1, 5) ?: 1
+        }
+
+        assertEquals(1, resolveInitialDifficulty(null))
+        assertEquals(4, resolveInitialDifficulty(4))
+        assertEquals(1, resolveInitialDifficulty(0)) // Clamped up to 1
+        assertEquals(5, resolveInitialDifficulty(6)) // Clamped down to 5
+    }
+
+    @Test
+    fun testRoomMigration1To2Contract() {
+        val migration = MIGRATION_1_2
+        assertEquals(1, migration.startVersion)
+        assertEquals(2, migration.endVersion)
     }
 }
 

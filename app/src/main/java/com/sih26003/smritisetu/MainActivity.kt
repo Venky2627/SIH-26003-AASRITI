@@ -51,35 +51,28 @@ class MainActivity : ComponentActivity() {
                 var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
 
                 LaunchedEffect(Unit) {
-                    val existing = app.patientRepository.getPatientById("AS-KAM-0042")
+                    val existing = app.patientRepository.getPatientById(com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID)
                     if (existing == null) {
-                        val aitaBorah = PatientEntity(
-                            id = "AS-KAM-0042",
-                            pseudonymCode = "AS-KAM-0042",
-                            birthYear = 1958,
-                            gender = "F",
-                            primaryLanguage = "as",
-                            cognitiveStage = "Mild Cognitive Impairment (MCI)"
-                        )
+                        val aitaBorah = com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         app.patientRepository.savePatient(aitaBorah)
 
                         app.patientRepository.addRelationship(
                             RelationshipEntity(
-                                patientId = "AS-KAM-0042",
+                                patientId = com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID,
                                 name = "ৰূপম বৰা (Rupam Borah)",
                                 relationshipType = "পুত্ৰ (Son)"
                             )
                         )
                         app.patientRepository.addRelationship(
                             RelationshipEntity(
-                                patientId = "AS-KAM-0042",
+                                patientId = com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID,
                                 name = "মীৰা বৰা (Mira Borah)",
                                 relationshipType = "বোৱাৰী / প্ৰধান যত্ন লওঁতা (Daughter-in-law)"
                             )
                         )
                         app.patientRepository.addRelationship(
                             RelationshipEntity(
-                                patientId = "AS-KAM-0042",
+                                patientId = com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID,
                                 name = "প্ৰীতম (Pritam)",
                                 relationshipType = "নাতি (Grandson)"
                             )
@@ -87,7 +80,7 @@ class MainActivity : ComponentActivity() {
 
                         app.doctorAccessRepository.grantAccess(
                             DoctorAccessEntity(
-                                patientId = "AS-KAM-0042",
+                                patientId = com.sih26003.smritisetu.demo.DemoPatientConfig.PATIENT_ID,
                                 doctorAccessCode = "424242",
                                 doctorName = "ডাঃ হেমন্ত বৰুৱা (Dr. H. Baruah, Neurologist)"
                             )
@@ -142,12 +135,7 @@ class MainActivity : ComponentActivity() {
 
                     // 4. Patient Home Screen (Focal Activity + Care Companions)
                     composable("patient_home") {
-                        val p = activePatient ?: PatientEntity(
-                            id = "default_id",
-                            pseudonymCode = "AS-KAM-0042",
-                            birthYear = 1958,
-                            gender = "F"
-                        )
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         PatientHomeScreen(
                             patient = p,
                             voicePromptManager = app.voicePromptManager,
@@ -156,7 +144,9 @@ class MainActivity : ComponentActivity() {
                                     GameId.FAMILY_TRIVIA -> {
                                         scope.launch {
                                             activePatientRelationships = app.patientRepository.getRelationshipsList(p.id)
-                                            navController.navigate("game_family_trivia")
+                                            val latestSession = app.gameRepository.getLatestSession(p.id, GameId.FAMILY_TRIVIA.name)
+                                            val initialDiff = latestSession?.adaptationDecision?.coerceIn(1, 5) ?: 1
+                                            navController.navigate("game_family_trivia/$initialDiff")
                                         }
                                     }
                                     GameId.VOICE_CUE_CARD -> navController.navigate("game_voice_cue_card")
@@ -176,7 +166,7 @@ class MainActivity : ComponentActivity() {
 
                     // 5. Flagship Game: Flower Match
                     composable("game_flower_match") {
-                        val p = activePatient ?: PatientEntity(id = "AS-KAM-0042", pseudonymCode = "AS-KAM-0042", birthYear = 1958, gender = "F")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         FlowerMatchGameScreen(
                             patientId = p.id,
                             gameRepository = app.gameRepository,
@@ -251,25 +241,55 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // GAME 1: Family Trivia
-                    composable("game_family_trivia") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
-                        val engine = remember(p.id, activePatientRelationships) {
+                    // GAME 1: Family Trivia (Cross-session adaptive difficulty route)
+                    composable(
+                        route = "game_family_trivia/{difficulty}",
+                        arguments = listOf(androidx.navigation.navArgument("difficulty") {
+                            type = androidx.navigation.NavType.IntType
+                            defaultValue = 1
+                        })
+                    ) { backStackEntry ->
+                        val diff = backStackEntry.arguments?.getInt("difficulty")?.coerceIn(1, 5) ?: 1
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
+                        val engine = remember(p.id, activePatientRelationships, diff) {
                             FamilyTriviaEngine(
                                 patientId = p.id,
                                 relationships = activePatientRelationships,
                                 gameRepository = app.gameRepository,
                                 decisionTreeEngine = app.decisionTreeEngine,
                                 voicePromptManager = app.voicePromptManager,
-                                scope = scope
+                                scope = scope,
+                                initialDifficulty = diff
                             )
                         }
                         FamilyTriviaGameScreen(engine = engine, onBack = { navController.popBackStack() })
                     }
 
+                    // GAME 1: Family Trivia (Fallback route resolving difficulty from Room)
+                    composable("game_family_trivia") {
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
+                        var engine by remember(p.id) { mutableStateOf<FamilyTriviaEngine?>(null) }
+                        LaunchedEffect(p.id) {
+                            val latestSession = app.gameRepository.getLatestSession(p.id, GameId.FAMILY_TRIVIA.name)
+                            val initialDiff = latestSession?.adaptationDecision?.coerceIn(1, 5) ?: 1
+                            engine = FamilyTriviaEngine(
+                                patientId = p.id,
+                                relationships = activePatientRelationships,
+                                gameRepository = app.gameRepository,
+                                decisionTreeEngine = app.decisionTreeEngine,
+                                voicePromptManager = app.voicePromptManager,
+                                scope = scope,
+                                initialDifficulty = initialDiff
+                            )
+                        }
+                        engine?.let { eng ->
+                            FamilyTriviaGameScreen(engine = eng, onBack = { navController.popBackStack() })
+                        }
+                    }
+
                     // GAME 2: Voice Cue Card
                     composable("game_voice_cue_card") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         val engine = remember(p.id) {
                             VoiceCueCardEngine(
                                 patientId = p.id,
@@ -284,7 +304,7 @@ class MainActivity : ComponentActivity() {
 
                     // GAME 3: Sequencing
                     composable("game_sequencing") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         val engine = remember(p.id) {
                             SequencingEngine(
                                 patientId = p.id,
@@ -299,7 +319,7 @@ class MainActivity : ComponentActivity() {
 
                     // GAME 4: Categorisation
                     composable("game_categorisation") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         val engine = remember(p.id) {
                             CategorisationEngine(
                                 patientId = p.id,
@@ -314,7 +334,7 @@ class MainActivity : ComponentActivity() {
 
                     // GAME 5: Village Market
                     composable("game_village_market") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         val engine = remember(p.id) {
                             VillageMarketEngine(
                                 patientId = p.id,
@@ -329,7 +349,7 @@ class MainActivity : ComponentActivity() {
 
                     // GAME 6: Pattern Recognition
                     composable("game_pattern_recognition") {
-                        val p = activePatient ?: PatientEntity(id = "default", pseudonymCode = "AS-01", birthYear = 1950, gender = "M")
+                        val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
                         val engine = remember(p.id) {
                             PatternRecognitionEngine(
                                 patientId = p.id,

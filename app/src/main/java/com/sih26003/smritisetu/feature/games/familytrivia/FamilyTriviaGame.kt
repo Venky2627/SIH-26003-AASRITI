@@ -33,14 +33,16 @@ class FamilyTriviaEngine(
     gameRepository: GameRepository,
     decisionTreeEngine: DecisionTreeEngine,
     voicePromptManager: VoicePromptManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    initialDifficulty: Int = 1
 ) : BaseGameEngine(
     gameId = GameId.FAMILY_TRIVIA,
     patientId = patientId,
     gameRepository = gameRepository,
     decisionTreeEngine = decisionTreeEngine,
     voicePromptManager = voicePromptManager,
-    scope = scope
+    scope = scope,
+    initialDifficulty = initialDifficulty.coerceIn(1, 5)
 ) {
     override fun speakInstructions() {
         voicePromptManager.speakPromptKey(
