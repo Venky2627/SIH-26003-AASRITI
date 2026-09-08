@@ -22,10 +22,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
+import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
+import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.demo.AasritiDemoData
 import com.sih26003.smritisetu.demo.DemoFlowerCard
 import com.sih26003.smritisetu.demo.DemoStateHolder
+import com.sih26003.smritisetu.engine.orchestrator.CognitiveInsightOrchestrator
+import com.sih26003.smritisetu.feature.games.framework.PerformanceCollector
+import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 import com.sih26003.smritisetu.voice.playback.VoicePromptManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -36,25 +43,97 @@ import kotlin.math.sin
  * - Authentic botanical vectors (Kopou Phool, Tagar, Jaba, Nilkamal).
  * - Spoken Assamese/English prompt guidance.
  * - Touch targets >= 72dp with WCAG AAA contrast.
+ * - Real interaction telemetry (timing, hesitation, errors) saved to Room SQLite.
  */
 @Composable
 fun FlowerMatchGameScreen(
+    patientId: String = "AS-KAM-0042",
+    gameRepository: GameRepository? = null,
+    decisionTreeEngine: DecisionTreeEngine? = null,
+    insightOrchestrator: CognitiveInsightOrchestrator? = null,
     voicePromptManager: VoicePromptManager?,
     onBack: () -> Unit
 ) {
     val flowers = remember { AasritiDemoData.flowerCards }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val scope = rememberCoroutineScope()
+    val collector = remember { PerformanceCollector() }
+
+    var sessionSaved by remember { mutableStateOf(false) }
+    var lastReactionTimeMs by remember { mutableStateOf(0L) }
+    var lastHesitationCount by remember { mutableStateOf(0) }
+    var lastErrorCount by remember { mutableStateOf(0) }
+    var nextRecommendedLevel by remember { mutableStateOf(1) }
+    var adaptiveFeedbackMessage by remember { mutableStateOf("") }
 
     // Target flower for current round (Round 1: Kopou Phool, Round 2: Nilkamal)
     val targetFlower = if (DemoStateHolder.flowerGameRound == 1) flowers[0] else flowers[3]
 
     LaunchedEffect(DemoStateHolder.flowerGameRound) {
+        if (DemoStateHolder.flowerGameRound == 1 && !DemoStateHolder.isFlowerGameComplete) {
+            collector.startRound()
+            sessionSaved = false
+        }
         val prompt = if (isAssamese) {
             "অনুগ্ৰহ কৰি ${targetFlower.nameIndic} বাছক।"
         } else {
             "Please select the ${targetFlower.nameEn}."
         }
         voicePromptManager?.speak(prompt)
+    }
+
+    val handleCardSelection: (DemoFlowerCard) -> Unit = { flower ->
+        val isMatch = (flower.id == targetFlower.id)
+        collector.recordInteraction(isMatch)
+        val ok = DemoStateHolder.onFlowerSelected(flower.id, targetFlower.id)
+        if (ok) {
+            if (DemoStateHolder.flowerGameRound == 1) {
+                DemoStateHolder.flowerGameRound = 2
+            } else if (DemoStateHolder.flowerGameRound == 2 && !sessionSaved) {
+                DemoStateHolder.isFlowerGameComplete = true
+                sessionSaved = true
+
+                // Compute real physical telemetry
+                if (decisionTreeEngine != null) {
+                    val metrics = collector.computeMetrics(
+                        currentDifficulty = 1,
+                        completed = true,
+                        decisionTreeEngine = decisionTreeEngine
+                    )
+                    lastReactionTimeMs = metrics.reactionTimeMs
+                    lastHesitationCount = metrics.hesitationCount
+                    lastErrorCount = metrics.errors
+
+                    val session = GameSessionEntity(
+                        patientId = patientId,
+                        gameId = "FLOWER_MATCH",
+                        difficultyLevel = 1,
+                        durationMs = metrics.durationMs,
+                        accuracy = metrics.accuracy,
+                        errors = metrics.errors,
+                        reactionTimeMs = metrics.reactionTimeMs,
+                        hesitationCount = metrics.hesitationCount,
+                        adaptationDecision = metrics.adaptationDecision,
+                        completed = true
+                    )
+
+                    // 1. Commit session to local Room SQLite
+                    scope.launch(Dispatchers.IO) {
+                        gameRepository?.saveGameSession(session)
+                    }
+
+                    // 2. Feed session into CognitiveInsightOrchestrator
+                    if (insightOrchestrator != null) {
+                        val insight = insightOrchestrator.processSession(session, 1)
+                        nextRecommendedLevel = insight.nextLevel
+                        adaptiveFeedbackMessage = if (isAssamese) insight.feedbackIndic else insight.feedbackEn
+                    } else {
+                        nextRecommendedLevel = metrics.adaptationDecision
+                        adaptiveFeedbackMessage = if (isAssamese) "বৰ সুন্দৰ! আপুনি বহুত ভাল খেলিছে।" else "Wonderful! Excellent recognition."
+                    }
+                }
+            }
+        }
     }
 
     Column(
@@ -138,6 +217,22 @@ fun FlowerMatchGameScreen(
             }
         }
 
+        // 100% Offline Status Badge
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                .border(1.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(8.dp))
+                .padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "100% Offline • Room SQLite Local Source of Truth",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = AasritiColorTokens.DeepNortheastForest
+            )
+        }
+
         // 2. Center Game Header & Prompt Instruction
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -184,21 +279,14 @@ fun FlowerMatchGameScreen(
                     isAssamese = isAssamese,
                     isMatched = DemoStateHolder.matchedFlowerIds.contains(flowers[0].id),
                     modifier = Modifier.weight(1f),
-                    onSelect = {
-                        val ok = DemoStateHolder.onFlowerSelected(flowers[0].id, targetFlower.id)
-                        if (ok && DemoStateHolder.flowerGameRound == 1) {
-                            DemoStateHolder.flowerGameRound = 2
-                        }
-                    }
+                    onSelect = { handleCardSelection(flowers[0]) }
                 )
                 FlowerChoiceCard(
                     flower = flowers[1],
                     isAssamese = isAssamese,
                     isMatched = DemoStateHolder.matchedFlowerIds.contains(flowers[1].id),
                     modifier = Modifier.weight(1f),
-                    onSelect = {
-                        DemoStateHolder.onFlowerSelected(flowers[1].id, targetFlower.id)
-                    }
+                    onSelect = { handleCardSelection(flowers[1]) }
                 )
             }
 
@@ -211,26 +299,19 @@ fun FlowerMatchGameScreen(
                     isAssamese = isAssamese,
                     isMatched = DemoStateHolder.matchedFlowerIds.contains(flowers[2].id),
                     modifier = Modifier.weight(1f),
-                    onSelect = {
-                        DemoStateHolder.onFlowerSelected(flowers[2].id, targetFlower.id)
-                    }
+                    onSelect = { handleCardSelection(flowers[2]) }
                 )
                 FlowerChoiceCard(
                     flower = flowers[3],
                     isAssamese = isAssamese,
                     isMatched = DemoStateHolder.matchedFlowerIds.contains(flowers[3].id),
                     modifier = Modifier.weight(1f),
-                    onSelect = {
-                        val ok = DemoStateHolder.onFlowerSelected(flowers[3].id, targetFlower.id)
-                        if (ok && DemoStateHolder.flowerGameRound == 2) {
-                            DemoStateHolder.isFlowerGameComplete = true
-                        }
-                    }
+                    onSelect = { handleCardSelection(flowers[3]) }
                 )
             }
         }
 
-        // 4. Gentle Feedback / Celebration Footer
+        // 4. Gentle Feedback / Celebration Footer with Real Telemetry & Adaptation
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -247,7 +328,10 @@ fun FlowerMatchGameScreen(
             contentAlignment = Alignment.Center
         ) {
             if (DemoStateHolder.isFlowerGameComplete) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Text(
                         text = if (isAssamese) "🌸 বৰ সুন্দৰ! সকলো ফুল চিনাক্ত কৰা হ'ল।" else "🌸 Wonderful! All blooms identified gently.",
                         fontSize = 18.sp,
@@ -255,10 +339,53 @@ fun FlowerMatchGameScreen(
                         color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Real interaction physical telemetry from PerformanceCollector
+                    Text(
+                        text = if (isAssamese) {
+                            "প্ৰতিক্ৰিয়া: ${lastReactionTimeMs}ms • দ্বিধা: $lastHesitationCount বাৰ • ত্ৰুটি: $lastErrorCount"
+                        } else {
+                            "Latency: ${lastReactionTimeMs}ms • Hesitation: $lastHesitationCount • Errors: $lastErrorCount"
+                        },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+
+                    // On-Device Scikit-Learn Decision Tree Adaptation
+                    Text(
+                        text = if (isAssamese) {
+                            "অনুকূলিত স্তৰ: স্তৰ $nextRecommendedLevel ($adaptiveFeedbackMessage)"
+                        } else {
+                            "Adaptive Next Level: Level $nextRecommendedLevel ($adaptiveFeedbackMessage)"
+                        },
+                        fontSize = 13.sp,
+                        color = AasritiColorTokens.DeepNortheastForest,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // Room SQLite Local Persistence Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "✓ Room SQLite: অধিবেশন সংৰক্ষিত (100% Offline)",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AasritiColorTokens.DeepNortheastForest
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
                     Button(
                         onClick = {
                             DemoStateHolder.resetFlowerGame()
+                            sessionSaved = false
+                            collector.startRound()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(12.dp),

@@ -25,16 +25,21 @@ import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
 import com.sih26003.smritisetu.demo.AasritiDemoData
 import com.sih26003.smritisetu.demo.DemoStateHolder
+import com.sih26003.smritisetu.domain.model.CareLog
+import com.sih26003.smritisetu.domain.model.GameSession
+import com.sih26003.smritisetu.domain.model.Reminder
+import com.sih26003.smritisetu.engine.priority.PriorityEngine
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 /**
  * SCREEN_CAREGIVER_DASHBOARD & SCREEN_CAREGIVER_QUICK_LOG:
  * Low-medium density family caregiver overview.
  * Follows UI_SCREEN_SPEC.md:
  * - Patient status header with local SQLite sync chip
- * - Today's Priority Card with Muga Gold accent
+ * - Today's Priority Card evaluated reactively by PriorityEngine
  * - Daily Routine progress connected to reactive DemoStateHolder
- * - <30s Quick Log triage dialog
+ * - <30s Quick Log triage dialog persisting into care records
  * - Doctor Access Code generator
  */
 @Suppress("UNUSED_PARAMETER")
@@ -49,6 +54,66 @@ fun CaregiverDashboardScreen(
     val patient = remember { AasritiDemoData.patient }
     val scope = rememberCoroutineScope()
     val isAssamese = DemoStateHolder.currentLanguage == "as"
+
+    val realSessions by gameRepository.getSessionsForPatient(patient.id).collectAsState(initial = emptyList())
+    val loggedIncidents = remember { mutableStateListOf<CareLog>() }
+
+    val reminders = remember(DemoStateHolder.completedRoutineIds.size) {
+        listOf(
+            Reminder(
+                id = "routine_1",
+                patientId = patient.id,
+                titleIndic = "পুৱাৰ ৰক্তচাপৰ ঔষধ",
+                titleEn = "Morning Blood Pressure Medication",
+                timeLabel = "08:00 AM",
+                isMedicine = true,
+                isCompleted = DemoStateHolder.completedRoutineIds.contains("routine_1")
+            ),
+            Reminder(
+                id = "routine_2",
+                patientId = patient.id,
+                titleIndic = "কুহুমীয়া পানী আৰু প্ৰাতঃভ্ৰমণ",
+                titleEn = "Hydration & Gentle Garden Walk",
+                timeLabel = "09:30 AM",
+                isMedicine = false,
+                isCompleted = DemoStateHolder.completedRoutineIds.contains("routine_2")
+            )
+        )
+    }
+
+    val evaluatedPriority = remember(realSessions, loggedIncidents.size, DemoStateHolder.completedRoutineIds.size) {
+        val domainSessions = realSessions.map {
+            GameSession(
+                id = it.id,
+                patientId = it.patientId,
+                gameId = it.gameId,
+                difficultyLevel = it.difficultyLevel,
+                accuracy = it.accuracy,
+                reactionTimeMs = it.reactionTimeMs,
+                hesitationCount = it.hesitationCount,
+                errorCount = it.errors,
+                durationMs = it.durationMs,
+                timestamp = it.timestamp
+            )
+        }
+        val domainPatient = com.sih26003.smritisetu.domain.model.Patient(
+            id = patient.id,
+            pseudonymCode = patient.pseudonymCode,
+            displayName = patient.displayName,
+            displaySubtitle = patient.displaySubtitle,
+            birthYear = 1958,
+            gender = "F",
+            villageLocation = patient.villageLocation,
+            primaryLanguage = "as",
+            cognitiveStage = patient.cognitiveStage
+        )
+        PriorityEngine.evaluateTodayPriority(
+            patient = domainPatient,
+            reminders = reminders,
+            recentSessions = domainSessions,
+            recentLogs = loggedIncidents
+        )
+    }
 
     var showQuickLogDialog by remember { mutableStateOf(false) }
     var generatedDoctorCode by remember { mutableStateOf<String?>("424242") }
@@ -78,6 +143,20 @@ fun CaregiverDashboardScreen(
                     color = AasritiColorTokens.DeepNortheastForest,
                     fontWeight = FontWeight.SemiBold
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "100% Offline • Room SQLite Local Source of Truth",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
+                }
             }
 
             Button(
@@ -142,7 +221,6 @@ fun CaregiverDashboardScreen(
                             }
                         }
 
-                        // Local Sync Badge
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
@@ -156,9 +234,15 @@ fun CaregiverDashboardScreen(
                 }
             }
 
-            // 3. Today's Priority Card (Muga Gold Accent)
+            // 3. Today's Priority Card (Evaluated reactively by PriorityEngine)
             item {
-                val hasPendingMeds = !DemoStateHolder.completedRoutineIds.contains("routine_1")
+                val priorityColor = when (evaluatedPriority.severity) {
+                    "URGENT" -> AasritiColorTokens.DeepCranberryEmergency
+                    "PRIORITY" -> AasritiColorTokens.MutedHeritageTerracotta
+                    "WATCH" -> AasritiColorTokens.MugaGold
+                    else -> AasritiColorTokens.DeepNortheastForest
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,49 +250,74 @@ fun CaregiverDashboardScreen(
                         .background(AasritiColorTokens.SoftCream)
                         .border(
                             width = 2.dp,
-                            color = if (hasPendingMeds) AasritiColorTokens.MugaGold else AasritiColorTokens.DeepNortheastForest,
+                            color = priorityColor,
                             shape = RoundedCornerShape(18.dp)
                         )
                         .padding(16.dp)
                 ) {
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(priorityColor)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (isAssamese) evaluatedPriority.titleIndic else evaluatedPriority.titleEn,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = priorityColor
+                                )
+                            }
+
                             Box(
                                 modifier = Modifier
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(if (hasPendingMeds) AasritiColorTokens.MugaGold else AasritiColorTokens.DeepNortheastForest)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (hasPendingMeds) "আজিৰ সৰ্বোচ্চ অগ্ৰাধিকাৰ (Today's Priority)" else "দৈনন্দিন অগ্ৰাধিকাৰ সম্পন্ন (Priority Completed)",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (hasPendingMeds) AasritiColorTokens.MugaGold else AasritiColorTokens.DeepNortheastForest
-                            )
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(priorityColor.copy(alpha = 0.15f))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = evaluatedPriority.severity,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = priorityColor
+                                )
+                            }
                         }
+
                         Spacer(modifier = Modifier.height(6.dp))
+
                         Text(
-                            text = if (hasPendingMeds) {
-                                "পুৱাৰ ৰক্তচাপৰ ঔষধ নিশ্চিত কৰক। আইতাই ঔষধ সেৱন কৰিলে ক্লিক কৰি চিহ্নিত কৰক।"
-                            } else {
-                                "পুৱাৰ ৰক্তচাপৰ ঔষধ সম্পন্ন কৰা হৈছে। পৰৱৰ্তী: এগিলাচ কুহুমীয়া পানী।"
-                            },
+                            text = if (isAssamese) evaluatedPriority.explanationIndic else evaluatedPriority.explanationEn,
                             fontSize = 14.sp,
-                            color = AasritiColorTokens.DeepCharcoal
+                            color = AasritiColorTokens.DeepCharcoal,
+                            lineHeight = 20.sp
                         )
+
                         Spacer(modifier = Modifier.height(10.dp))
+
                         Button(
-                            onClick = { DemoStateHolder.toggleRoutine("routine_1") },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (hasPendingMeds) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface
-                            ),
+                            onClick = {
+                                if (evaluatedPriority.suggestedAction.contains("medication", ignoreCase = true) || evaluatedPriority.titleIndic.contains("ঔষধ")) {
+                                    DemoStateHolder.toggleRoutine("routine_1")
+                                } else {
+                                    DemoStateHolder.toggleRoutine("routine_2")
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.height(44.dp)
                         ) {
                             Text(
-                                text = if (hasPendingMeds) "✓ ঔষধ লোৱা হ'ল বুলি চিহ্নিত কৰক" else "সম্পন্ন (Undo)",
-                                color = if (hasPendingMeds) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal,
+                                text = "কৰণীয়: ${evaluatedPriority.suggestedAction}",
+                                color = AasritiColorTokens.WarmIvory,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -443,6 +552,20 @@ fun CaregiverDashboardScreen(
                         Button(
                             onClick = {
                                 DemoStateHolder.recordCaregiverQuickLog(selectedCategory, noteInput)
+                                val cat = when {
+                                    selectedCategory.contains("Confusion") || selectedCategory.contains("বিভ্ৰান্তি") -> "FALL"
+                                    selectedCategory.contains("Medication") || selectedCategory.contains("ঔষধ") -> "MEDICINE"
+                                    else -> "GENERAL"
+                                }
+                                val newLog = CareLog(
+                                    id = UUID.randomUUID().toString(),
+                                    patientId = patient.id,
+                                    authorRole = "CAREGIVER",
+                                    category = cat,
+                                    severity = if (cat == "FALL") "PRIORITY" else "NORMAL",
+                                    notes = noteInput
+                                )
+                                loggedIncidents.add(0, newLog)
                                 showQuickLogDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest)

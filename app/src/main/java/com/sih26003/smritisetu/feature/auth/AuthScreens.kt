@@ -91,6 +91,21 @@ fun RoleAndModeSelectScreen(
                 color = AasritiColorTokens.WarmSlate,
                 textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "100% Offline • Room SQLite Local Source of Truth",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AasritiColorTokens.DeepNortheastForest
+                )
+            }
         }
 
         // 2. Patient Direct Photo Tap Arena (NO PIN for Patient)

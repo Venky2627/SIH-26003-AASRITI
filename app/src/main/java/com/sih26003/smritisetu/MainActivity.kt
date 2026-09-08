@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sih26003.smritisetu.core.ui.theme.AasritiTheme
+import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
 import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.feature.asha.AshaDashboardScreen
@@ -48,6 +49,51 @@ class MainActivity : ComponentActivity() {
                 val scope = rememberCoroutineScope()
                 var activePatient by remember { mutableStateOf<PatientEntity?>(null) }
                 var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
+
+                LaunchedEffect(Unit) {
+                    val existing = app.patientRepository.getPatientById("AS-KAM-0042")
+                    if (existing == null) {
+                        val aitaBorah = PatientEntity(
+                            id = "AS-KAM-0042",
+                            pseudonymCode = "AS-KAM-0042",
+                            birthYear = 1958,
+                            gender = "F",
+                            primaryLanguage = "as",
+                            cognitiveStage = "Mild Cognitive Impairment (MCI)"
+                        )
+                        app.patientRepository.savePatient(aitaBorah)
+
+                        app.patientRepository.addRelationship(
+                            RelationshipEntity(
+                                patientId = "AS-KAM-0042",
+                                name = "ৰূপম বৰা (Rupam Borah)",
+                                relationshipType = "পুত্ৰ (Son)"
+                            )
+                        )
+                        app.patientRepository.addRelationship(
+                            RelationshipEntity(
+                                patientId = "AS-KAM-0042",
+                                name = "মীৰা বৰা (Mira Borah)",
+                                relationshipType = "বোৱাৰী / প্ৰধান যত্ন লওঁতা (Daughter-in-law)"
+                            )
+                        )
+                        app.patientRepository.addRelationship(
+                            RelationshipEntity(
+                                patientId = "AS-KAM-0042",
+                                name = "প্ৰীতম (Pritam)",
+                                relationshipType = "নাতি (Grandson)"
+                            )
+                        )
+
+                        app.doctorAccessRepository.grantAccess(
+                            DoctorAccessEntity(
+                                patientId = "AS-KAM-0042",
+                                doctorAccessCode = "424242",
+                                doctorName = "ডাঃ হেমন্ত বৰুৱা (Dr. H. Baruah, Neurologist)"
+                            )
+                        )
+                    }
+                }
 
                 NavHost(navController = navController, startDestination = "role_select") {
                     // 1. Role Selection & Direct Patient Photo Mode
@@ -130,7 +176,12 @@ class MainActivity : ComponentActivity() {
 
                     // 5. Flagship Game: Flower Match
                     composable("game_flower_match") {
+                        val p = activePatient ?: PatientEntity(id = "AS-KAM-0042", pseudonymCode = "AS-KAM-0042", birthYear = 1958, gender = "F")
                         FlowerMatchGameScreen(
+                            patientId = p.id,
+                            gameRepository = app.gameRepository,
+                            decisionTreeEngine = app.decisionTreeEngine,
+                            insightOrchestrator = app.insightOrchestrator,
                             voicePromptManager = app.voicePromptManager,
                             onBack = { navController.popBackStack() }
                         )

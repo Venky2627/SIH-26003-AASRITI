@@ -1,13 +1,13 @@
 package com.sih26003.smritisetu
 
 import android.app.Application
-import com.sih26003.smritisetu.data.firebase.FirebaseSyncMessenger
 import com.sih26003.smritisetu.data.local.database.AppDatabase
 import com.sih26003.smritisetu.data.repository.DoctorAccessRepository
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
 import com.sih26003.smritisetu.data.repository.ReminderRepository
 import com.sih26003.smritisetu.data.repository.UserRepository
+import com.sih26003.smritisetu.engine.orchestrator.CognitiveInsightOrchestrator
 import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 import com.sih26003.smritisetu.voice.playback.VoicePromptManager
 
@@ -31,7 +31,7 @@ class SmritiSetuApplication : Application() {
         private set
     lateinit var voicePromptManager: VoicePromptManager
         private set
-    lateinit var firebaseSyncMessenger: FirebaseSyncMessenger
+    lateinit var insightOrchestrator: CognitiveInsightOrchestrator
         private set
 
     override fun onCreate() {
@@ -46,6 +46,6 @@ class SmritiSetuApplication : Application() {
 
         decisionTreeEngine = DecisionTreeEngine(this)
         voicePromptManager = VoicePromptManager(this)
-        firebaseSyncMessenger = FirebaseSyncMessenger(this, database.syncQueueDao())
+        insightOrchestrator = CognitiveInsightOrchestrator(decisionTreeEngine)
     }
 }
