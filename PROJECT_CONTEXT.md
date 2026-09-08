@@ -208,3 +208,16 @@ Never commit:
 The repository state and these collaboration documents are the source of truth.
 
 AI contributors must never assume project state from old conversations.
+
+## UI Integration Status (Design Ingestion Baseline)
+
+- **Prototype Source**: Ingested in `ui-reference/prototype/` with authoritative screen mapping in `ui-reference/SCREEN_MAPPING.md`.
+- **Integrated Screens (P0 Core Pipelines)**:
+  - Welcome & Role Pathways (`AuthScreens.kt`): Top utility bar with Language switch (`ENG` / `অসমীয়া`), "Saved Locally" reassurance pill, spiral logo badge, dominant elder patient touch target (>= 64dp), and PIN-protected caregiver/doctor cards.
+  - Patient Home & 6 Cognitive Games (`PatientHomeScreen.kt`, `FamilyTriviaGame.kt`): Very low density layout, touch targets >= 64dp, real interaction latency & hesitation gap tracking, `GameSessionEntity` Room persistence, and cross-session adaptive difficulty recommendations (bounded 1..5).
+  - Caregiver / ASHA Field Workflow (`CaregiverDashboardScreen.kt`, `AshaDashboardScreen.kt`): Patient switching, <30s Quick Care Log (Medication, Appetite, Sleep, Mood, Fall, Confusion) writing to Room SQLite `care_logs`, real-time `PriorityEngine` evaluation (WATCH / PRIORITY / NORMAL).
+  - Clinician Snapshot & Longitudinal Trends (`DoctorAccessScreen.kt`): 6-digit access gate, 7/30-day reaction time curves via `TrendEngine`, clinical assessments review, caregiver observation table, clinician notes, and follow-up guidance.
+  - Offline PDF Summary Export (`PdfReportGenerator.kt`): Native Android `PdfDocument` generating formal consultation dossier compiling real Room SQLite data (Patient profile, longitudinal trends, recent sessions, caregiver logs, priority tier, guidance notes, and statutory medical disclaimer).
+- **Deferred Screens (P2)**: Cloud push sync animations, secondary print spooler protocols, decorative animations.
+- **Asset & Token Policy**: Strictly enforced `AasritiColorTokens` (Warm Ivory, Soft Cream, Deep Northeast Forest, Muted Heritage Terracotta, Muga Gold) with AAA contrast and >= 64dp elderly touch targets. Zero web runtimes or WebViews.
+

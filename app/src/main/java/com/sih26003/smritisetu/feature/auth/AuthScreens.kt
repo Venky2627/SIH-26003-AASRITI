@@ -53,30 +53,101 @@ fun RoleAndModeSelectScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
+            .padding(18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Top Utility Bar: Language Selector & Calm Connectivity Indicator (from Prototype Screen 1)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Language Toggle Pill
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(AasritiColorTokens.WarmSunkenSurface)
+                    .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
+                    .padding(3.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (!isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
+                        .clickable { DemoStateHolder.currentLanguage = "en" }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        "ENG",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (!isAssamese) Color.White else AasritiColorTokens.WarmSlate
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
+                        .clickable { DemoStateHolder.currentLanguage = "as" }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        "অসমীয়া",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isAssamese) Color.White else AasritiColorTokens.WarmSlate
+                    )
+                }
+            }
+
+            // Calm Reassurance Pill
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(AasritiColorTokens.SoftCream)
+                    .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .clip(CircleShape)
+                            .background(AasritiColorTokens.DeepNortheastForest)
+                    )
+                    Text(
+                        text = "Saved Locally",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
+                }
+            }
+        }
+
         // 1. App Heritage Branding Header
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 10.dp)
+            modifier = Modifier.padding(top = 4.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(64.dp)
                     .clip(CircleShape)
-                    .background(AasritiColorTokens.DeepNortheastForest),
+                    .background(AasritiColorTokens.SoftCream)
+                    .border(2.dp, AasritiColorTokens.WarmStoneBorder, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🌿", fontSize = 28.sp)
+                Text("🌀", fontSize = 32.sp)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "আশ্ৰিতি (AASRITI)",
-                fontSize = 28.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = AasritiColorTokens.DeepCharcoal
             )
@@ -87,25 +158,10 @@ fun RoleAndModeSelectScreen(
                 } else {
                     "AI-Based Cognitive Gaming & Memory Assistance Platform"
                 },
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = AasritiColorTokens.WarmSlate,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = "100% Offline • Room SQLite Local Source of Truth",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AasritiColorTokens.DeepNortheastForest
-                )
-            }
         }
 
         // 2. Patient Direct Photo Tap Arena (NO PIN for Patient)

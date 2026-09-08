@@ -523,7 +523,14 @@ fun CaregiverDashboardScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    val categories = listOf("ঔষধ (Medication)", "আহাৰ (Appetite)", "টোপনি (Sleep)", "মেজাজ (Mood)", "বিভ্ৰান্তি (Confusion)")
+                    val categories = listOf(
+                        "ঔষধ (Medication)",
+                        "আহাৰ (Appetite)",
+                        "টোপনি (Sleep)",
+                        "মেজাজ (Mood)",
+                        "পতন / আঘাত (Fall)",
+                        "বিভ্ৰান্তি (Confusion)"
+                    )
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         categories.forEach { cat ->
                             Box(
@@ -570,8 +577,11 @@ fun CaregiverDashboardScreen(
                             onClick = {
                                 DemoStateHolder.recordCaregiverQuickLog(selectedCategory, noteInput)
                                 val cat = when {
-                                    selectedCategory.contains("Confusion") || selectedCategory.contains("বিভ্ৰান্তি") -> "FALL"
+                                    selectedCategory.contains("Fall") || selectedCategory.contains("পতন") -> "FALL"
+                                    selectedCategory.contains("Confusion") || selectedCategory.contains("বিভ্ৰান্তি") -> "CONFUSION"
                                     selectedCategory.contains("Medication") || selectedCategory.contains("ঔষধ") -> "MEDICINE"
+                                    selectedCategory.contains("Sleep") || selectedCategory.contains("টোপনি") -> "SLEEP"
+                                    selectedCategory.contains("Appetite") || selectedCategory.contains("আহাৰ") -> "APPETITE"
                                     else -> "GENERAL"
                                 }
                                 val sev = if (cat == "FALL") "PRIORITY" else "NORMAL"

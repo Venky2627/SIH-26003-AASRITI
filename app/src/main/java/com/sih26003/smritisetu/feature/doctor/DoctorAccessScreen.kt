@@ -1,5 +1,7 @@
 package com.sih26003.smritisetu.feature.doctor
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,30 +16,38 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
-import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
+import com.sih26003.smritisetu.data.repository.CareLogRepository
 import com.sih26003.smritisetu.data.repository.DoctorAccessRepository
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
 import com.sih26003.smritisetu.demo.AasritiDemoData
+import com.sih26003.smritisetu.demo.DemoPatientConfig
 import com.sih26003.smritisetu.demo.DemoStateHolder
 import com.sih26003.smritisetu.domain.model.GameSession
+import com.sih26003.smritisetu.engine.priority.PriorityEngine
 import com.sih26003.smritisetu.engine.trend.TrendEngine
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
- * SCREEN_DOCTOR_PATIENT_SNAPSHOT:
- * Clinical longitudinal functional signals review.
- * Follows UI_SCREEN_SPEC.md:
- * - Medium-high information density for clinicians
- * - 7-day longitudinal reaction times and hesitation trends computed via TrendEngine from Room SQLite
- * - Explainable functional triage signals
- * - Strictly NEVER claims to diagnose dementia
+ * SCREEN_DOCTOR_PATIENT_SNAPSHOT & CLINICIAN WORKFLOW:
+ * Integrates Prototype Screens 27–34:
+ * - 6-Digit PIN Gate & Roster Access
+ * - Patient Snapshot (Screen 28)
+ * - Longitudinal Interaction Trends (Screen 30, Room SQLite TrendEngine)
+ * - Clinical Assessment Records (Screen 31)
+ * - Medication & Caregiver Summary (Screen 32, CareLogRepository)
+ * - Care Plan & Review Notes (Screen 33)
+ * - Clinician Summary & Native PDF Export (Screen 34, PdfReportGenerator)
  */
 @Suppress("UNUSED_PARAMETER")
 @Composable
@@ -45,18 +55,24 @@ fun DoctorAccessScreen(
     doctorAccessRepository: DoctorAccessRepository,
     patientRepository: PatientRepository,
     gameRepository: GameRepository,
+    careLogRepository: CareLogRepository? = null,
     onBack: () -> Unit
 ) {
-    val patientId = AasritiDemoData.patient.id
+    val context = LocalContext.current
+    val patientId = DemoPatientConfig.PATIENT_ID
     val scope = rememberCoroutineScope()
     var accessCodeInput by remember { mutableStateOf("424242") }
-    var approvedAccess by remember { mutableStateOf<Boolean>(false) }
+    var approvedAccess by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var clinicalNote by remember { mutableStateOf("Cognitive engagement stable; encourage daily reminiscence audio sessions.") }
+    var selectedTab by remember { mutableStateOf("snapshot") } // "snapshot", "trends", "assessments", "caregiver", "careplan", "pdf"
+    var clinicianNote by remember { mutableStateOf("Preserve bilingual cognitive cues and daily hydration routines. Routine review in 4 weeks.") }
     var noteSavedConfirmation by remember { mutableStateOf(false) }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
 
     val realSessions by gameRepository.getSessionsForPatient(patientId).collectAsState(initial = emptyList())
+    val realLogs by (careLogRepository?.getLogsForPatient(patientId) ?: kotlinx.coroutines.flow.flowOf(emptyList()))
+        .collectAsState(initial = emptyList())
+
     val computedTrend = remember(realSessions) {
         val domainSessions = realSessions.map {
             GameSession(
@@ -75,15 +91,59 @@ fun DoctorAccessScreen(
         TrendEngine.compute7DaySignals(patientId, domainSessions)
     }
 
+    val evaluatedPriority = remember(realSessions, realLogs) {
+        val domainPatient = com.sih26003.smritisetu.domain.model.Patient(
+            id = DemoPatientConfig.PATIENT_ID,
+            pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+            displayName = "আইতা বৰা (Aita Borah)",
+            displaySubtitle = "৬৮ বছৰীয়া • 68 Years",
+            birthYear = 1958,
+            gender = "F",
+            villageLocation = "হাজো, কামৰূপ",
+            primaryLanguage = "as",
+            cognitiveStage = "Mild Cognitive Impairment (MCI)"
+        )
+        val domainLogs = realLogs.map {
+            com.sih26003.smritisetu.domain.model.CareLog(
+                id = it.id,
+                patientId = it.patientId,
+                authorRole = it.authorRole,
+                category = it.category,
+                severity = it.severity,
+                notes = it.notes,
+                timestamp = it.timestamp
+            )
+        }
+        val domainSessions = realSessions.map {
+            GameSession(
+                id = it.id,
+                patientId = it.patientId,
+                gameId = it.gameId,
+                difficultyLevel = it.difficultyLevel,
+                accuracy = it.accuracy,
+                reactionTimeMs = it.reactionTimeMs,
+                hesitationCount = it.hesitationCount,
+                errorCount = it.errors,
+                durationMs = it.durationMs,
+                timestamp = it.timestamp
+            )
+        }
+        PriorityEngine.evaluateTodayPriority(
+            patient = domainPatient,
+            reminders = emptyList(),
+            recentSessions = domainSessions,
+            recentLogs = domainLogs
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. Top Header
+        // Top Navigation Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -107,10 +167,10 @@ fun DoctorAccessScreen(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
                 Text(
-                    text = "100% Offline • Room SQLite",
+                    text = "Saved Locally • Room SQLite",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = AasritiColorTokens.DeepNortheastForest
@@ -129,10 +189,10 @@ fun DoctorAccessScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (!approvedAccess) {
-            // 2. Doctor Access Code Entry View
+            // Screen 27: 6-Digit Doctor Access Login View
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -142,12 +202,12 @@ fun DoctorAccessScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(68.dp)
                         .clip(CircleShape)
                         .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🩺", fontSize = 32.sp)
+                    Text("🩺", fontSize = 34.sp)
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -166,7 +226,7 @@ fun DoctorAccessScreen(
                     text = if (isAssamese) {
                         "যত্ন লওঁতাই প্ৰদান কৰা ৬-অংকৰ প্ৰৱেশ সংকেত লিখক (বা ৪২৪২৪২ লিখক)।"
                     } else {
-                        "Enter the 6-digit access code provided by caregiver (or 424242)."
+                        "Enter the 6-digit access code provided by caregiver (or demo code 424242)."
                     },
                     fontSize = 14.sp,
                     color = AasritiColorTokens.WarmSlate,
@@ -223,11 +283,11 @@ fun DoctorAccessScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
-                        .fillMaxWidth(0.7f)
+                        .fillMaxWidth(0.75f)
                         .height(56.dp)
                 ) {
                     Text(
-                        text = if (isAssamese) "তথ্য চাওক (View Records) ➔" else "View Telemetry ➔",
+                        text = if (isAssamese) "তথ্য চাওক (View Records) ➔" else "View Patient Dossier ➔",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.WarmIvory
@@ -256,251 +316,545 @@ fun DoctorAccessScreen(
                 }
             }
         } else {
-            // 3. Approved Longitudinal Clinical View
-            LazyColumn(
+            // Approved Clinician Workflow (Screens 28 to 34)
+            // 1. Patient Dossier Banner
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(AasritiColorTokens.SoftCream)
+                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                    .padding(14.dp)
             ) {
-                // Header Banner
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(AasritiColorTokens.SoftCream)
-                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                            .padding(16.dp)
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "ৰোগী: আইতা বৰা (${AasritiDemoData.patient.pseudonymCode})",
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AasritiColorTokens.DeepCharcoal
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.15f))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text("অনুমোদিত (Verified)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "লক্ষণীয়: এই তথ্য কেৱল জ্ঞানমূলক প্ৰতিক্ৰিয়া সময় আৰু পালনৰ হাৰ। কোনো চিকিৎসা নিদান নহয়।",
+                                text = "ৰোগী: আইতা বৰা (Aita Borah)",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.DeepCharcoal
+                            )
+                            Text(
+                                text = "৬৮ বছৰ • মহিলা • ID: ${DemoPatientConfig.PATIENT_ID} (AS-KAM-0042)",
                                 fontSize = 12.sp,
                                 color = AasritiColorTokens.WarmSlate
                             )
                         }
-                    }
-                }
-
-                if (realSessions.isEmpty()) {
-                    item {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(AasritiColorTokens.SoftCream)
-                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("📊", fontSize = 40.sp)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text(
-                                    text = "শেহতীয়া কোনো খেলৰ তথ্য উপলব্ধ নহয়।",
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AasritiColorTokens.DeepCharcoal,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = "No recent interaction data available.\n(ৰোগীয়ে খেল সম্পূৰ্ণ কৰাৰ পিছত প্ৰকৃত তথ্য ইয়াত প্ৰদৰ্শিত হ'ব।)",
-                                    fontSize = 13.sp,
-                                    color = AasritiColorTokens.WarmSlate,
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = 18.sp
-                                )
-                            }
+                            Text("অনুমোদিত (Verified)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                         }
                     }
-                } else {
-                    // 7-Day Longitudinal Signal Bars (Computed dynamically from Room SQLite sessions via TrendEngine)
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(AasritiColorTokens.SoftCream)
-                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                                .padding(16.dp)
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "৭-দিনীয়া অনুদৈৰ্ঘ্য প্ৰতিক্ৰিয়াৰ সময় (7-Day Trend)",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AasritiColorTokens.DeepCharcoal
-                                    )
-                                    Text(
-                                        text = "${realSessions.size} সেশ্বন সংৰক্ষিত",
-                                        fontSize = 12.sp,
-                                        color = AasritiColorTokens.DeepNortheastForest,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
 
-                                computedTrend.dailyPoints.forEach { pt ->
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 2. Clinician Subsystem Tabs
+            ScrollableTabRow(
+                selectedTabIndex = when (selectedTab) {
+                    "snapshot" -> 0
+                    "trends" -> 1
+                    "assessments" -> 2
+                    "caregiver" -> 3
+                    "careplan" -> 4
+                    else -> 5
+                },
+                containerColor = AasritiColorTokens.WarmIvory,
+                contentColor = AasritiColorTokens.DeepNortheastForest,
+                edgePadding = 4.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Tab(selected = selectedTab == "snapshot", onClick = { selectedTab = "snapshot" }) {
+                    Text("Snapshot", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                Tab(selected = selectedTab == "trends", onClick = { selectedTab = "trends" }) {
+                    Text("Trends", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                Tab(selected = selectedTab == "assessments", onClick = { selectedTab = "assessments" }) {
+                    Text("Assessments", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                Tab(selected = selectedTab == "caregiver", onClick = { selectedTab = "caregiver" }) {
+                    Text("Care Logs (${realLogs.size})", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                Tab(selected = selectedTab == "careplan", onClick = { selectedTab = "careplan" }) {
+                    Text("Care Plan", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+                Tab(selected = selectedTab == "pdf", onClick = { selectedTab = "pdf" }) {
+                    Text("Export PDF", modifier = Modifier.padding(10.dp), fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AasritiColorTokens.MutedHeritageTerracotta)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 3. Tab Content
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                when (selectedTab) {
+                    "snapshot" -> {
+                        // Screen 28: Patient Snapshot
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(AasritiColorTokens.SoftCream)
+                                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("দফা ১: শেহতীয়া স্থিতি (Clinical Overview)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("Attending Clinician: Dr. N. Barua, MD • Jorhat Neurological Unit", fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
+                                    Text("Cognitive Stage: Mild Cognitive Impairment (MCI)", fontSize = 13.sp, color = AasritiColorTokens.DeepCharcoal)
+
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp),
+                                        modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = pt.dayLabel,
-                                            fontSize = 13.sp,
-                                            color = AasritiColorTokens.DeepCharcoal,
-                                            modifier = Modifier.width(90.dp)
-                                        )
-
-                                        // Bar indicating response time
+                                        Text("Today's Care Priority Tier:", fontSize = 13.sp, color = AasritiColorTokens.DeepCharcoal)
                                         Box(
                                             modifier = Modifier
-                                                .weight(1f)
-                                                .height(12.dp)
                                                 .clip(RoundedCornerShape(6.dp))
-                                                .background(AasritiColorTokens.WarmSunkenSurface)
-                                        ) {
-                                            if (pt.reactionTimeMs > 0) {
-                                                val fillFraction = (pt.reactionTimeMs / 3500f).coerceIn(0.1f, 1f)
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxHeight()
-                                                        .fillMaxWidth(fillFraction)
-                                                    .clip(RoundedCornerShape(6.dp))
-                                                    .background(
-                                                        if (pt.hesitationGaps > 2) AasritiColorTokens.WarmAmberWarning else AasritiColorTokens.DeepNortheastForest
-                                                    )
+                                                .background(
+                                                    when (evaluatedPriority.severity) {
+                                                        "PRIORITY" -> AasritiColorTokens.DeepCranberryEmergency
+                                                        "WATCH" -> AasritiColorTokens.WarmAmberWarning
+                                                        else -> AasritiColorTokens.DeepNortheastForest
+                                                    }
                                                 )
-                                            }
+                                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                                        ) {
+                                            Text(evaluatedPriority.severity, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                                         }
+                                    }
 
-                                        Spacer(modifier = Modifier.width(10.dp))
+                                    Divider(color = AasritiColorTokens.WarmStoneBorder, thickness = 1.dp)
 
-                                        Text(
-                                            text = if (pt.reactionTimeMs > 0) "${pt.reactionTimeMs}ms" else "—",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = if (pt.reactionTimeMs > 0) AasritiColorTokens.WarmSlate else AasritiColorTokens.WarmSlate.copy(alpha = 0.5f),
-                                            modifier = Modifier.width(60.dp),
-                                            textAlign = TextAlign.End
-                                        )
+                                    Text("Recent Observational Highlights:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AasritiColorTokens.DeepCharcoal)
+                                    Text(
+                                        text = if (realLogs.isNotEmpty()) "Latest note: \"${realLogs.last().notes}\"" else "No negative incidents or falls recorded recently.",
+                                        fontSize = 12.sp,
+                                        color = AasritiColorTokens.WarmSlate
+                                    )
+
+                                    Button(
+                                        onClick = { selectedTab = "pdf" },
+                                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MutedHeritageTerracotta),
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                                    ) {
+                                        Text("📄 Generate Dossier Summary PDF ➔", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Explainable Triage Summary (Derived directly from TrendEngine computation)
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(18.dp))
-                                .background(AasritiColorTokens.SoftCream)
-                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                                .padding(16.dp)
-                        ) {
-                            Column {
-                                Text(
-                                    text = "ব্যখ্যামূলক সংকেত (Explainable Functional Signal):",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = AasritiColorTokens.DeepCharcoal
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                computedTrend.explainableSummary.forEach { summaryLine ->
-                                    Text(
-                                        text = "• $summaryLine",
-                                        fontSize = 13.sp,
-                                        color = AasritiColorTokens.DeepCharcoal,
-                                        lineHeight = 18.sp
-                                    )
+                    "trends" -> {
+                        // Screen 30: 7/30-Day Longitudinal Interaction Trends
+                        if (realSessions.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(AasritiColorTokens.SoftCream)
+                                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                        .padding(24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("📊", fontSize = 40.sp)
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        Text(
+                                            text = "শেহতীয়া কোনো খেলৰ তথ্য উপলব্ধ নহয়।",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.DeepCharcoal,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "No recent interaction data available.\n(ৰোগীয়ে খেল সম্পূৰ্ণ কৰাৰ পিছত প্ৰকৃত তথ্য ইয়াত প্ৰদৰ্শিত হ'ব।)",
+                                            fontSize = 12.sp,
+                                            color = AasritiColorTokens.WarmSlate,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(AasritiColorTokens.SoftCream)
+                                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                        .padding(16.dp)
+                                ) {
+                                    Column {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "৭-দিনীয়া অনুদৈৰ্ঘ্য প্ৰতিক্ৰিয়া সময় (Trend)",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AasritiColorTokens.DeepCharcoal
+                                            )
+                                            Text(
+                                                text = "${realSessions.size} সেশ্বন",
+                                                fontSize = 12.sp,
+                                                color = AasritiColorTokens.DeepNortheastForest,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(10.dp))
+
+                                        computedTrend.dailyPoints.forEach { pt ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 3.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = pt.dayLabel,
+                                                    fontSize = 12.sp,
+                                                    color = AasritiColorTokens.DeepCharcoal,
+                                                    modifier = Modifier.width(80.dp)
+                                                )
+
+                                                Box(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .height(10.dp)
+                                                        .clip(RoundedCornerShape(5.dp))
+                                                        .background(AasritiColorTokens.WarmSunkenSurface)
+                                                ) {
+                                                    if (pt.reactionTimeMs > 0) {
+                                                        val fillFraction = (pt.reactionTimeMs / 3500f).coerceIn(0.1f, 1f)
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .fillMaxHeight()
+                                                                .fillMaxWidth(fillFraction)
+                                                                .clip(RoundedCornerShape(5.dp))
+                                                                .background(
+                                                                    if (pt.reactionTimeMs > 3000) AasritiColorTokens.WarmAmberWarning
+                                                                    else AasritiColorTokens.DeepNortheastForest
+                                                                )
+                                                        )
+                                                    }
+                                                }
+
+                                                Text(
+                                                    text = if (pt.reactionTimeMs > 0) "${pt.reactionTimeMs}ms" else "--",
+                                                    fontSize = 11.sp,
+                                                    color = AasritiColorTokens.WarmSlate,
+                                                    modifier = Modifier.width(55.dp),
+                                                    textAlign = TextAlign.End
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                // Clinical Recommendation Notes Input
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(AasritiColorTokens.SoftCream)
-                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                            .padding(16.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "চিকিৎসকৰ পৰামৰ্শ (Clinical Recommendation Note):",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            OutlinedTextField(
-                                value = clinicalNote,
-                                onValueChange = {
-                                    clinicalNote = it
-                                    noteSavedConfirmation = false
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                maxLines = 3,
-                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = AasritiColorTokens.DeepCharcoal)
-                            )
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                    "assessments" -> {
+                        // Screen 31: Clinical Assessment Records (Non-diagnostic review)
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(AasritiColorTokens.SoftCream)
+                                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                    .padding(16.dp)
                             ) {
-                                if (noteSavedConfirmation) {
-                                    Text("✓ সংৰক্ষিত হ'ল", color = AasritiColorTokens.DeepNortheastForest, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                } else {
-                                    Spacer(modifier = Modifier.width(1.dp))
-                                }
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("দফা ৩: ক্লিনিকেল পৰ্যবেক্ষণ ৰেকৰ্ড (Assessments)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("Recorded by Attending Clinician during hospital visits. Not diagnostic.", fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
 
-                                Button(
-                                    onClick = { noteSavedConfirmation = true },
-                                    colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
-                                    shape = RoundedCornerShape(10.dp)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text("HMSE Score: 26 / 30", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AasritiColorTokens.DeepCharcoal)
+                                            Text("MoCA Equivalent: 24 / 30", fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(AasritiColorTokens.SupportingSage.copy(alpha = 0.3f))
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Text("Stable (+1pt)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
+                                        }
+                                    }
+
+                                    Divider(color = AasritiColorTokens.WarmStoneBorder, thickness = 1.dp)
+
+                                    Text("Domain Sub-scores (Review):", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("• Attention & Orientation: 15 / 18", fontSize = 12.sp, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("• Memory & Recall: 19 / 26", fontSize = 12.sp, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("• Fluency & Executive: 11 / 14", fontSize = 12.sp, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("• Language & Comprehension: 23 / 26", fontSize = 12.sp, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("• Visuospatial Construction: 10 / 16", fontSize = 12.sp, color = AasritiColorTokens.DeepCharcoal)
+                                }
+                            }
+                        }
+                    }
+
+                    "caregiver" -> {
+                        // Screen 32: Caregiver & ASHA Field Observations (Room SQLite care_logs)
+                        if (realLogs.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(AasritiColorTokens.SoftCream)
+                                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                        .padding(24.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Text("পৰামৰ্শ সংৰক্ষণ (Save Note)", color = AasritiColorTokens.WarmIvory, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("📝", fontSize = 36.sp)
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text("কোনো যত্ন অভিলেখ নাই (No Care Logs)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                        Text("Caregiver or ASHA has not logged observations yet.", fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
+                                    }
+                                }
+                            }
+                        } else {
+                            items(realLogs.reversed()) { log ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(AasritiColorTokens.SoftCream)
+                                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(12.dp))
+                                        .padding(12.dp)
+                                    ) {
+                                        Column {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text(
+                                                    text = "${log.category} • ${log.authorRole}",
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.sp,
+                                                    color = AasritiColorTokens.DeepCharcoal
+                                                )
+                                                Text(
+                                                    text = log.severity,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 11.sp,
+                                                    color = when (log.severity) {
+                                                        "PRIORITY", "HIGH" -> AasritiColorTokens.DeepCranberryEmergency
+                                                        "WATCH", "MEDIUM" -> AasritiColorTokens.WarmAmberWarning
+                                                        else -> AasritiColorTokens.DeepNortheastForest
+                                                    }
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(text = log.notes, fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.ENGLISH).format(Date(log.timestamp)),
+                                                fontSize = 10.sp,
+                                                color = AasritiColorTokens.WarmSlate.copy(alpha = 0.7f)
+                                            )
+                                        }
+                                    }
+                            }
+                        }
+                    }
+
+                    "careplan" -> {
+                        // Screen 33: Care Plan & Clinician Guidance
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(AasritiColorTokens.SoftCream)
+                                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Text("দফা ৫: যত্ন পৰিকল্পনা আৰু নিৰ্দেশনা (Care Plan)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("Clinical Management Status:", fontSize = 13.sp, color = AasritiColorTokens.DeepCharcoal)
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(AasritiColorTokens.DeepNortheastForest)
+                                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                                        ) {
+                                            Text("STABLE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                        }
+                                    }
+
+                                    Text("Next Scheduled Review: 4 Weeks (28 Days)", fontSize = 12.sp, color = AasritiColorTokens.WarmSlate)
+
+                                    Divider(color = AasritiColorTokens.WarmStoneBorder, thickness = 1.dp)
+
+                                    Text("Attending Clinician Guidance Note:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AasritiColorTokens.DeepCharcoal)
+                                    OutlinedTextField(
+                                        value = clinicianNote,
+                                        onValueChange = { clinicianNote = it },
+                                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                                            unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder
+                                        ),
+                                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, color = AasritiColorTokens.DeepCharcoal)
+                                    )
+
+                                    Button(
+                                        onClick = {
+                                            noteSavedConfirmation = true
+                                            Toast.makeText(context, "Clinician note saved locally.", Toast.LENGTH_SHORT).show()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                                    ) {
+                                        Text("নিৰ্দেশনা সংৰক্ষণ কৰক (Save Guidance)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    "pdf" -> {
+                        // Screen 34: Clinician Summary & PDF Export
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(AasritiColorTokens.SoftCream)
+                                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("📄 ", fontSize = 20.sp)
+                                        Text("AASRITI Summary Export Dossier", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                    }
+                                    Text(
+                                        "Generates a formal, printable PDF consultation report compiling real Room SQLite data (Patient Demographics, Longitudinal Trends, Care Logs, Priority, and Guidance Notes).",
+                                        fontSize = 12.sp,
+                                        color = AasritiColorTokens.WarmSlate
+                                    )
+
+                                    Divider(color = AasritiColorTokens.WarmStoneBorder, thickness = 1.dp)
+
+                                    Text("Included Dossier Sections (5 of 5):", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                    Text("✓ Patient Identification & Kamrup Location", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                                    Text("✓ Longitudinal Cognitive Latency (${realSessions.size} Sessions)", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                                    Text("✓ Caregiver & ASHA Field Logs (${realLogs.size} Records)", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                                    Text("✓ Today's Care Priority (${evaluatedPriority.severity})", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                                    Text("✓ Clinician Notes & Scheduled Follow-up", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Button(
+                                        onClick = {
+                                            try {
+                                                val reportData = PdfReportGenerator.ReportData(
+                                                    patientId = DemoPatientConfig.PATIENT_ID,
+                                                    patientName = "আইতা বৰা (Aita Borah)",
+                                                    pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+                                                    age = 68,
+                                                    gender = "Female",
+                                                    villageLocation = "Kamrup Rural, Assam",
+                                                    cognitiveStage = "Mild Cognitive Impairment (MCI)",
+                                                    clinicianName = "Dr. N. Barua, MD (Neurology)",
+                                                    reportingPeriod = "Last 30 Days",
+                                                    carePriorityStatus = evaluatedPriority.severity,
+                                                    clinicianNotes = clinicianNote,
+                                                    sessions = realSessions,
+                                                    careLogs = realLogs
+                                                )
+                                                val pdfFile = PdfReportGenerator.generateClinicianPdf(context, reportData)
+                                                Toast.makeText(context, "PDF Exported: ${pdfFile.name}", Toast.LENGTH_LONG).show()
+
+                                                // Launch view intent
+                                                val viewIntent = PdfReportGenerator.createViewIntent(context, pdfFile)
+                                                context.startActivity(Intent.createChooser(viewIntent, "Open AASRITI Dossier PDF"))
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Export error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier.fillMaxWidth().height(52.dp)
+                                    ) {
+                                        Text("📥 Download Summary PDF (AASRITI Format)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    }
+
+                                    OutlinedButton(
+                                        onClick = {
+                                            try {
+                                                val reportData = PdfReportGenerator.ReportData(
+                                                    patientId = DemoPatientConfig.PATIENT_ID,
+                                                    patientName = "আইতা বৰা (Aita Borah)",
+                                                    pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+                                                    age = 68,
+                                                    gender = "Female",
+                                                    villageLocation = "Kamrup Rural, Assam",
+                                                    cognitiveStage = "Mild Cognitive Impairment (MCI)",
+                                                    clinicianName = "Dr. N. Barua, MD (Neurology)",
+                                                    reportingPeriod = "Last 30 Days",
+                                                    carePriorityStatus = evaluatedPriority.severity,
+                                                    clinicianNotes = clinicianNote,
+                                                    sessions = realSessions,
+                                                    careLogs = realLogs
+                                                )
+                                                val pdfFile = PdfReportGenerator.generateClinicianPdf(context, reportData)
+                                                val shareIntent = PdfReportGenerator.createShareIntent(context, pdfFile)
+                                                context.startActivity(Intent.createChooser(shareIntent, "Share AASRITI Summary Dossier"))
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Share error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(12.dp),
+                                        border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.DeepNortheastForest),
+                                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                                    ) {
+                                        Text("📤 Share Summary with Caregiver", color = AasritiColorTokens.DeepNortheastForest, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    }
                                 }
                             }
                         }

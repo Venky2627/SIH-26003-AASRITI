@@ -6,6 +6,7 @@ import com.sih26003.smritisetu.data.local.entities.CareLogEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
 import com.sih26003.smritisetu.demo.AasritiDemoData
 import com.sih26003.smritisetu.demo.DemoPatientConfig
+import com.sih26003.smritisetu.feature.doctor.PdfReportGenerator
 import com.sih26003.smritisetu.feature.games.framework.GameId
 import com.sih26003.smritisetu.feature.games.framework.PerformanceCollector
 import org.junit.Assert.*
@@ -339,6 +340,91 @@ class CoreEngineTests {
         val migration = MIGRATION_1_2
         assertEquals(1, migration.startVersion)
         assertEquals(2, migration.endVersion)
+    }
+
+    @Test
+    fun testPdfReportDataModelContract() {
+        val report = PdfReportGenerator.ReportData(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            patientName = "আইতা বৰা (Aita Borah)",
+            pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+            reportingPeriod = "Last 30 Days",
+            carePriorityStatus = "WATCH",
+            clinicianNotes = "Routine review in 4 weeks.",
+            sessions = listOf(
+                GameSessionEntity(
+                    patientId = DemoPatientConfig.PATIENT_ID,
+                    gameId = "FAMILY_TRIVIA",
+                    difficultyLevel = 2,
+                    durationMs = 15000L,
+                    accuracy = 0.95f,
+                    errors = 0,
+                    reactionTimeMs = 2100L,
+                    hesitationCount = 0,
+                    adaptationDecision = 3,
+                    completed = true
+                )
+            ),
+            careLogs = listOf(
+                CareLogEntity(
+                    patientId = DemoPatientConfig.PATIENT_ID,
+                    authorRole = "CAREGIVER",
+                    category = "MEDICINE",
+                    severity = "NORMAL",
+                    notes = "Morning medication taken."
+                )
+            )
+        )
+        assertEquals("aita_borah_01", report.patientId)
+        assertEquals("AS-KAM-0042", report.pseudonymCode)
+        assertEquals(1, report.sessions.size)
+        assertEquals(1, report.careLogs.size)
+        assertEquals("WATCH", report.carePriorityStatus)
+        assertTrue(report.clinicianNotes.isNotBlank())
+    }
+
+    @Test
+    fun testCareLogFallSeverityTriageMapping() {
+        val fallLog = CareLogEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "CAREGIVER",
+            category = "FALL",
+            severity = "PRIORITY",
+            notes = "Elder slipped near bed; uninjured."
+        )
+        assertEquals("FALL", fallLog.category)
+        assertEquals("PRIORITY", fallLog.severity)
+
+        val domainPatient = com.sih26003.smritisetu.domain.model.Patient(
+            id = DemoPatientConfig.PATIENT_ID,
+            pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+            displayName = "আইতা বৰা",
+            displaySubtitle = "৬৮ বছৰীয়া",
+            birthYear = 1958,
+            gender = "F",
+            villageLocation = "হাজো, কামৰূপ",
+            primaryLanguage = "as",
+            cognitiveStage = "Mild Cognitive Impairment (MCI)"
+        )
+
+        val domainLogs = listOf(
+            com.sih26003.smritisetu.domain.model.CareLog(
+                id = fallLog.id,
+                patientId = fallLog.patientId,
+                authorRole = fallLog.authorRole,
+                category = fallLog.category,
+                severity = fallLog.severity,
+                notes = fallLog.notes
+            )
+        )
+
+        val priority = com.sih26003.smritisetu.engine.priority.PriorityEngine.evaluateTodayPriority(
+            patient = domainPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = domainLogs
+        )
+        assertEquals("PRIORITY", priority.severity)
     }
 }
 
