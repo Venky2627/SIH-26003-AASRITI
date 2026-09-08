@@ -1,6 +1,7 @@
 package com.sih26003.smritisetu.data.repository
 
 import com.google.gson.Gson
+import com.sih26003.smritisetu.data.local.dao.CareLogDao
 import com.sih26003.smritisetu.data.local.dao.DoctorAccessDao
 import com.sih26003.smritisetu.data.local.dao.GameSessionDao
 import com.sih26003.smritisetu.data.local.dao.PatientDao
@@ -8,6 +9,7 @@ import com.sih26003.smritisetu.data.local.dao.RelationshipDao
 import com.sih26003.smritisetu.data.local.dao.ReminderDao
 import com.sih26003.smritisetu.data.local.dao.SyncQueueDao
 import com.sih26003.smritisetu.data.local.dao.UserDao
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
 import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
@@ -147,4 +149,27 @@ class DoctorAccessRepository(
 
     suspend fun revokeAccess(id: String) =
         doctorAccessDao.revokeAccess(id)
+}
+
+class CareLogRepository(
+    private val careLogDao: CareLogDao,
+    private val syncQueueDao: SyncQueueDao
+) {
+    fun getLogsForPatient(patientId: String): Flow<List<CareLogEntity>> =
+        careLogDao.getLogsForPatient(patientId)
+
+    suspend fun getRecentLogs(patientId: String, limit: Int = 10): List<CareLogEntity> =
+        careLogDao.getRecentLogsList(patientId, limit)
+
+    suspend fun saveLog(log: CareLogEntity) {
+        careLogDao.insertLog(log)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "care_logs",
+                recordId = log.id,
+                operation = "INSERT",
+                payloadJson = Gson().toJson(log)
+            )
+        )
+    }
 }

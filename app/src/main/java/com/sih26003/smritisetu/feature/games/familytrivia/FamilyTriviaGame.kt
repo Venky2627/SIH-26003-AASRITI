@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clip
+import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
 import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.feature.games.framework.BaseGameEngine
@@ -61,6 +63,7 @@ fun FamilyTriviaGameScreen(
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
+    val lastMetrics by engine.lastMetrics.collectAsState()
 
     // Real relationships from Room SQLite, with fallback if not yet configured
     val members = remember(engine.relationships) {
@@ -94,7 +97,7 @@ fun FamilyTriviaGameScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -107,13 +110,19 @@ fun FamilyTriviaGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                 shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "স্তৰ $difficulty (Level $difficulty)",
+                color = AasritiColorTokens.DeepNortheastForest,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         when (phase) {
@@ -121,7 +130,9 @@ fun FamilyTriviaGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -129,7 +140,7 @@ fun FamilyTriviaGameScreen(
                         "👨‍👩‍👧 পৰিয়ালৰ স্মৃতি (Family Trivia)",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -142,7 +153,7 @@ fun FamilyTriviaGameScreen(
                             else -> "ফটোখন চাই নিজে মনত পেলাওক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
@@ -155,13 +166,13 @@ fun FamilyTriviaGameScreen(
                                 engine.speakClue("তেখেত আপোনাৰ ${currentTarget.relationshipType}। চিনাক্ত কৰক।")
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("খেল আৰম্ভ কৰক (Start) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("খেল আৰম্ভ কৰক (Start) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
                 }
             }
@@ -175,8 +186,9 @@ fun FamilyTriviaGameScreen(
                     Box(
                         modifier = Modifier
                             .size(160.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(20.dp))
-                            .border(3.dp, Color(0xFFFFD700), RoundedCornerShape(20.dp)),
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(AasritiColorTokens.SoftCream)
+                            .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("👤", fontSize = 68.sp)
@@ -197,29 +209,29 @@ fun FamilyTriviaGameScreen(
                         promptTitle,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (difficulty < 5) {
-                        // Levels 1 to 4: Large Tactile Choices
+                        // Levels 1 to 4: Large Tactile Choices (>= 64dp touch target)
                         choices.forEach { choice ->
                             Button(
                                 onClick = {
                                     val isCorrect = (choice == currentTarget.name)
                                     engine.onAnswerAttempt(isCorrect)
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
+                                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                                 shape = RoundedCornerShape(14.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(64.dp)
                                     .padding(vertical = 4.dp)
-                                    .border(2.dp, Color(0xFF424242), RoundedCornerShape(14.dp))
+                                    .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(14.dp))
                             ) {
-                                Text(choice, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(choice, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                             }
                         }
                     } else {
@@ -230,21 +242,20 @@ fun FamilyTriviaGameScreen(
                                     level5Revealed = true
                                     engine.onAnswerAttempt(isCorrect = true)
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
+                                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                                 shape = RoundedCornerShape(16.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(68.dp)
-                                    .border(2.dp, Color(0xFF4CAF50), RoundedCornerShape(16.dp))
                             ) {
-                                Text("💡 মনত পৰিছে (I remember this person)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("💡 মনত পৰিছে (I remember this person)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                             }
                         } else {
                             Text(
                                 "তেখেত হৈছে: ${currentTarget.name} (${currentTarget.relationshipType})",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E676),
+                                color = AasritiColorTokens.DeepNortheastForest,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -256,7 +267,9 @@ fun FamilyTriviaGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -266,19 +279,19 @@ fun FamilyTriviaGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
                 }
             }
@@ -287,23 +300,85 @@ fun FamilyTriviaGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
+                    Text("Round Complete", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    lastMetrics?.let { metrics ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(AasritiColorTokens.WarmSunkenSurface)
+                                .padding(12.dp)
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    text = "প্ৰতিক্ৰিয়া সময়: ${metrics.reactionTimeMs} ms",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Text(
+                                    text = "দ্বিধা / অপেক্ষা (>3.5s): ${metrics.hesitationCount} বাৰ",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Text(
+                                    text = "ভুলৰ সংখ্যা: ${metrics.errors}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Text(
+                                    text = "সঠিকতা: ${(metrics.accuracy * 100).toInt()}%",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepNortheastForest
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    Text(
+                        "পৰৱৰ্তী পৰামৰ্শিত স্তৰ: স্তৰ $difficulty (Level $difficulty)",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("আকৌ খেলক (Play Next Round)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("আকৌ খেলক (Play Next Round)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = onBack,
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                        shape = RoundedCornerShape(14.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    ) {
+                        Text("ঘৰলৈ উভতি যাওক (Finish & Return)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
                 }
             }

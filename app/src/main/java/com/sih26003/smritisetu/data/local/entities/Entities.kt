@@ -163,3 +163,29 @@ data class SyncQueueEntity(
     val retryCount: Int = 0,
     val status: String = "PENDING" // "PENDING", "SYNCED", "FAILED"
 )
+
+/**
+ * Caregiver daily observational notes and incident logs. Persisted in Room SQLite.
+ */
+@Entity(
+    tableName = "care_logs",
+    foreignKeys = [
+        ForeignKey(
+            entity = PatientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["patientId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("patientId")]
+)
+data class CareLogEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val patientId: String,
+    val authorRole: String = "CAREGIVER",
+    val category: String, // "MEDICINE", "FALL", "APPETITE", "SLEEP", "CONFUSION", "GENERAL"
+    val severity: String, // "NORMAL", "WATCH", "PRIORITY", "URGENT"
+    val notes: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isSynced: Boolean = false
+)

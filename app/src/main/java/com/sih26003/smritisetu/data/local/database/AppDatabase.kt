@@ -11,6 +11,8 @@ import com.sih26003.smritisetu.data.local.dao.RelationshipDao
 import com.sih26003.smritisetu.data.local.dao.ReminderDao
 import com.sih26003.smritisetu.data.local.dao.SyncQueueDao
 import com.sih26003.smritisetu.data.local.dao.UserDao
+import com.sih26003.smritisetu.data.local.dao.CareLogDao
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
 import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
@@ -27,9 +29,10 @@ import com.sih26003.smritisetu.data.local.entities.UserEntity
         GameSessionEntity::class,
         ReminderEntity::class,
         DoctorAccessEntity::class,
-        SyncQueueEntity::class
+        SyncQueueEntity::class,
+        CareLogEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,6 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
     abstract fun doctorAccessDao(): DoctorAccessDao
     abstract fun syncQueueDao(): SyncQueueDao
+    abstract fun careLogDao(): CareLogDao
 
     companion object {
         @Volatile

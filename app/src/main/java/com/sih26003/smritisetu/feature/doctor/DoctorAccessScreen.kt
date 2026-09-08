@@ -304,110 +304,150 @@ fun DoctorAccessScreen(
                     }
                 }
 
-                // 7-Day Longitudinal Signal Bars (Computed dynamically from Room SQLite sessions via TrendEngine)
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(AasritiColorTokens.SoftCream)
-                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                            .padding(16.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "৭-দিনীয়া অনুদৈৰ্ঘ্য প্ৰতিক্ৰিয়াৰ সময় (7-Day Longitudinal Trend)",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            computedTrend.dailyPoints.forEach { pt ->
+                if (realSessions.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(AasritiColorTokens.SoftCream)
+                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("📊", fontSize = 40.sp)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "শেহতীয়া কোনো খেলৰ তথ্য উপলব্ধ নহয়।",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepCharcoal,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "No recent interaction data available.\n(ৰোগীয়ে খেল সম্পূৰ্ণ কৰাৰ পিছত প্ৰকৃত তথ্য ইয়াত প্ৰদৰ্শিত হ'ব।)",
+                                    fontSize = 13.sp,
+                                    color = AasritiColorTokens.WarmSlate,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 18.sp
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // 7-Day Longitudinal Signal Bars (Computed dynamically from Room SQLite sessions via TrendEngine)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(AasritiColorTokens.SoftCream)
+                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
+                                .padding(16.dp)
+                        ) {
+                            Column {
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
+                                    modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = pt.dayLabel,
-                                        fontSize = 13.sp,
-                                        color = AasritiColorTokens.DeepCharcoal,
-                                        modifier = Modifier.width(90.dp)
+                                        text = "৭-দিনীয়া অনুদৈৰ্ঘ্য প্ৰতিক্ৰিয়াৰ সময় (7-Day Trend)",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AasritiColorTokens.DeepCharcoal
                                     )
+                                    Text(
+                                        text = "${realSessions.size} সেশ্বন সংৰক্ষিত",
+                                        fontSize = 12.sp,
+                                        color = AasritiColorTokens.DeepNortheastForest,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
 
-                                    // Bar indicating response time
-                                    Box(
+                                computedTrend.dailyPoints.forEach { pt ->
+                                    Row(
                                         modifier = Modifier
-                                            .weight(1f)
-                                            .height(12.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(AasritiColorTokens.WarmSunkenSurface)
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        val fillFraction = (pt.reactionTimeMs / 3500f).coerceIn(0.1f, 1f)
+                                        Text(
+                                            text = pt.dayLabel,
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal,
+                                            modifier = Modifier.width(90.dp)
+                                        )
+
+                                        // Bar indicating response time
                                         Box(
                                             modifier = Modifier
-                                                .fillMaxHeight()
-                                                .fillMaxWidth(fillFraction)
+                                                .weight(1f)
+                                                .height(12.dp)
                                                 .clip(RoundedCornerShape(6.dp))
-                                                .background(
-                                                    if (pt.hesitationGaps > 2) AasritiColorTokens.WarmAmberWarning else AasritiColorTokens.DeepNortheastForest
+                                                .background(AasritiColorTokens.WarmSunkenSurface)
+                                        ) {
+                                            if (pt.reactionTimeMs > 0) {
+                                                val fillFraction = (pt.reactionTimeMs / 3500f).coerceIn(0.1f, 1f)
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .fillMaxWidth(fillFraction)
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(
+                                                        if (pt.hesitationGaps > 2) AasritiColorTokens.WarmAmberWarning else AasritiColorTokens.DeepNortheastForest
+                                                    )
                                                 )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.width(10.dp))
+
+                                        Text(
+                                            text = if (pt.reactionTimeMs > 0) "${pt.reactionTimeMs}ms" else "—",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (pt.reactionTimeMs > 0) AasritiColorTokens.WarmSlate else AasritiColorTokens.WarmSlate.copy(alpha = 0.5f),
+                                            modifier = Modifier.width(60.dp),
+                                            textAlign = TextAlign.End
                                         )
                                     }
-
-                                    Spacer(modifier = Modifier.width(10.dp))
-
-                                    Text(
-                                        text = "${pt.reactionTimeMs}ms",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = AasritiColorTokens.WarmSlate,
-                                        modifier = Modifier.width(60.dp),
-                                        textAlign = TextAlign.End
-                                    )
                                 }
                             }
                         }
                     }
-                }
 
-                // Explainable Triage Summary (Derived directly from TrendEngine computation)
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(AasritiColorTokens.SoftCream)
-                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
-                            .padding(16.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "ব্যখ্যামূলক সংকেত (Explainable Functional Signal):",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "• গড় প্ৰতিক্ৰিয়া সময়: ${computedTrend.averageReactionTimeMs} মিলিছেকেণ্ড (${if (computedTrend.averageReactionTimeMs < 3000) "স্থিৰ আৰু স্বাভাৱিক" else "কিছু ধীৰ"})।",
-                                fontSize = 13.sp,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Text(
-                                text = "• অনিশ্চয়তাৰ ব্যৱধান: ৭ দিনত সৰ্বমুঠ ${computedTrend.totalHesitationGaps} বাৰ ৩.৫ ছেকেণ্ডতকৈ অধিক সময়।",
-                                fontSize = 13.sp,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Text(
-                                text = "• দৈনন্দিন নিয়ম পালনৰ হাৰ: ${computedTrend.routineAdherencePercent}% (সুন্দৰ অগ্ৰগতি)।",
-                                fontSize = 13.sp,
-                                color = AasritiColorTokens.DeepNortheastForest,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    // Explainable Triage Summary (Derived directly from TrendEngine computation)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(AasritiColorTokens.SoftCream)
+                                .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
+                                .padding(16.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "ব্যখ্যামূলক সংকেত (Explainable Functional Signal):",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                computedTrend.explainableSummary.forEach { summaryLine ->
+                                    Text(
+                                        text = "• $summaryLine",
+                                        fontSize = 13.sp,
+                                        color = AasritiColorTokens.DeepCharcoal,
+                                        lineHeight = 18.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }

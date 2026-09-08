@@ -2,6 +2,7 @@ package com.sih26003.smritisetu
 
 import android.app.Application
 import com.sih26003.smritisetu.data.local.database.AppDatabase
+import com.sih26003.smritisetu.data.repository.CareLogRepository
 import com.sih26003.smritisetu.data.repository.DoctorAccessRepository
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
@@ -26,6 +27,8 @@ class SmritiSetuApplication : Application() {
         private set
     lateinit var doctorAccessRepository: DoctorAccessRepository
         private set
+    lateinit var careLogRepository: CareLogRepository
+        private set
 
     lateinit var decisionTreeEngine: DecisionTreeEngine
         private set
@@ -43,6 +46,7 @@ class SmritiSetuApplication : Application() {
         gameRepository = GameRepository(database.gameSessionDao(), database.syncQueueDao())
         reminderRepository = ReminderRepository(database.reminderDao(), database.syncQueueDao())
         doctorAccessRepository = DoctorAccessRepository(database.doctorAccessDao())
+        careLogRepository = CareLogRepository(database.careLogDao(), database.syncQueueDao())
 
         decisionTreeEngine = DecisionTreeEngine(this)
         voicePromptManager = VoicePromptManager(this)

@@ -133,3 +133,18 @@ interface SyncQueueDao {
     @Query("DELETE FROM sync_queue WHERE status = 'SYNCED'")
     suspend fun clearCompleted()
 }
+
+@Dao
+interface CareLogDao {
+    @Query("SELECT * FROM care_logs WHERE patientId = :patientId ORDER BY timestamp DESC")
+    fun getLogsForPatient(patientId: String): Flow<List<com.sih26003.smritisetu.data.local.entities.CareLogEntity>>
+
+    @Query("SELECT * FROM care_logs WHERE patientId = :patientId ORDER BY timestamp DESC LIMIT :limit")
+    suspend fun getRecentLogsList(patientId: String, limit: Int = 10): List<com.sih26003.smritisetu.data.local.entities.CareLogEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLog(log: com.sih26003.smritisetu.data.local.entities.CareLogEntity)
+
+    @Query("DELETE FROM care_logs WHERE id = :id")
+    suspend fun deleteLog(id: String)
+}

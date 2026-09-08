@@ -225,6 +225,7 @@ class MainActivity : ComponentActivity() {
                             patientRepository = app.patientRepository,
                             gameRepository = app.gameRepository,
                             doctorAccessRepository = app.doctorAccessRepository,
+                            careLogRepository = app.careLogRepository,
                             onOpenReminders = { patientId -> navController.navigate("reminders/$patientId") },
                             onLogout = { navController.navigate("role_select") }
                         )

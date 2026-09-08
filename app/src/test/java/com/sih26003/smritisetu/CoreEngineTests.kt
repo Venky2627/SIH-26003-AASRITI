@@ -243,4 +243,42 @@ class CoreEngineTests {
         )
         assertEquals("PRIORITY", fallPriority.severity)
     }
+
+    @Test
+    fun testTrendEngineEmptyStateNoSyntheticData() {
+        val trend = com.sih26003.smritisetu.engine.trend.TrendEngine.compute7DaySignals("AS-KAM-0042", emptyList())
+        assertEquals("AS-KAM-0042", trend.patientId)
+        assertEquals(0L, trend.averageReactionTimeMs)
+        assertEquals(0, trend.totalHesitationGaps)
+        assertEquals(0, trend.routineAdherencePercent)
+        assertTrue(trend.dailyPoints.isEmpty())
+        assertTrue(trend.explainableSummary.any { it.contains("No recent interaction data available") })
+    }
+
+    @Test
+    fun testCareLogPersistenceEntityToDomainMapping() {
+        val entity = com.sih26003.smritisetu.data.local.entities.CareLogEntity(
+            id = "log-test-1",
+            patientId = "AS-KAM-0042",
+            authorRole = "CAREGIVER",
+            category = "FALL",
+            severity = "PRIORITY",
+            notes = "Elder slipped near bed; uninjured.",
+            timestamp = System.currentTimeMillis()
+        )
+        val domainLog = com.sih26003.smritisetu.domain.model.CareLog(
+            id = entity.id,
+            patientId = entity.patientId,
+            authorRole = entity.authorRole,
+            category = entity.category,
+            severity = entity.severity,
+            notes = entity.notes,
+            timestamp = entity.timestamp
+        )
+        assertEquals(entity.id, domainLog.id)
+        assertEquals("FALL", domainLog.category)
+        assertEquals("PRIORITY", domainLog.severity)
+        assertEquals(entity.notes, domainLog.notes)
+    }
 }
+

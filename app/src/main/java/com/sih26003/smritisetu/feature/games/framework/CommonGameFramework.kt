@@ -171,6 +171,9 @@ abstract class BaseGameEngine(
     private val _roundCount = MutableStateFlow(1)
     val roundCount: StateFlow<Int> = _roundCount.asStateFlow()
 
+    private val _lastMetrics = MutableStateFlow<PerformanceMetrics?>(null)
+    val lastMetrics: StateFlow<PerformanceMetrics?> = _lastMetrics.asStateFlow()
+
     open fun startRound() {
         collector.startRound()
         _gamePhase.value = GamePhase.PLAYING
@@ -196,6 +199,7 @@ abstract class BaseGameEngine(
 
     fun finishRound(completed: Boolean = true) {
         val metrics = collector.computeMetrics(_currentDifficulty.value, completed, decisionTreeEngine)
+        _lastMetrics.value = metrics
 
         // ROOM IS KING: Commit session synchronously to local Room SQLite
         scope.launch(Dispatchers.IO) {

@@ -19,7 +19,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.sih26003.smritisetu.core.security.CryptoUtils
 import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
 import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
+import com.sih26003.smritisetu.data.repository.CareLogRepository
 import com.sih26003.smritisetu.data.repository.DoctorAccessRepository
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
@@ -48,6 +50,7 @@ fun CaregiverDashboardScreen(
     patientRepository: PatientRepository,
     gameRepository: GameRepository,
     doctorAccessRepository: DoctorAccessRepository,
+    careLogRepository: CareLogRepository,
     onOpenReminders: (String) -> Unit,
     onLogout: () -> Unit
 ) {
@@ -56,7 +59,7 @@ fun CaregiverDashboardScreen(
     val isAssamese = DemoStateHolder.currentLanguage == "as"
 
     val realSessions by gameRepository.getSessionsForPatient(patient.id).collectAsState(initial = emptyList())
-    val loggedIncidents = remember { mutableStateListOf<CareLog>() }
+    val realCareLogs by careLogRepository.getLogsForPatient(patient.id).collectAsState(initial = emptyList())
 
     val reminders = remember(DemoStateHolder.completedRoutineIds.size) {
         listOf(
@@ -81,7 +84,7 @@ fun CaregiverDashboardScreen(
         )
     }
 
-    val evaluatedPriority = remember(realSessions, loggedIncidents.size, DemoStateHolder.completedRoutineIds.size) {
+    val evaluatedPriority = remember(realSessions, realCareLogs, DemoStateHolder.completedRoutineIds.size) {
         val domainSessions = realSessions.map {
             GameSession(
                 id = it.id,
@@ -93,6 +96,17 @@ fun CaregiverDashboardScreen(
                 hesitationCount = it.hesitationCount,
                 errorCount = it.errors,
                 durationMs = it.durationMs,
+                timestamp = it.timestamp
+            )
+        }
+        val domainLogs = realCareLogs.map {
+            CareLog(
+                id = it.id,
+                patientId = it.patientId,
+                authorRole = it.authorRole,
+                category = it.category,
+                severity = it.severity,
+                notes = it.notes,
                 timestamp = it.timestamp
             )
         }
@@ -111,7 +125,7 @@ fun CaregiverDashboardScreen(
             patient = domainPatient,
             reminders = reminders,
             recentSessions = domainSessions,
-            recentLogs = loggedIncidents
+            recentLogs = domainLogs
         )
     }
 
@@ -461,7 +475,10 @@ fun CaregiverDashboardScreen(
             }
 
             // 7. Recent Logged Incident
-            DemoStateHolder.lastLoggedIncidentText?.let { incident ->
+            val latestIncident = realCareLogs.firstOrNull()?.let { "[${it.category}] ${it.notes}" }
+                ?: DemoStateHolder.lastLoggedIncidentText
+
+            latestIncident?.let { incident ->
                 item {
                     Box(
                         modifier = Modifier
@@ -557,15 +574,19 @@ fun CaregiverDashboardScreen(
                                     selectedCategory.contains("Medication") || selectedCategory.contains("ঔষধ") -> "MEDICINE"
                                     else -> "GENERAL"
                                 }
-                                val newLog = CareLog(
-                                    id = UUID.randomUUID().toString(),
-                                    patientId = patient.id,
-                                    authorRole = "CAREGIVER",
-                                    category = cat,
-                                    severity = if (cat == "FALL") "PRIORITY" else "NORMAL",
-                                    notes = noteInput
-                                )
-                                loggedIncidents.add(0, newLog)
+                                val sev = if (cat == "FALL") "PRIORITY" else "NORMAL"
+                                scope.launch {
+                                    careLogRepository.saveLog(
+                                        CareLogEntity(
+                                            patientId = patient.id,
+                                            authorRole = "CAREGIVER",
+                                            category = cat,
+                                            severity = sev,
+                                            notes = noteInput,
+                                            timestamp = System.currentTimeMillis()
+                                        )
+                                    )
+                                }
                                 showQuickLogDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest)
