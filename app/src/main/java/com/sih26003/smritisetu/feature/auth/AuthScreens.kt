@@ -388,8 +388,13 @@ fun PinAuthScreen(
     var enteredPin by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isNewSetup by remember { mutableStateOf(false) }
+    var failedAttempts by remember { mutableIntStateOf(0) }
+    var lockoutUntilTimestamp by remember { mutableLongStateOf(0L) }
     val scope = rememberCoroutineScope()
     val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val isLockedOut = remember(lockoutUntilTimestamp, enteredPin) {
+        System.currentTimeMillis() < lockoutUntilTimestamp
+    }
 
     LaunchedEffect(role) {
         val exists = userRepository.hasUser(role)
@@ -491,7 +496,16 @@ fun PinAuthScreen(
         // Submit Button
         Button(
             onClick = {
-                // Fictional SIH demo shortcut: "123456" always succeeds
+                if (isLockedOut) {
+                    errorMessage = if (isAssamese) {
+                        "অত্যধিক ভুল প্ৰচেষ্টা। সুৰক্ষাৰ বাবে ৫ মিনিট লক কৰা হৈছে।"
+                    } else {
+                        "Too many failed attempts. Locked out for 5 minutes per security policy."
+                    }
+                    return@Button
+                }
+
+                // SIH demo shortcut: "123456" always succeeds
                 if (enteredPin == "123456" || enteredPin.length == 6) {
                     val hash = CryptoUtils.hashPin(enteredPin)
                     scope.launch {
@@ -503,13 +517,30 @@ fun PinAuthScreen(
                                     name = if (role == "CAREGIVER") "মুখ্য যত্ন লওঁতা" else "পৰিদৰ্শক চিকিৎসক"
                                 )
                             )
+                            failedAttempts = 0
                             onSuccess()
                         } else {
                             val user = userRepository.authenticatePin(hash)
                             if (user != null || enteredPin == "123456") {
+                                failedAttempts = 0
                                 onSuccess()
                             } else {
-                                errorMessage = if (isAssamese) "পিনটো ভুল হৈছে। পুনৰ চেষ্টা কৰক।" else "Invalid PIN. Try again."
+                                failedAttempts++
+                                if (failedAttempts >= 5) {
+                                    lockoutUntilTimestamp = System.currentTimeMillis() + 5 * 60 * 1000L
+                                    errorMessage = if (isAssamese) {
+                                        "অত্যধিক ভুল প্ৰচেষ্টা (৫/৫)। সুৰক্ষাৰ বাবে ৫ মিনিট লক কৰা হৈছে।"
+                                    } else {
+                                        "Too many failed attempts (5/5). Locked out for 5 minutes."
+                                    }
+                                } else {
+                                    val remaining = 5 - failedAttempts
+                                    errorMessage = if (isAssamese) {
+                                        "পিনটো ভুল হৈছে। অৱশিষ্ট প্ৰচেষ্টা: $remaining"
+                                    } else {
+                                        "Invalid PIN. Remaining attempts: $remaining"
+                                    }
+                                }
                             }
                         }
                     }
@@ -517,17 +548,27 @@ fun PinAuthScreen(
                     errorMessage = if (isAssamese) "অনুগ্ৰহ কৰি ৬-অংকৰ পিন লিখক।" else "Please enter 6 digits."
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+            enabled = !isLockedOut,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isLockedOut) AasritiColorTokens.WarmSunkenSurface else AasritiColorTokens.DeepNortheastForest,
+                disabledContainerColor = AasritiColorTokens.WarmSunkenSurface
+            ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
         ) {
             Text(
-                text = if (isNewSetup) "পিন সংৰক্ষণ কৰক (Save PIN) ➔" else "প্ৰৱেশ কৰক (Enter) ➔",
+                text = if (isLockedOut) {
+                    if (isAssamese) "লক কৰা হৈছে (Locked)" else "Locked (5 min)"
+                } else if (isNewSetup) {
+                    "পিন সংৰক্ষণ কৰক (Save PIN) ➔"
+                } else {
+                    "প্ৰৱেশ কৰক (Enter) ➔"
+                },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.WarmIvory
+                color = if (isLockedOut) AasritiColorTokens.WarmSlate else AasritiColorTokens.WarmIvory
             )
         }
     }

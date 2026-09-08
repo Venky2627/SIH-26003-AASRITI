@@ -51,6 +51,7 @@ fun DoctorAccessScreen(
     val scope = rememberCoroutineScope()
     var accessCodeInput by remember { mutableStateOf("424242") }
     var approvedAccess by remember { mutableStateOf<Boolean>(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var clinicalNote by remember { mutableStateOf("Cognitive engagement stable; encourage daily reminiscence audio sessions.") }
     var noteSavedConfirmation by remember { mutableStateOf(false) }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
@@ -206,8 +207,17 @@ fun DoctorAccessScreen(
                                 val verify = doctorAccessRepository.verifyDoctorAccess(accessCodeInput)
                                 if (verify != null || accessCodeInput == "424242") {
                                     approvedAccess = true
+                                    errorMessage = null
+                                } else {
+                                    errorMessage = if (isAssamese) {
+                                        "ভুল বা ম্যাদ উকলি যোৱা প্ৰৱেশ সংকেত। যত্ন লওঁতাৰ পৰা নতুন ক'ড লওক।"
+                                    } else {
+                                        "Invalid or expired access code. Request a new code from caregiver."
+                                    }
                                 }
                             }
+                        } else {
+                            errorMessage = if (isAssamese) "অনুগ্ৰহ কৰি ৬-অংকৰ ক'ড লিখক।" else "Please enter a 6-digit code."
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
@@ -222,6 +232,27 @@ fun DoctorAccessScreen(
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.WarmIvory
                     )
+                }
+
+                errorMessage?.let { msg ->
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(AasritiColorTokens.DeepCranberryEmergency.copy(alpha = 0.12f))
+                            .border(1.dp, AasritiColorTokens.DeepCranberryEmergency, RoundedCornerShape(10.dp))
+                            .padding(10.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ $msg",
+                            color = AasritiColorTokens.DeepCranberryEmergency,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         } else {

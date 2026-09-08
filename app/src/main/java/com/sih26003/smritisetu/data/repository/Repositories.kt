@@ -130,8 +130,14 @@ class ReminderRepository(
 class DoctorAccessRepository(
     private val doctorAccessDao: DoctorAccessDao
 ) {
-    suspend fun verifyDoctorAccess(code: String): DoctorAccessEntity? =
-        doctorAccessDao.getActiveDoctorAccess(code)
+    /**
+     * Verifies that the doctor access code exists, is unrevoked, and has not expired (default: 72 hours per SECURITY.md).
+     */
+    suspend fun verifyDoctorAccess(code: String, maxAgeMs: Long = 72 * 3600 * 1000L): DoctorAccessEntity? {
+        val access = doctorAccessDao.getActiveDoctorAccess(code) ?: return null
+        val isExpired = (System.currentTimeMillis() - access.approvedAt) > maxAgeMs
+        return if (isExpired) null else access
+    }
 
     fun getAccessListForPatient(patientId: String): Flow<List<DoctorAccessEntity>> =
         doctorAccessDao.getAccessForPatient(patientId)

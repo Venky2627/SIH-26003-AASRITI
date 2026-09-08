@@ -19,12 +19,35 @@ class CoreEngineTests {
     }
 
     @Test
+    fun testSaltedPinHashingAndConstantTimeVerification() {
+        val pin = "876543"
+        val salt = "device_xyz_unique_salt"
+        val hash = CryptoUtils.hashPin(pin, salt)
+        assertNotNull(hash)
+        assertEquals(64, hash.length)
+
+        // Verifies with same salt
+        assertTrue(CryptoUtils.verifyPin(pin, hash, salt))
+
+        // Fails with wrong PIN
+        assertFalse(CryptoUtils.verifyPin("111111", hash, salt))
+
+        // Fails with wrong salt
+        assertFalse(CryptoUtils.verifyPin(pin, hash, "wrong_salt"))
+    }
+
+    @Test
     fun testSixDigitCodeGeneration() {
-        for (i in 1..20) {
+        val generated = mutableSetOf<String>()
+        for (i in 1..50) {
             val code = CryptoUtils.generateSixDigitCode()
             assertEquals(6, code.length)
             assertTrue(code.all { it.isDigit() })
+            assertTrue(code.toInt() in 100000..999999)
+            generated.add(code)
         }
+        // SecureRandom entropy check: >= 45 unique codes in 50 trials
+        assertTrue(generated.size >= 45)
     }
 
     @Test

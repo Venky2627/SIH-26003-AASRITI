@@ -182,9 +182,8 @@ def train_and_export():
             }
         }
 
-    # Save to assets directories
+    # Save to canonical Android assets directory
     target_dirs = [
-        "assets/ml",
         "app/src/main/assets/ml"
     ]
     for d in target_dirs:
