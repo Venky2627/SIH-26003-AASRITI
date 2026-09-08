@@ -1,5 +1,46 @@
 # AASRITI — CONTRIBUTING WORKFLOW
 
+# 🚨 MANDATORY PRE-FLIGHT SYNC GATE
+
+Every work session MUST begin with synchronization.
+
+**NO EXCEPTIONS.**
+
+Before ANY Antigravity instance or developer is allowed to:
+
+- Inspect implementation files
+- Analyze architecture
+- Make a plan
+- Edit code
+- Generate code
+- Run implementation commands
+- Commit changes
+
+it MUST synchronize with the latest remote repository state.
+
+### Pre-Flight Steps:
+
+1. Check repository status.
+2. Fetch latest remote state.
+3. Update local develop from origin/develop.
+4. Return to the assigned feature branch.
+5. Merge the latest develop into the feature branch.
+6. Verify the shared collaboration context exists (`PROJECT_CONTEXT.md`, `OWNERSHIP.md`, `CONTRIBUTING.md`).
+7. **ONLY THEN** begin analysis or implementation.
+
+Use this workflow:
+
+```bash
+git status
+git fetch origin
+git checkout develop
+git pull origin develop
+git checkout <YOUR_ASSIGNED_FEATURE_BRANCH>
+git merge develop
+```
+
+---
+
 ## Repository Branch Model
 
 - **`main`**:
