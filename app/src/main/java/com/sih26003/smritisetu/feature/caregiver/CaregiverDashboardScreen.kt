@@ -412,7 +412,7 @@ fun CaregiverDashboardScreen(
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
                                     shape = RoundedCornerShape(10.dp),
-                                    modifier = Modifier.height(44.dp)
+                                    modifier = Modifier.height(64.dp)
                                 ) {
                                     Text(
                                         text = "কৰণীয়: ${evaluatedPriority.suggestedAction}",
@@ -426,7 +426,7 @@ fun CaregiverDashboardScreen(
                                     onClick = { onOpenReminders(patient.id) },
                                     colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
                                     shape = RoundedCornerShape(10.dp),
-                                    modifier = Modifier.height(44.dp)
+                                    modifier = Modifier.height(64.dp)
                                 ) {
                                     Text(
                                         text = if (isAssamese) "⏰ সোঁৱৰণী নিৰ্ধাৰণ কৰক (Set Reminders)" else "⏰ Set Reminders",
@@ -445,7 +445,7 @@ fun CaregiverDashboardScreen(
                                         disabledContentColor = AasritiColorTokens.DeepNortheastForest
                                     ),
                                     shape = RoundedCornerShape(10.dp),
-                                    modifier = Modifier.height(44.dp)
+                                    modifier = Modifier.height(64.dp)
                                 ) {
                                     Text(
                                         text = if (isAssamese) "✓ সকলো নিয়ম সম্পন্ন (All Routines Done)" else "✓ All Routines Done",
