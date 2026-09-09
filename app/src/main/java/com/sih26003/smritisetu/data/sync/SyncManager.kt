@@ -7,8 +7,17 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Durable local SyncQueue processing and state management layer for AASRITI.
- * Processes pending local mutations from Room SQLite sync_queue table.
- * Pure local offline processor with zero external Firebase/cloud dependencies.
+ *
+ * PHASE 1 LOCAL QUEUE ACKNOWLEDGEMENT STUB:
+ * This class provides local queue buffer processing and state management for offline mutation tracking
+ * in Room SQLite (`sync_queue` table).
+ *
+ * It uses the existing Room schema status semantics ("PENDING" -> "SYNCED") to process and drain
+ * locally acknowledged mutation batches.
+ *
+ * NOTE: This processor operates 100% locally. It does NOT perform remote Firebase or cloud network
+ * synchronization, nor does it represent remote cloud delivery. Actual remote transport dispatching
+ * is reserved for Phase 2 integration adapters built on top of this local queue.
  */
 class SyncManager(
     private val syncQueueDao: SyncQueueDao
@@ -20,10 +29,15 @@ class SyncManager(
     val lastProcessedCount: StateFlow<Int> = _lastProcessedCount.asStateFlow()
 
     /**
-     * Drains pending items from the durable local sync queue in Room.
-     * Marks pending items as SYNCED in Room SQLite.
-     * Increments retry count on processing errors.
-     * Prunes completed items and returns total count of processed records.
+     * Processes pending mutation items in the local Room sync queue.
+     *
+     * In Phase 1 local offline mode:
+     * - Drains pending batch items from `SyncQueueDao.getPendingSyncBatches()`.
+     * - Marks items as locally acknowledged (`SYNCED`) in Room SQLite.
+     * - Increments retry counter if local DAO update encounters an error.
+     * - Prunes acknowledged items from the local queue and returns total processed count.
+     *
+     * This does NOT represent remote cloud synchronization.
      */
     suspend fun processPendingBatch(): Int {
         if (_isProcessing.value) return 0
@@ -34,16 +48,16 @@ class SyncManager(
             val pendingItems = syncQueueDao.getPendingSyncBatches()
             for (item in pendingItems) {
                 try {
-                    // Local durable state transition: mark item as SYNCED
+                    // Local queue state transition: mark item as locally acknowledged (SYNCED)
                     syncQueueDao.markSynced(item.id)
                     processedCount++
                 } catch (e: Exception) {
-                    // Increment retry counter on error
+                    // Increment retry counter on local processing error
                     syncQueueDao.incrementRetry(item.id)
                 }
             }
             if (processedCount > 0) {
-                // Prune successfully synced entries from queue
+                // Prune locally acknowledged items from queue
                 syncQueueDao.clearCompleted()
             }
             _lastProcessedCount.value = processedCount
@@ -54,7 +68,7 @@ class SyncManager(
     }
 
     /**
-     * Manually triggers cleanup of completed sync records from Room SQLite.
+     * Manually triggers cleanup of acknowledged sync records from Room SQLite.
      */
     suspend fun clearCompletedSyncs() {
         syncQueueDao.clearCompleted()
