@@ -77,38 +77,15 @@ fun CaregiverDashboardScreen(
         ?: remember { mutableStateOf(emptyList()) })
 
     val reminders = remember(roomReminders, DemoStateHolder.completedRoutineIds.size) {
-        if (roomReminders.isNotEmpty()) {
-            roomReminders.map { entity ->
-                Reminder(
-                    id = entity.id,
-                    patientId = entity.patientId,
-                    titleIndic = entity.title,
-                    titleEn = entity.title,
-                    timeLabel = "${entity.hour}:${if (entity.minute < 10) "0" else ""}${entity.minute}",
-                    isMedicine = entity.reminderType.equals("MEDICINE", ignoreCase = true),
-                    isCompleted = DemoStateHolder.completedRoutineIds.contains(entity.id)
-                )
-            }
-        } else {
-            listOf(
-                Reminder(
-                    id = "routine_1",
-                    patientId = patient.id,
-                    titleIndic = "পুৱাৰ ৰক্তচাপৰ ঔষধ",
-                    titleEn = "Morning Blood Pressure Medication",
-                    timeLabel = "08:00 AM",
-                    isMedicine = true,
-                    isCompleted = DemoStateHolder.completedRoutineIds.contains("routine_1")
-                ),
-                Reminder(
-                    id = "routine_2",
-                    patientId = patient.id,
-                    titleIndic = "কুহুমীয়া পানী আৰু প্ৰাতঃভ্ৰমণ",
-                    titleEn = "Hydration & Gentle Garden Walk",
-                    timeLabel = "09:30 AM",
-                    isMedicine = false,
-                    isCompleted = DemoStateHolder.completedRoutineIds.contains("routine_2")
-                )
+        roomReminders.map { entity ->
+            Reminder(
+                id = entity.id,
+                patientId = entity.patientId,
+                titleIndic = entity.title,
+                titleEn = entity.title,
+                timeLabel = "${entity.hour}:${if (entity.minute < 10) "0" else ""}${entity.minute}",
+                isMedicine = entity.reminderType.equals("MEDICINE", ignoreCase = true),
+                isCompleted = DemoStateHolder.completedRoutineIds.contains(entity.id)
             )
         }
     }
@@ -425,26 +402,57 @@ fun CaregiverDashboardScreen(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            Button(
-                                onClick = {
-                                    if (evaluatedPriority.suggestedAction.contains("medication", ignoreCase = true) ||
-                                        evaluatedPriority.titleIndic.contains("ঔষধ")
-                                    ) {
-                                        DemoStateHolder.toggleRoutine("routine_1")
-                                    } else {
-                                        DemoStateHolder.toggleRoutine("routine_2")
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.height(44.dp)
-                            ) {
-                                Text(
-                                    text = "কৰণীয়: ${evaluatedPriority.suggestedAction}",
-                                    color = AasritiColorTokens.WarmIvory,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            val pendingReminder = reminders.firstOrNull { it.isMedicine && !it.isCompleted }
+                                ?: reminders.firstOrNull { !it.isCompleted }
+
+                            if (pendingReminder != null) {
+                                Button(
+                                    onClick = {
+                                        DemoStateHolder.toggleRoutine(pendingReminder.id)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.height(44.dp)
+                                ) {
+                                    Text(
+                                        text = "কৰণীয়: ${evaluatedPriority.suggestedAction}",
+                                        color = AasritiColorTokens.WarmIvory,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else if (reminders.isEmpty()) {
+                                Button(
+                                    onClick = { onOpenReminders(patient.id) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = priorityColor),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.height(44.dp)
+                                ) {
+                                    Text(
+                                        text = if (isAssamese) "⏰ সোঁৱৰণী নিৰ্ধাৰণ কৰক (Set Reminders)" else "⏰ Set Reminders",
+                                        color = AasritiColorTokens.WarmIvory,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else {
+                                Button(
+                                    onClick = { /* All current reminders completed */ },
+                                    enabled = false,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.6f),
+                                        disabledContainerColor = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.2f),
+                                        disabledContentColor = AasritiColorTokens.DeepNortheastForest
+                                    ),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.height(44.dp)
+                                ) {
+                                    Text(
+                                        text = if (isAssamese) "✓ সকলো নিয়ম সম্পন্ন (All Routines Done)" else "✓ All Routines Done",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }
@@ -469,27 +477,45 @@ fun CaregiverDashboardScreen(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            val totalRoutines = if (reminders.isNotEmpty()) reminders.size else 2
-                            val doneCount = reminders.count { it.isCompleted }
-                            val percent = if (totalRoutines > 0) (doneCount * 100) / totalRoutines else 0
+                            if (reminders.isEmpty()) {
+                                Text(
+                                    text = if (isAssamese) "কোনো সক্ৰিয় সোঁৱৰণী নিৰ্ধাৰণ কৰা নাই (No active reminders scheduled)" else "No active reminders scheduled",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (isAssamese)
+                                        "দৈনন্দিন ঔষধ বা নিয়মৰ সময় নিৰ্ধাৰণ কৰিবলৈ তলৰ '⏰ সোঁৱৰণী' ব্যৱহাৰ কৰক।"
+                                    else
+                                        "Use '⏰ Reminders' below to schedule daily medicine and routine alarms.",
+                                    fontSize = 12.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                            } else {
+                                val totalRoutines = reminders.size
+                                val doneCount = reminders.count { it.isCompleted }
+                                val percent = if (totalRoutines > 0) (doneCount * 100) / totalRoutines else 0
 
-                            Text(
-                                text = "নিয়ম পালন: $doneCount / $totalRoutines সম্পন্ন ($percent%)",
-                                fontSize = 13.sp,
-                                color = AasritiColorTokens.WarmSlate
-                            )
+                                Text(
+                                    text = "নিয়ম পালন: $doneCount / $totalRoutines সম্পন্ন ($percent%)",
+                                    fontSize = 13.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
 
-                            LinearProgressIndicator(
-                                progress = { if (totalRoutines > 0) doneCount.toFloat() / totalRoutines.toFloat() else 0f },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(10.dp)
-                                    .clip(RoundedCornerShape(5.dp)),
-                                color = AasritiColorTokens.DeepNortheastForest,
-                                trackColor = AasritiColorTokens.WarmSunkenSurface
-                            )
+                                LinearProgressIndicator(
+                                    progress = { if (totalRoutines > 0) doneCount.toFloat() / totalRoutines.toFloat() else 0f },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(10.dp)
+                                        .clip(RoundedCornerShape(5.dp)),
+                                    color = AasritiColorTokens.DeepNortheastForest,
+                                    trackColor = AasritiColorTokens.WarmSunkenSurface
+                                )
+                            }
                         }
                     }
                 }
