@@ -353,4 +353,58 @@ class RepositoryPersistenceTest {
         assertEquals("care_logs", queue[0].tableName)
         assertEquals("INSERT", queue[0].operation)
     }
+
+    @Test
+    fun testGameRepositorySaveSessionIdempotencyAndReplace() = runBlocking {
+        val sessionId = "session_idempotent_01"
+        val initialSession = GameSessionEntity(
+            id = sessionId,
+            patientId = DemoPatientConfig.PATIENT_ID,
+            gameId = "PATTERN_RECOGNITION",
+            difficultyLevel = 1,
+            durationMs = 20000L,
+            accuracy = 0.5f,
+            errors = 2,
+            reactionTimeMs = 4000L,
+            hesitationCount = 3,
+            adaptationDecision = 1,
+            completed = true,
+            timestamp = 1000L
+        )
+        val updatedSession = GameSessionEntity(
+            id = sessionId,
+            patientId = DemoPatientConfig.PATIENT_ID,
+            gameId = "PATTERN_RECOGNITION",
+            difficultyLevel = 1,
+            durationMs = 22000L,
+            accuracy = 1.0f,
+            errors = 0,
+            reactionTimeMs = 1800L,
+            hesitationCount = 0,
+            adaptationDecision = 2,
+            completed = true,
+            timestamp = 2000L
+        )
+
+        // 1. Initial save
+        gameRepository.saveGameSession(initialSession)
+        var list = gameRepository.getAllSessionsList(DemoPatientConfig.PATIENT_ID)
+        assertEquals(1, list.size)
+        assertEquals(0.5f, list[0].accuracy)
+
+        // 2. Re-save same session ID (REPLACE idempotency)
+        gameRepository.saveGameSession(updatedSession)
+        list = gameRepository.getAllSessionsList(DemoPatientConfig.PATIENT_ID)
+
+        // Assert clean replacement: total count remains 1, updated session values present
+        assertEquals(1, list.size)
+        assertEquals(sessionId, list[0].id)
+        assertEquals(1.0f, list[0].accuracy)
+        assertEquals(2, list[0].adaptationDecision)
+
+        // Assert latest session returns updated session
+        val latest = gameRepository.getLatestSession(DemoPatientConfig.PATIENT_ID, "PATTERN_RECOGNITION")
+        assertNotNull(latest)
+        assertEquals(2, latest!!.adaptationDecision)
+    }
 }
