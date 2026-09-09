@@ -35,6 +35,22 @@ import java.util.Date
 import java.util.Locale
 
 /**
+ * Maps a DemoAshaRosterItem to its canonical Room SQLite patient ID, if one exists.
+ *
+ * Only the AASRITI canonical demo patient (Aita Borah, AS-KAM-0042) has a seeded
+ * Room PatientEntity record. Other ASHA roster entries are presentation-only demo
+ * items. Returning null is the honest and correct result for them — no Room records
+ * should be written or read under a fabricated ID.
+ */
+private fun resolveRoomPatientId(rosterItem: DemoAshaRosterItem): String? {
+    return if (rosterItem.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE) {
+        DemoPatientConfig.PATIENT_ID
+    } else {
+        null // No Room PatientEntity seeded for this demo roster entry.
+    }
+}
+
+/**
  * SCREEN_ASHA_PATIENT_ROSTER:
  * Community health worker multi-patient management roster.
  * Follows UI_SCREEN_SPEC.md:
@@ -61,8 +77,21 @@ fun AshaDashboardScreen(
     var activeHistoryPatient by remember { mutableStateOf<DemoAshaRosterItem?>(null) }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
 
-    val realCareLogs by (resolvedCareLogRepo?.getLogsForPatient(DemoPatientConfig.PATIENT_ID)?.collectAsState(initial = emptyList())
-        ?: remember { mutableStateOf(emptyList()) })
+    // Resolve the Room patient ID for the patient whose history dialog is open.
+    // This is computed per-open patient, not globally, to avoid cross-patient log leakage.
+    val historyPatientRoomId: String? = activeHistoryPatient?.let { resolveRoomPatientId(it) }
+
+    // Collect care logs ONLY for the patient whose history is being viewed, and ONLY
+    // when that patient has a resolved Room identity. For patients without a Room record,
+    // this produces an empty list (honest empty state) rather than leaking another
+    // patient's records.
+    val historyCareLogs: List<CareLogEntity> by (
+        if (historyPatientRoomId != null && resolvedCareLogRepo != null) {
+            resolvedCareLogRepo.getLogsForPatient(historyPatientRoomId).collectAsState(initial = emptyList())
+        } else {
+            remember(activeHistoryPatient) { mutableStateOf(emptyList()) }
+        }
+    )
 
     val filteredRoster = remember(selectedFilter) {
         when (selectedFilter) {
@@ -107,7 +136,7 @@ fun AshaDashboardScreen(
                     color = AasritiColorTokens.DeepCharcoal
                 )
                 Text(
-                    text = "কামৰূপ গ্ৰাম্য (Kamrup Rural) • ১৪ গৰাকী জ্যেষ্ঠ",
+                    text = "কামৰূপ গ্ৰাম্য (Kamrup Rural) • ${roster.size} গৰাকী জ্যেষ্ঠ",
                     fontSize = 12.sp,
                     color = AasritiColorTokens.WarmSlate
                 )
@@ -193,33 +222,45 @@ fun AshaDashboardScreen(
 
     // 4. Quick Visit Log Dialog (Room SQLite-backed)
     activeVisitLogPatient?.let { p ->
+        // Resolve the Room patient ID for the patient being visited.
+        // If no Room identity exists for this roster entry, the visit log is
+        // recorded in DemoStateHolder (in-memory presentation) only, and Room
+        // persistence is intentionally skipped to avoid fabricating patient records.
+        val visitPatientRoomId: String? = resolveRoomPatientId(p)
         AshaVisitLogDialog(
             patient = p,
+            hasRoomIdentity = visitPatientRoomId != null,
             isAssamese = isAssamese,
             onDismiss = { activeVisitLogPatient = null },
             onSave = { category, severity, bp, notes ->
                 DemoStateHolder.recordCaregiverQuickLog("ASHA Visit", "$bp - $notes")
-                scope.launch {
-                    resolvedCareLogRepo?.saveLog(
-                        CareLogEntity(
-                            patientId = DemoPatientConfig.PATIENT_ID,
-                            authorRole = "ASHA",
-                            category = category,
-                            severity = severity,
-                            notes = "ৰক্তচাপ (BP): $bp • $notes",
-                            timestamp = System.currentTimeMillis()
+                if (visitPatientRoomId != null) {
+                    scope.launch {
+                        resolvedCareLogRepo?.saveLog(
+                            CareLogEntity(
+                                patientId = visitPatientRoomId,
+                                authorRole = "ASHA",
+                                category = category,
+                                severity = severity,
+                                notes = "ৰক্তচাপ (BP): $bp • $notes",
+                                timestamp = System.currentTimeMillis()
+                            )
                         )
-                    )
+                    }
                 }
+                // If visitPatientRoomId == null: the in-memory log via DemoStateHolder
+                // above is the only record. No Room write occurs. This is correct and honest.
             }
         )
     }
 
     // 5. Patient Care & Visit History Dialog (Room SQLite-backed)
+    // historyCareLogs is already scoped to historyPatientRoomId — no cross-patient leakage.
     activeHistoryPatient?.let { p ->
         AshaPatientHistoryDialog(
             patient = p,
-            logs = realCareLogs,
+            logs = historyCareLogs,
+            hasRoomIdentity = historyPatientRoomId != null,
             isAssamese = isAssamese,
             onDismiss = { activeHistoryPatient = null }
         )
@@ -370,10 +411,15 @@ private fun AshaPatientCard(
 
 /**
  * Rapid Field Visit Log Dialog (<30s entry) persisting into Room SQLite.
+ *
+ * @param hasRoomIdentity Whether the selected patient has a canonical Room PatientEntity.
+ *   When false, the dialog still allows entry but the confirmation note informs that
+ *   the visit is recorded in the session only (no Room persistence).
  */
 @Composable
 private fun AshaVisitLogDialog(
     patient: DemoAshaRosterItem,
+    hasRoomIdentity: Boolean,
     isAssamese: Boolean,
     onDismiss: () -> Unit,
     onSave: (category: String, severity: String, bp: String, notes: String) -> Unit
@@ -567,11 +613,20 @@ private fun AshaVisitLogDialog(
                             fontWeight = FontWeight.Bold,
                             color = AasritiColorTokens.DeepNortheastForest
                         )
-                        Text(
-                            text = "Room SQLite local care_logs table updated",
-                            fontSize = 12.sp,
-                            color = AasritiColorTokens.WarmSlate
-                        )
+                        // Show an honest persistence note depending on Room identity availability.
+                        if (hasRoomIdentity) {
+                            Text(
+                                text = "Room SQLite local care_logs table updated",
+                                fontSize = 12.sp,
+                                color = AasritiColorTokens.WarmSlate
+                            )
+                        } else {
+                            Text(
+                                text = "Session log recorded (Room persistence unavailable for this patient)",
+                                fontSize = 12.sp,
+                                color = AasritiColorTokens.WarmSlate
+                            )
+                        }
                         Spacer(modifier = Modifier.height(14.dp))
                         Button(
                             onClick = onDismiss,
@@ -589,11 +644,16 @@ private fun AshaVisitLogDialog(
 
 /**
  * Dialog displaying Room SQLite-backed care logs and field observations for the elder.
+ *
+ * @param hasRoomIdentity Whether the patient has a seeded Room PatientEntity. When false,
+ *   logs will always be empty (no Room query is issued) and an honest unavailable state
+ *   is shown instead of a misleading empty-with-log-CTA.
  */
 @Composable
 private fun AshaPatientHistoryDialog(
     patient: DemoAshaRosterItem,
     logs: List<CareLogEntity>,
+    hasRoomIdentity: Boolean,
     isAssamese: Boolean,
     onDismiss: () -> Unit
 ) {
@@ -644,7 +704,33 @@ private fun AshaPatientHistoryDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if (logs.isEmpty()) {
+                if (!hasRoomIdentity) {
+                    // This demo roster patient has no seeded Room PatientEntity.
+                    // Show an honest unavailable state rather than a misleading empty state.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("🗂️", fontSize = 36.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "স্থায়ী ইতিহাস উপলব্ধ নহয়",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.DeepCharcoal
+                            )
+                            Text(
+                                text = "(History unavailable — patient not registered in this device)",
+                                fontSize = 12.sp,
+                                color = AasritiColorTokens.WarmSlate,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                } else if (logs.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
