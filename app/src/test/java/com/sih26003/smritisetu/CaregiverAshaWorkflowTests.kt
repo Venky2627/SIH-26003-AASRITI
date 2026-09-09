@@ -335,4 +335,100 @@ class CaregiverAshaWorkflowTests {
         assertTrue("No logs should be present when repository is empty", emptyLogs.isEmpty())
         assertEquals(0, emptyLogs.size)
     }
+
+    // =========================================================================
+    // 6. DAY 2 GOLDEN VERTICAL SLICE INTEGRATION TESTS
+    // =========================================================================
+
+    @Test
+    fun testGoldenSliceGameSessionTelemetryToCaregiverPriority() {
+        // Telemetry signals: Family Trivia session with 4 hesitation gaps
+        val realSession = com.sih26003.smritisetu.data.local.entities.GameSessionEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            gameId = "FAMILY_TRIVIA",
+            difficultyLevel = 2,
+            durationMs = 32000L,
+            accuracy = 0.75f,
+            errors = 1,
+            reactionTimeMs = 4200L,
+            hesitationCount = 4,
+            adaptationDecision = 1,
+            completed = true
+        )
+
+        // Convert to domain model as done in CaregiverDashboardScreen
+        val domainSession = com.sih26003.smritisetu.domain.model.GameSession(
+            id = realSession.id,
+            patientId = realSession.patientId,
+            gameId = realSession.gameId,
+            difficultyLevel = realSession.difficultyLevel,
+            accuracy = realSession.accuracy,
+            reactionTimeMs = realSession.reactionTimeMs,
+            hesitationCount = realSession.hesitationCount,
+            errorCount = realSession.errors,
+            durationMs = realSession.durationMs,
+            timestamp = realSession.timestamp
+        )
+
+        val priority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = listOf(domainSession),
+            recentLogs = emptyList()
+        )
+
+        assertEquals("WATCH", priority.severity)
+        assertEquals("Offer glass of water", priority.suggestedAction)
+        assertTrue("Title mentions hesitation", priority.titleEn.contains("hesitation"))
+    }
+
+    @Test
+    fun testGoldenSliceQuickLogPersistenceToCaregiverPriority() {
+        // Caregiver saves a rapid fall observation in Room
+        val fallLog = CareLogEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "CAREGIVER",
+            category = "FALL",
+            severity = "PRIORITY",
+            notes = "Mild slip near the bathroom door, assisted immediately."
+        )
+
+        val domainLog = CareLog(
+            id = fallLog.id,
+            patientId = fallLog.patientId,
+            authorRole = fallLog.authorRole,
+            category = fallLog.category,
+            severity = fallLog.severity,
+            notes = fallLog.notes,
+            timestamp = fallLog.timestamp
+        )
+
+        val priority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = listOf(domainLog)
+        )
+
+        assertEquals("PRIORITY", priority.severity)
+        assertEquals("Check balance & footwear", priority.suggestedAction)
+        assertTrue("Priority title indicates stumble alert", priority.titleEn.contains("Stumble"))
+    }
+
+    @Test
+    fun testGoldenSliceHonestEmptyStateWhenNoGameSessionsExist() {
+        val emptySessions: List<com.sih26003.smritisetu.data.local.entities.GameSessionEntity> = emptyList()
+        assertTrue("No game sessions should exist initially", emptySessions.isEmpty())
+
+        val domainPatient = testPatient
+        val priority = PriorityEngine.evaluateTodayPriority(
+            patient = domainPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+
+        assertEquals("NORMAL", priority.severity)
+        assertEquals("Continue daily routine", priority.suggestedAction)
+    }
 }

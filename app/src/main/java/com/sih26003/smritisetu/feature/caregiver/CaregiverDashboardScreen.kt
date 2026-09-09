@@ -561,7 +561,192 @@ fun CaregiverDashboardScreen(
                     }
                 }
 
-                // 5. Doctor Access Code Generator
+                // 5. Cognitive Activity & Interaction Telemetry Summary Card (Room SQLite GameSession Source of Truth)
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(AasritiColorTokens.SoftCream)
+                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
+                            .padding(16.dp)
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("🧠", fontSize = 18.sp)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (isAssamese) "খেল আৰু মানসিক সক্ৰিয়তা" else "Cognitive Game Activity",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AasritiColorTokens.DeepCharcoal
+                                    )
+                                }
+                                if (realSessions.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "${realSessions.size} খেল (Sessions)",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.DeepNortheastForest
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            if (realSessions.isEmpty()) {
+                                Text(
+                                    text = if (isAssamese) "কোনো খেলৰ তথ্য এতিয়ালৈকে উপলব্ধ নহয়" else "No game sessions recorded yet",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (isAssamese)
+                                        "আইতাই 'পৰিয়ালৰ স্মৃতি' (Family Trivia) বা আন খেলসমূহ খেলিলে ইয়াত প্ৰতিক্ৰিয়া সময় আৰু অগ্ৰগতি প্ৰদৰ্শিত হ'ব।"
+                                    else
+                                        "When elder plays cognitive games like Family Trivia, response latency and pacing metrics will appear here.",
+                                    fontSize = 12.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                            } else {
+                                val latestSession = realSessions.maxByOrNull { it.timestamp } ?: realSessions.first()
+                                val gameTitle = when (latestSession.gameId) {
+                                    "FAMILY_TRIVIA" -> if (isAssamese) "পৰিয়ালৰ স্মৃতি (Family Trivia)" else "Family Trivia"
+                                    "FLOWER_MATCH" -> if (isAssamese) "ফুলৰ খেল (Flower Match)" else "Flower Match"
+                                    "SEQUENCING" -> if (isAssamese) "দৈনন্দিন ক্ৰম (Sequencing)" else "Daily Sequencing"
+                                    "CATEGORISATION" -> if (isAssamese) "শ্ৰেণীবিভাজন (Categorisation)" else "Categorisation"
+                                    "VILLAGE_MARKET" -> if (isAssamese) "গাঁওৰ বজাৰ (Village Market)" else "Village Market"
+                                    "PATTERN_RECOGNITION" -> if (isAssamese) "আৰ্হি চিনাক্তকৰণ (Pattern Recognition)" else "Pattern Recognition"
+                                    "VOICE_CUE_CARD" -> if (isAssamese) "কণ্ঠ আৰু ছবি (Voice Cue Card)" else "Voice Cue Card"
+                                    else -> latestSession.gameId
+                                }
+
+                                Text(
+                                    text = "শেহতীয়া খেল: $gameTitle",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "সময়: ${formatTimestamp(latestSession.timestamp)} • স্থিতি: ${if (latestSession.completed) "সম্পন্ন (Completed)" else "অসমাপ্ত (Incomplete)"}",
+                                    fontSize = 12.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(AasritiColorTokens.WarmSunkenSurface)
+                                            .padding(10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(
+                                                text = "স্তৰ ${latestSession.difficultyLevel}",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AasritiColorTokens.DeepNortheastForest
+                                            )
+                                            Text(
+                                                text = "পৰৱৰ্তী: স্তৰ ${latestSession.adaptationDecision}",
+                                                fontSize = 10.sp,
+                                                color = AasritiColorTokens.WarmSlate
+                                            )
+                                        }
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(AasritiColorTokens.WarmSunkenSurface)
+                                            .padding(10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(
+                                                text = "${(latestSession.accuracy * 100).toInt()}%",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AasritiColorTokens.DeepCharcoal
+                                            )
+                                            Text(
+                                                text = "সঠিকতা (Accuracy)",
+                                                fontSize = 10.sp,
+                                                color = AasritiColorTokens.WarmSlate
+                                            )
+                                        }
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(AasritiColorTokens.WarmSunkenSurface)
+                                            .padding(10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(
+                                                text = "${latestSession.reactionTimeMs}ms",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = AasritiColorTokens.DeepCharcoal
+                                            )
+                                            Text(
+                                                text = "প্ৰতিক্ৰিয়া (Latency)",
+                                                fontSize = 10.sp,
+                                                color = AasritiColorTokens.WarmSlate
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (latestSession.hesitationCount > 0) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "⚠️ দ্বিধাবোধ বিৰতি (>3.5s): ${latestSession.hesitationCount} বাৰ পৰিলক্ষিত।",
+                                        fontSize = 12.sp,
+                                        color = AasritiColorTokens.WarmAmberWarning,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "এই তথ্য কেৱল দৈনন্দিন কাৰ্য্যক্ষমতাৰ পৰ্যবেক্ষণৰ বাবেহে, কোনো চিকিৎসা বা ৰোগ নিৰ্ণয় নহয়। (Functional interaction metrics only, not a clinical diagnosis)",
+                                fontSize = 10.sp,
+                                color = AasritiColorTokens.WarmSlate,
+                                lineHeight = 14.sp
+                            )
+                        }
+                    }
+                }
+
+                // 6. Doctor Access Code Generator
                 item {
                     Box(
                         modifier = Modifier
