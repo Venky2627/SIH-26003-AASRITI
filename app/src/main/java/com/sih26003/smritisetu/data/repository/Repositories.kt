@@ -122,10 +122,26 @@ class ReminderRepository(
     suspend fun toggleReminder(reminder: ReminderEntity, isEnabled: Boolean) {
         val updated = reminder.copy(isEnabled = isEnabled)
         reminderDao.updateReminder(updated)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "reminders",
+                recordId = updated.id,
+                operation = "UPDATE",
+                payloadJson = Gson().toJson(updated)
+            )
+        )
     }
 
     suspend fun deleteReminder(id: String) {
         reminderDao.deleteReminder(id)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "reminders",
+                recordId = id,
+                operation = "DELETE",
+                payloadJson = Gson().toJson(mapOf("id" to id))
+            )
+        )
     }
 }
 
