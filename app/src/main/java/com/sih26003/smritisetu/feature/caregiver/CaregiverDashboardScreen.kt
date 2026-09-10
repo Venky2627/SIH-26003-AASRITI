@@ -3,9 +3,11 @@ package com.sih26003.smritisetu.feature.caregiver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -185,7 +187,8 @@ fun CaregiverDashboardScreen(
                 onClick = onLogout,
                 colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                 shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder)
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.heightIn(min = 48.dp)
             ) {
                 Text("প্ৰস্থান (Logout)", color = AasritiColorTokens.WarmAmberWarning, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
@@ -209,6 +212,7 @@ fun CaregiverDashboardScreen(
                     .clip(RoundedCornerShape(9.dp))
                     .background(if (selectedTab == 0) AasritiColorTokens.DeepNortheastForest else Color.Transparent)
                     .clickable { selectedTab = 0 }
+                    .heightIn(min = 48.dp)
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -226,6 +230,7 @@ fun CaregiverDashboardScreen(
                     .clip(RoundedCornerShape(9.dp))
                     .background(if (selectedTab == 1) AasritiColorTokens.DeepNortheastForest else Color.Transparent)
                     .clickable { selectedTab = 1 }
+                    .heightIn(min = 48.dp)
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -792,9 +797,9 @@ fun CaregiverDashboardScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                                     shape = RoundedCornerShape(10.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
-                                    modifier = Modifier.height(44.dp)
+                                    modifier = Modifier.heightIn(min = 48.dp)
                                 ) {
-                                    Text("নতুন ক'ড সৃষ্টি কৰক", color = AasritiColorTokens.DeepCharcoal, fontSize = 13.sp)
+                                    Text("নতুন ক'ড সৃষ্টি কৰক", color = AasritiColorTokens.DeepCharcoal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                 }
 
                                 Text(
@@ -905,15 +910,19 @@ fun CaregiverDashboardScreen(
                     "FALL" -> realCareLogs.filter { it.category == "FALL" }
                     "APPETITE" -> realCareLogs.filter { it.category == "APPETITE" }
                     "SLEEP" -> realCareLogs.filter { it.category == "SLEEP" }
+                    "CONFUSION" -> realCareLogs.filter { it.category == "CONFUSION" }
+                    "GENERAL" -> realCareLogs.filter { it.category == "GENERAL" }
                     "ASHA" -> realCareLogs.filter { it.authorRole == "ASHA" }
                     else -> realCareLogs
                 }
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                // Filter chips row
+                // Horizontally scrollable filter chips row covering all categories
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     FilterChip(
@@ -930,7 +939,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "MEDICINE",
                         onClick = { historyFilterCategory = "MEDICINE" },
-                        label = { Text("ঔষধ") },
+                        label = { Text("💊 ঔষধ") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -941,7 +950,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "FALL",
                         onClick = { historyFilterCategory = "FALL" },
-                        label = { Text("পতন/উজুটি") },
+                        label = { Text("⚠️ পতন") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.DeepCranberryEmergency,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -950,9 +959,42 @@ fun CaregiverDashboardScreen(
                         )
                     )
                     FilterChip(
+                        selected = historyFilterCategory == "APPETITE",
+                        onClick = { historyFilterCategory = "APPETITE" },
+                        label = { Text("🍲 আহাৰ") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
+                            selectedLabelColor = AasritiColorTokens.WarmIvory,
+                            containerColor = AasritiColorTokens.SoftCream,
+                            labelColor = AasritiColorTokens.DeepCharcoal
+                        )
+                    )
+                    FilterChip(
+                        selected = historyFilterCategory == "SLEEP",
+                        onClick = { historyFilterCategory = "SLEEP" },
+                        label = { Text("🌙 টোপনি") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
+                            selectedLabelColor = AasritiColorTokens.WarmIvory,
+                            containerColor = AasritiColorTokens.SoftCream,
+                            labelColor = AasritiColorTokens.DeepCharcoal
+                        )
+                    )
+                    FilterChip(
+                        selected = historyFilterCategory == "CONFUSION",
+                        onClick = { historyFilterCategory = "CONFUSION" },
+                        label = { Text("❓ বিভ্ৰান্তি") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = AasritiColorTokens.WarmAmberWarning,
+                            selectedLabelColor = AasritiColorTokens.WarmIvory,
+                            containerColor = AasritiColorTokens.SoftCream,
+                            labelColor = AasritiColorTokens.DeepCharcoal
+                        )
+                    )
+                    FilterChip(
                         selected = historyFilterCategory == "ASHA",
                         onClick = { historyFilterCategory = "ASHA" },
-                        label = { Text("আশা পৰিদৰ্শন") },
+                        label = { Text("👩‍⚕️ আশা") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.MugaGold,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -1092,12 +1134,18 @@ fun CaregiverDashboardScreen(
                                                 if (isSelected) AasritiColorTokens.DeepNortheastForest
                                                 else AasritiColorTokens.SoftCream
                                             )
+                                            .border(
+                                                width = 1.dp,
+                                                color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
+                                                shape = RoundedCornerShape(9.dp)
+                                            )
                                             .clickable {
                                                 selectedCategoryKey = key
                                                 if (key == "FALL") selectedSeverity = "PRIORITY"
                                                 if (key == "CONFUSION") selectedSeverity = "WATCH"
                                             }
-                                            .padding(vertical = 8.dp, horizontal = 6.dp),
+                                            .heightIn(min = 44.dp)
+                                            .padding(vertical = 10.dp, horizontal = 6.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
@@ -1144,8 +1192,14 @@ fun CaregiverDashboardScreen(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(if (isSel) btnColor else AasritiColorTokens.SoftCream)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSel) btnColor else AasritiColorTokens.WarmStoneBorder,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                                     .clickable { selectedSeverity = sevKey }
-                                    .padding(vertical = 7.dp),
+                                    .heightIn(min = 44.dp)
+                                    .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -1170,6 +1224,12 @@ fun CaregiverDashboardScreen(
                         label = { Text("টোকা (Care Notes)") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = validationError != null,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = AasritiColorTokens.WarmIvory,
+                            unfocusedContainerColor = AasritiColorTokens.WarmIvory,
+                            focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                            unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder
+                        ),
                         supportingText = {
                             if (validationError != null) {
                                 Text(validationError ?: "", color = AasritiColorTokens.DeepCranberryEmergency)
@@ -1186,9 +1246,11 @@ fun CaregiverDashboardScreen(
                         Button(
                             onClick = { showQuickLogDialog = false },
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                            modifier = Modifier.heightIn(min = 52.dp)
                         ) {
-                            Text("বাতিল (Cancel)", color = AasritiColorTokens.DeepCharcoal)
+                            Text("বাতিল (Cancel)", color = AasritiColorTokens.DeepCharcoal, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
 
                         Button(
@@ -1214,9 +1276,10 @@ fun CaregiverDashboardScreen(
                                 showQuickLogDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.heightIn(min = 52.dp)
                         ) {
-                            Text("সংৰক্ষণ কৰক (Save)", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
+                            Text("সংৰক্ষণ কৰক (Save)", color = AasritiColorTokens.WarmIvory, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

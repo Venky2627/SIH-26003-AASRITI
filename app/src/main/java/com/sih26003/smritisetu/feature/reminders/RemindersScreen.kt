@@ -179,7 +179,7 @@ fun RemindersScreen(
                                     containerColor = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface,
                                     contentColor = if (isSelected) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal
                                 ),
-                                modifier = Modifier.weight(1f).heightIn(min = 44.dp)
+                                modifier = Modifier.weight(1f).heightIn(min = 48.dp)
                             ) {
                                 Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                             }
@@ -203,7 +203,7 @@ fun RemindersScreen(
                                     containerColor = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface,
                                     contentColor = if (isSelected) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal
                                 ),
-                                modifier = Modifier.weight(1f).heightIn(min = 44.dp)
+                                modifier = Modifier.weight(1f).heightIn(min = 48.dp)
                             ) {
                                 Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                             }
@@ -360,7 +360,7 @@ fun RemindersScreen(
             ) {
                 items(reminders.size) { index ->
                     val rem = reminders[index]
-                    val formattedTime = String.format("%02d:%02d", rem.hour, rem.minute)
+                    val formattedTime = String.format(java.util.Locale.US, "%02d:%02d", rem.hour, rem.minute)
                     val typeLabel = when (rem.reminderType) {
                         "MEDICINE" -> "💊 ঔষধ (Medicine)"
                         "HYDRATION" -> "🥛 পানী (Hydration)"

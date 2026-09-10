@@ -59,6 +59,7 @@ private fun resolveRoomPatientId(rosterItem: DemoAshaRosterItem): String? {
  * - Offline home visit logging dialog persisting into Room care_logs
  * - Recent observations and care history inspector
  */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun AshaDashboardScreen(
     onOpenPatientView: () -> Unit,
@@ -363,7 +364,7 @@ private fun AshaPatientCard(
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                     shape = RoundedCornerShape(10.dp),
                     border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
-                    modifier = Modifier.height(44.dp)
+                    modifier = Modifier.heightIn(min = 48.dp)
                 ) {
                     Text(
                         text = if (isAssamese) "ইতিহাস (History)" else "History",
@@ -379,7 +380,7 @@ private fun AshaPatientCard(
                     onClick = onLogVisit,
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.height(44.dp)
+                    modifier = Modifier.heightIn(min = 48.dp)
                 ) {
                     Text(
                         text = if (isAssamese) "+ পৰিদৰ্শন লিখক" else "+ Log Visit",
@@ -395,7 +396,7 @@ private fun AshaPatientCard(
                     onClick = onOpenCompanion,
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.WarmSunkenSurface),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.height(44.dp)
+                    modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp)
                 ) {
                     Text(
                         text = "➔",
@@ -461,7 +462,13 @@ private fun AshaVisitLogDialog(
                         value = bpValue,
                         onValueChange = { bpValue = it },
                         label = { Text("ৰক্তচাপ (Blood Pressure)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = AasritiColorTokens.WarmIvory,
+                            unfocusedContainerColor = AasritiColorTokens.WarmIvory,
+                            focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                            unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -493,11 +500,17 @@ private fun AshaVisitLogDialog(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(if (isSel) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.SoftCream)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSel) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                                     .clickable {
                                         selectedCategoryKey = catKey
                                         if (catKey == "FALL") selectedSeverity = "PRIORITY"
                                     }
-                                    .padding(vertical = 6.dp),
+                                    .heightIn(min = 44.dp)
+                                    .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -541,8 +554,14 @@ private fun AshaVisitLogDialog(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(if (isSel) btnColor else AasritiColorTokens.SoftCream)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSel) btnColor else AasritiColorTokens.WarmStoneBorder,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                                     .clickable { selectedSeverity = sevKey }
-                                    .padding(vertical = 6.dp),
+                                    .heightIn(min = 44.dp)
+                                    .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -567,6 +586,12 @@ private fun AshaVisitLogDialog(
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 3,
                         isError = validationError != null,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = AasritiColorTokens.WarmIvory,
+                            unfocusedContainerColor = AasritiColorTokens.WarmIvory,
+                            focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                            unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder
+                        ),
                         supportingText = {
                             if (validationError != null) {
                                 Text(validationError ?: "", color = AasritiColorTokens.DeepCranberryEmergency)
@@ -583,9 +608,11 @@ private fun AshaVisitLogDialog(
                         Button(
                             onClick = onDismiss,
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                            modifier = Modifier.heightIn(min = 52.dp)
                         ) {
-                            Text("বাতিল (Cancel)", color = AasritiColorTokens.DeepCharcoal)
+                            Text("বাতিল (Cancel)", color = AasritiColorTokens.DeepCharcoal, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
 
                         Button(
@@ -598,9 +625,10 @@ private fun AshaVisitLogDialog(
                                 isSubmitted = true
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.heightIn(min = 52.dp)
                         ) {
-                            Text("সংৰক্ষণ কৰক (Save)", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
+                            Text("সংৰক্ষণ কৰক (Save)", color = AasritiColorTokens.WarmIvory, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 } else {
@@ -675,7 +703,7 @@ private fun AshaPatientHistoryDialog(
                 ) {
                     Column {
                         Text(
-                            text = "পৰ্যবেক্ষণ ইতিহাস (Care History)",
+                            text = if (isAssamese) "পৰ্যবেক্ষণ ইতিহাস (Care History)" else "Care History",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = AasritiColorTokens.DeepCharcoal
@@ -843,7 +871,7 @@ private fun AshaPatientHistoryDialog(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                     shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 ) {
                     Text("বন্ধ কৰক (Close)", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
                 }

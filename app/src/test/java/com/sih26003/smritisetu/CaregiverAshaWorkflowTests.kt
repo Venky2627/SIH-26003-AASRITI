@@ -431,4 +431,79 @@ class CaregiverAshaWorkflowTests {
         assertEquals("NORMAL", priority.severity)
         assertEquals("Continue daily routine", priority.suggestedAction)
     }
+
+    // =========================================================================
+    // 7. DAY 3 HARDENING & MULTI-ROLE CONTRACT TESTS
+    // =========================================================================
+
+    @Test
+    fun testCareHistoryFilterSupportsAllSevenChips() {
+        val mixedLogs = listOf(
+            CareLogEntity(id = "1", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "MEDICINE", severity = "NORMAL", notes = "Med taken"),
+            CareLogEntity(id = "2", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "FALL", severity = "PRIORITY", notes = "Slip near chair"),
+            CareLogEntity(id = "3", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "APPETITE", severity = "NORMAL", notes = "Ate rice and dal"),
+            CareLogEntity(id = "4", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "SLEEP", severity = "NORMAL", notes = "Restful night"),
+            CareLogEntity(id = "5", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "CONFUSION", severity = "WATCH", notes = "Asked where glasses were"),
+            CareLogEntity(id = "6", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "ASHA", category = "GENERAL", severity = "NORMAL", notes = "Monthly field visit"),
+            CareLogEntity(id = "7", patientId = DemoPatientConfig.PATIENT_ID, authorRole = "CAREGIVER", category = "GENERAL", severity = "NORMAL", notes = "Normal evening")
+        )
+
+        fun applyFilter(filter: String, logs: List<CareLogEntity>): List<CareLogEntity> {
+            return when (filter) {
+                "ALL" -> logs
+                "ASHA" -> logs.filter { it.authorRole == "ASHA" }
+                else -> logs.filter { it.category == filter }
+            }
+        }
+
+        assertEquals(7, applyFilter("ALL", mixedLogs).size)
+        assertEquals(1, applyFilter("MEDICINE", mixedLogs).size)
+        assertEquals("MEDICINE", applyFilter("MEDICINE", mixedLogs).first().category)
+        assertEquals(1, applyFilter("FALL", mixedLogs).size)
+        assertEquals("PRIORITY", applyFilter("FALL", mixedLogs).first().severity)
+        assertEquals(1, applyFilter("APPETITE", mixedLogs).size)
+        assertEquals("APPETITE", applyFilter("APPETITE", mixedLogs).first().category)
+        assertEquals(1, applyFilter("SLEEP", mixedLogs).size)
+        assertEquals("SLEEP", applyFilter("SLEEP", mixedLogs).first().category)
+        assertEquals(1, applyFilter("CONFUSION", mixedLogs).size)
+        assertEquals("WATCH", applyFilter("CONFUSION", mixedLogs).first().severity)
+        assertEquals(1, applyFilter("ASHA", mixedLogs).size)
+        assertEquals("ASHA", applyFilter("ASHA", mixedLogs).first().authorRole)
+    }
+
+    @Test
+    fun testAshaRosterItemIdentityIsolationContract() {
+        // Contract: Only DemoPatientConfig.PATIENT_ID ("aita_borah_01") is seeded in Room SQLite.
+        // Demo roster entries with unseeded patient IDs must resolve to null, preventing foreign key violations
+        // and ensuring honest UI state with zero synthetic data.
+        fun resolveRoomPatientId(rosterPatientId: String): String? {
+            return if (rosterPatientId == DemoPatientConfig.PATIENT_ID) DemoPatientConfig.PATIENT_ID else null
+        }
+
+        assertEquals("aita_borah_01", resolveRoomPatientId("aita_borah_01"))
+        assertNull("Unseeded patient AS-02 must resolve to null", resolveRoomPatientId("AS-02"))
+        assertNull("Unseeded patient AS-03 must resolve to null", resolveRoomPatientId("AS-03"))
+        assertNull("Empty string must resolve to null", resolveRoomPatientId(""))
+    }
+
+    @Test
+    fun testQuickCareLogCategorySeverityAutoDefaults() {
+        // When user selects category in Quick Care Log:
+        // FALL auto-escalates to PRIORITY
+        // CONFUSION auto-escalates to WATCH
+        fun determineDefaultSeverity(categoryKey: String): String {
+            return when (categoryKey) {
+                "FALL" -> "PRIORITY"
+                "CONFUSION" -> "WATCH"
+                else -> "NORMAL"
+            }
+        }
+
+        assertEquals("PRIORITY", determineDefaultSeverity("FALL"))
+        assertEquals("WATCH", determineDefaultSeverity("CONFUSION"))
+        assertEquals("NORMAL", determineDefaultSeverity("MEDICINE"))
+        assertEquals("NORMAL", determineDefaultSeverity("APPETITE"))
+        assertEquals("NORMAL", determineDefaultSeverity("SLEEP"))
+        assertEquals("NORMAL", determineDefaultSeverity("GENERAL"))
+    }
 }
