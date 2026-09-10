@@ -35,14 +35,16 @@ class PatternRecognitionEngine(
     gameRepository: GameRepository,
     decisionTreeEngine: DecisionTreeEngine,
     voicePromptManager: VoicePromptManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    initialDifficulty: Int = 1
 ) : BaseGameEngine(
     gameId = GameId.PATTERN_RECOGNITION,
     patientId = patientId,
     gameRepository = gameRepository,
     decisionTreeEngine = decisionTreeEngine,
     voicePromptManager = voicePromptManager,
-    scope = scope
+    scope = scope,
+    initialDifficulty = initialDifficulty
 ) {
     override fun speakInstructions() {
         voicePromptManager.speakPromptKey(

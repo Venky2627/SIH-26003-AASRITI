@@ -12,6 +12,10 @@ import com.sih26003.smritisetu.engine.adaptive.AdaptiveResult
 import com.sih26003.smritisetu.engine.priority.PriorityEngine
 import com.sih26003.smritisetu.engine.trend.TrendEngine
 import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
+import android.util.Log
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * AASRITI Cognitive Insight Orchestrator.
@@ -25,6 +29,14 @@ import com.sih26003.smritisetu.ml.inference.DecisionTreeEngine
 class CognitiveInsightOrchestrator(
     private val decisionTreeEngine: DecisionTreeEngine
 ) {
+    // Telemetry flow for game sessions
+    private val telemetryFlow = MutableSharedFlow<GameSessionEntity>(replay = 0, extraBufferCapacity = 64)
+    val telemetry: SharedFlow<GameSessionEntity> = telemetryFlow.asSharedFlow()
+
+    suspend fun emitTelemetry(session: GameSessionEntity) {
+        telemetryFlow.emit(session)
+        Log.d("CognitiveInsightOrchestrator", "Telemetry emitted for session ${session.id}")
+    }
 
     /**
      * Evaluates a completed game session to calculate next difficulty level and non-punitive feedback.

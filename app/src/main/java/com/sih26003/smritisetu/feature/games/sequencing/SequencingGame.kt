@@ -42,14 +42,16 @@ class SequencingEngine(
     gameRepository: GameRepository,
     decisionTreeEngine: DecisionTreeEngine,
     voicePromptManager: VoicePromptManager,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    initialDifficulty: Int = 1
 ) : BaseGameEngine(
     gameId = GameId.SEQUENCING,
     patientId = patientId,
     gameRepository = gameRepository,
     decisionTreeEngine = decisionTreeEngine,
     voicePromptManager = voicePromptManager,
-    scope = scope
+    scope = scope,
+    initialDifficulty = initialDifficulty
 ) {
     override fun speakInstructions() {
         voicePromptManager.speakPromptKey(
@@ -68,6 +70,7 @@ fun SequencingGameScreen(
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
+    val lastMetrics by engine.lastMetrics.collectAsState()
 
     // Cultural activities: Assam Tea Making and Namghar Morning Routine
     val teaScenario = remember {
@@ -299,9 +302,54 @@ fun SequencingGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("Round Complete", fontSize = 13.sp, color = Color(0xFFBDBDBD))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    lastMetrics?.let { metrics ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF262626), RoundedCornerShape(12.dp))
+                                .padding(12.dp)
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    text = "প্ৰতিক্ৰিয়া সময়: ${metrics.reactionTimeMs} ms",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "দ্বিধা / অপেক্ষা (>3.5s): ${metrics.hesitationCount} বাৰ",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "ভুলৰ সংখ্যা: ${metrics.errors}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "সঠিকতা: ${(metrics.accuracy * 100).toInt()}%",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF00E676)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    Text(
+                        "পৰৱৰ্তী পৰামৰ্শিত স্তৰ: স্তৰ $difficulty (Level $difficulty)",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFFD700)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+
                     Button(
                         onClick = { engine.proceedToNextRound() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
@@ -310,7 +358,21 @@ fun SequencingGameScreen(
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("আকৌ খেলক (Play Again)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("আকৌ খেলক (Play Next Round)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = onBack,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
+                        shape = RoundedCornerShape(14.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF424242)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    ) {
+                        Text("ঘৰলৈ উভতি যাওক (Finish & Return)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
                     }
                 }
             }

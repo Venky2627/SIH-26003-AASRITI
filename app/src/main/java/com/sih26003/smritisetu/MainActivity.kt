@@ -291,31 +291,43 @@ class MainActivity : ComponentActivity() {
                     // GAME 2: Voice Cue Card
                     composable("game_voice_cue_card") {
                         val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
-                        val engine = remember(p.id) {
-                            VoiceCueCardEngine(
+                        var engine by remember(p.id) { mutableStateOf<VoiceCueCardEngine?>(null) }
+                        LaunchedEffect(p.id) {
+                            val latestSession = app.gameRepository.getLatestSession(p.id, GameId.VOICE_CUE_CARD.name)
+                            val diff = latestSession?.adaptationDecision?.coerceIn(1, 5) ?: 1
+                            engine = VoiceCueCardEngine(
                                 patientId = p.id,
                                 gameRepository = app.gameRepository,
                                 decisionTreeEngine = app.decisionTreeEngine,
                                 voicePromptManager = app.voicePromptManager,
-                                scope = scope
+                                scope = scope,
+                                initialDifficulty = diff
                             )
                         }
-                        VoiceCueCardGameScreen(engine = engine, onBack = { navController.popBackStack() })
+                        engine?.let { eng ->
+                            VoiceCueCardGameScreen(engine = eng, onBack = { navController.popBackStack() })
+                        }
                     }
 
                     // GAME 3: Sequencing
                     composable("game_sequencing") {
                         val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
-                        val engine = remember(p.id) {
-                            SequencingEngine(
+                        var engine by remember(p.id) { mutableStateOf<SequencingEngine?>(null) }
+                        LaunchedEffect(p.id) {
+                            val latestSession = app.gameRepository.getLatestSession(p.id, GameId.SEQUENCING.name)
+                            val diff = latestSession?.adaptationDecision?.coerceIn(1, 5) ?: 1
+                            engine = SequencingEngine(
                                 patientId = p.id,
                                 gameRepository = app.gameRepository,
                                 decisionTreeEngine = app.decisionTreeEngine,
                                 voicePromptManager = app.voicePromptManager,
-                                scope = scope
+                                scope = scope,
+                                initialDifficulty = diff
                             )
                         }
-                        SequencingGameScreen(engine = engine, onBack = { navController.popBackStack() })
+                        engine?.let { eng ->
+                            SequencingGameScreen(engine = eng, onBack = { navController.popBackStack() })
+                        }
                     }
 
                     // GAME 4: Categorisation
@@ -351,16 +363,22 @@ class MainActivity : ComponentActivity() {
                     // GAME 6: Pattern Recognition
                     composable("game_pattern_recognition") {
                         val p = activePatient ?: com.sih26003.smritisetu.demo.DemoPatientConfig.createCanonicalPatient()
-                        val engine = remember(p.id) {
-                            PatternRecognitionEngine(
+                        var engine by remember(p.id) { mutableStateOf<PatternRecognitionEngine?>(null) }
+                        LaunchedEffect(p.id) {
+                            val latestSession = app.gameRepository.getLatestSession(p.id, GameId.PATTERN_RECOGNITION.name)
+                            val diff = latestSession?.adaptationDecision?.coerceIn(1, 5) ?: 1
+                            engine = PatternRecognitionEngine(
                                 patientId = p.id,
                                 gameRepository = app.gameRepository,
                                 decisionTreeEngine = app.decisionTreeEngine,
                                 voicePromptManager = app.voicePromptManager,
-                                scope = scope
+                                scope = scope,
+                                initialDifficulty = diff
                             )
                         }
-                        PatternRecognitionGameScreen(engine = engine, onBack = { navController.popBackStack() })
+                        engine?.let { eng ->
+                            PatternRecognitionGameScreen(engine = eng, onBack = { navController.popBackStack() })
+                        }
                     }
                 }
             }
