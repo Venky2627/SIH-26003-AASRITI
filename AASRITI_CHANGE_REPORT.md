@@ -1,10 +1,10 @@
-# AASRITI CHANGE REPORT
+﻿# AASRITI CHANGE REPORT
 
 ## Final Sprint Status
 
 * **Date**: 2026-09-10
-* **Final develop SHA**: `d6f4cecd5f127ddd5eaecd3926195f62839177c2` (Code integration baseline: `8fe3417eca22d51f716d36804b323987291751cf`)
 * **Frozen main SHA**: `45b539886bf70f990a058cd0d6a6467f5e44b31e`
+* **Code Integration Baseline SHA**: `8fe3417eca22d51f716d36804b323987291751cf`
 * **Unit Test Result**: `BUILD SUCCESSFUL` (44/44 tests passed, 0 failures, 0 errors)
 * **APK Build Result**: `BUILD SUCCESSFUL` (`app-debug.apk`, 16.06 MB)
 
@@ -14,7 +14,7 @@
 
 ### Jasleen
 
-* **Branch**: `origin/feature/jasleen/backend-data-sync` (`e87c4b8`)
+* **Branch**: `origin/feature/jasleen/backend-data-sync` (head: `e87c4b802fc47aa8e5ec919da02f2e9c482c9675`)
 * **Commits Integrated**:
   * `5b132ad` feat(sync): implement durable local SyncQueue processing and state management layer
   * `2df0cb7` docs(sync): clarify Phase 1 local queue acknowledgement stub semantics in SyncManager
@@ -37,7 +37,7 @@
 
 ### Shravani
 
-* **Branch**: `origin/feature/shravani/frontend-caregiver-asha` (`2caa463`)
+* **Branch**: `origin/feature/shravani/frontend-caregiver-asha` (head: `2caa463be28c0e3e415e619fad08f7690a941a5b`)
 * **Commits Integrated**:
   * `9cabab4` feat(caregiver): establish caregiver and asha foundation
   * `b4571a9` fix(asha): preserve selected patient care log identity
@@ -51,7 +51,7 @@
   * `app/src/test/java/com/sih26003/smritisetu/CaregiverAshaWorkflowTests.kt`
 * **Functionality**:
   * Real `GameSession` telemetry and `CareLog` bindings in `CaregiverDashboardScreen`.
-  * Strict $\ge 64\text{dp}$ touch target ergonomics and priority triage actions.
+  * Strict >= 64dp touch target ergonomics and priority triage actions.
   * Multi-patient community tracking in `AshaDashboardScreen` preserving patient identities.
   * Daily routine reminder time validation and toggle controls in `RemindersScreen`.
   * Honest empty state enforcement without synthetic fallback generation.
@@ -61,31 +61,43 @@
 
 ---
 
-## Previously Integrated Work
+## Previously Integrated Work & Branch Relationships
+
+The repository distinguishes clearly between:
+* **`main` (`45b539886bf70f990a058cd0d6a6467f5e44b31e`)**: Frozen release baseline.
+* **`develop`**: Current active integration branch containing all integrated sprint work.
+
+Individual feature branch pointers on `origin` and their relationship to `develop`:
 
 ### Bhavya
-* **Branch**: `origin/feature/bhavya/frontend-cultural-games` (`45b5398`)
-* **Status**: Contained in `develop` (`git merge-base --is-ancestor` verified). Preserved untouched.
+* **Remote Branch**: `origin/feature/bhavya/frontend-cultural-games`
+* **Current Remote SHA**: `45b539886bf70f990a058cd0d6a6467f5e44b31e`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). All prior work is contained in `develop`. Preserved untouched.
 
 ### Kimaya
-* **Branch**: `origin/feature/kimaya/frontend-elder-doctor` (`45b5398`)
-* **Status**: Contained in `develop` (`git merge-base --is-ancestor` verified). Preserved untouched.
+* **Remote Branch**: `origin/feature/kimaya/frontend-elder-doctor`
+* **Current Remote SHA**: `45b539886bf70f990a058cd0d6a6467f5e44b31e`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). All prior work is contained in `develop`. Preserved untouched.
 
 ### Krishna
-* **Branch**: `origin/feature/krishna/frontend-games-framework` (`45b5398`)
-* **Status**: Contained in `develop` (`git merge-base --is-ancestor` verified). Preserved untouched.
+* **Remote Branch**: `origin/feature/krishna/frontend-games-framework`
+* **Current Remote SHA**: `45b539886bf70f990a058cd0d6a6467f5e44b31e`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). All prior work is contained in `develop`. Preserved untouched.
 
 ### Venkatesh Backend/Security
-* **Branch**: `origin/feature/venkatesh/backend-engines-security` (`45b5398`)
-* **Status**: Contained in `develop` (`git merge-base --is-ancestor` verified). Preserved untouched.
+* **Remote Branch**: `origin/feature/venkatesh/backend-engines-security`
+* **Current Remote SHA**: `45b539886bf70f990a058cd0d6a6467f5e44b31e`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). All prior work is contained in `develop`. Preserved untouched.
 
 ### Venkatesh UI Integration
-* **Branch**: `origin/feature/venkatesh/ui-integration` (`7c556d9`)
-* **Status**: Ancestor of `develop`, merged in baseline pass. Preserved untouched.
+* **Remote Branch**: `origin/feature/venkatesh/ui-integration`
+* **Current Remote SHA**: `7c556d980075781b569555d90fbe29becaff4df2`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). Merged during UI design baseline ingestion pass. Preserved untouched.
 
 ### Venkatesh Integration
-* **Branch**: `origin/feature/venkatesh/integration` (`f242457`)
-* **Status**: Ancestor of `develop`. Preserved untouched.
+* **Remote Branch**: `origin/feature/venkatesh/integration`
+* **Current Remote SHA**: `f24245718805d83e5ae614d4c795948afbe8f79a`
+* **Relationship to Develop**: Ancestor (`git merge-base --is-ancestor` verified). Merged during initial integration pass. Preserved untouched.
 
 ---
 
@@ -102,12 +114,12 @@
 | `git diff --check` | **PASS** | Zero whitespace or conflict marker errors |
 | Working Tree | **CLEAN** | `nothing to commit, working tree clean` |
 | `origin/main` SHA | **FROZEN** | `45b539886bf70f990a058cd0d6a6467f5e44b31e` |
-| `origin/develop` SHA | **SYNCED** | `8fe3417eca22d51f716d36804b323987291751cf` |
+| `origin/develop` Status | **SYNCHRONIZED** | Contains all integrated commits and documentation |
 
 ---
 
 ## GitHub PR Status
 
-* **Jasleen's PR #1**: The underlying commit changes targeting `develop` have been fully integrated into `develop` in commit `262f1d5`.
-* **Shravani's Work**: The underlying commit changes targeting `develop` have been fully integrated into `develop` in commit `8fe3417`.
+* **Jasleen's PR #1**: The underlying commit changes targeting `develop` have been fully integrated into `develop` in merge commit `262f1d5`.
+* **Shravani's Work**: The underlying commit changes targeting `develop` have been fully integrated into `develop` in merge commit `8fe3417`.
 * **`main` Release Status**: Strictly frozen at `45b5398`. No direct merges into `main` occurred.
