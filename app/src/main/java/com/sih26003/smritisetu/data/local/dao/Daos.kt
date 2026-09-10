@@ -5,8 +5,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.sih26003.smritisetu.data.local.entities.CareLogEntity
+import com.sih26003.smritisetu.data.local.entities.CarePlanEntity
 import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
+import com.sih26003.smritisetu.data.local.entities.MemoryItemEntity
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
 import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.data.local.entities.ReminderEntity
@@ -46,6 +49,9 @@ interface PatientDao {
     @Update
     suspend fun updatePatient(patient: PatientEntity)
 
+    @Query("UPDATE patients SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
+
     @Query("DELETE FROM patients WHERE id = :id")
     suspend fun deletePatient(id: String)
 }
@@ -60,6 +66,9 @@ interface RelationshipDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRelationship(relationship: RelationshipEntity)
+
+    @Query("UPDATE relationships SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
 
     @Query("DELETE FROM relationships WHERE id = :id")
     suspend fun deleteRelationship(id: String)
@@ -76,8 +85,20 @@ interface GameSessionDao {
     @Query("SELECT * FROM game_sessions WHERE patientId = :patientId ORDER BY timestamp DESC")
     suspend fun getAllSessionsList(patientId: String): List<GameSessionEntity>
 
+    @Query("SELECT * FROM game_sessions WHERE patientId = :patientId ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentSessions(patientId: String, limit: Int = 10): Flow<List<GameSessionEntity>>
+
+    @Query("SELECT COUNT(*) FROM game_sessions WHERE patientId = :patientId")
+    suspend fun getTotalSessionsCount(patientId: String): Int
+
+    @Query("SELECT * FROM game_sessions WHERE patientId = :patientId AND timestamp >= :sinceTimestamp ORDER BY timestamp DESC")
+    suspend fun getSessionsSince(patientId: String, sinceTimestamp: Long): List<GameSessionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: GameSessionEntity)
+
+    @Query("UPDATE game_sessions SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
 
     @Query("SELECT AVG(accuracy) FROM game_sessions WHERE patientId = :patientId")
     suspend fun getAverageAccuracy(patientId: String): Float?
@@ -96,6 +117,9 @@ interface ReminderDao {
 
     @Update
     suspend fun updateReminder(reminder: ReminderEntity)
+
+    @Query("UPDATE reminders SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
 
     @Query("DELETE FROM reminders WHERE id = :id")
     suspend fun deleteReminder(id: String)
@@ -121,6 +145,9 @@ interface SyncQueueDao {
     @Query("SELECT * FROM sync_queue WHERE status = 'PENDING' ORDER BY timestamp ASC LIMIT 25")
     suspend fun getPendingSyncBatches(): List<SyncQueueEntity>
 
+    @Query("SELECT COUNT(*) FROM sync_queue WHERE status = 'PENDING'")
+    suspend fun getPendingCount(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun enqueue(syncItem: SyncQueueEntity)
 
@@ -137,14 +164,68 @@ interface SyncQueueDao {
 @Dao
 interface CareLogDao {
     @Query("SELECT * FROM care_logs WHERE patientId = :patientId ORDER BY timestamp DESC")
-    fun getLogsForPatient(patientId: String): Flow<List<com.sih26003.smritisetu.data.local.entities.CareLogEntity>>
+    fun getLogsForPatient(patientId: String): Flow<List<CareLogEntity>>
 
     @Query("SELECT * FROM care_logs WHERE patientId = :patientId ORDER BY timestamp DESC LIMIT :limit")
-    suspend fun getRecentLogsList(patientId: String, limit: Int = 10): List<com.sih26003.smritisetu.data.local.entities.CareLogEntity>
+    suspend fun getRecentLogsList(patientId: String, limit: Int = 10): List<CareLogEntity>
+
+    @Query("SELECT * FROM care_logs WHERE patientId = :patientId AND timestamp >= :sinceTimestamp ORDER BY timestamp DESC")
+    suspend fun getLogsSince(patientId: String, sinceTimestamp: Long): List<CareLogEntity>
+
+    @Query("SELECT * FROM care_logs WHERE patientId = :patientId AND category = :category ORDER BY timestamp DESC")
+    suspend fun getLogsByCategory(patientId: String, category: String): List<CareLogEntity>
+
+    @Query("SELECT COUNT(*) FROM care_logs WHERE patientId = :patientId AND (severity = 'PRIORITY' OR severity = 'URGENT')")
+    suspend fun getUrgentLogsCount(patientId: String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLog(log: com.sih26003.smritisetu.data.local.entities.CareLogEntity)
+    suspend fun insertLog(log: CareLogEntity)
+
+    @Query("UPDATE care_logs SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
 
     @Query("DELETE FROM care_logs WHERE id = :id")
     suspend fun deleteLog(id: String)
+}
+
+@Dao
+interface CarePlanDao {
+    @Query("SELECT * FROM care_plans WHERE patientId = :patientId ORDER BY updatedAt DESC LIMIT 1")
+    fun getLatestCarePlanFlow(patientId: String): Flow<CarePlanEntity?>
+
+    @Query("SELECT * FROM care_plans WHERE patientId = :patientId ORDER BY updatedAt DESC LIMIT 1")
+    suspend fun getLatestCarePlan(patientId: String): CarePlanEntity?
+
+    @Query("SELECT * FROM care_plans WHERE patientId = :patientId ORDER BY updatedAt DESC")
+    fun getAllCarePlansForPatient(patientId: String): Flow<List<CarePlanEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCarePlan(carePlan: CarePlanEntity)
+
+    @Query("UPDATE care_plans SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
+
+    @Query("DELETE FROM care_plans WHERE id = :id")
+    suspend fun deleteCarePlan(id: String)
+}
+
+@Dao
+interface MemoryItemDao {
+    @Query("SELECT * FROM memory_items WHERE patientId = :patientId ORDER BY createdAt DESC")
+    fun getMemoriesForPatient(patientId: String): Flow<List<MemoryItemEntity>>
+
+    @Query("SELECT * FROM memory_items WHERE patientId = :patientId ORDER BY createdAt DESC")
+    suspend fun getMemoriesList(patientId: String): List<MemoryItemEntity>
+
+    @Query("SELECT * FROM memory_items WHERE id = :id LIMIT 1")
+    suspend fun getMemoryById(id: String): MemoryItemEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMemory(memory: MemoryItemEntity)
+
+    @Query("UPDATE memory_items SET isSynced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
+
+    @Query("DELETE FROM memory_items WHERE id = :id")
+    suspend fun deleteMemory(id: String)
 }

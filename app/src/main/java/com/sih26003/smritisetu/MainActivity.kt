@@ -228,6 +228,7 @@ class MainActivity : ComponentActivity() {
                             patientRepository = app.patientRepository,
                             gameRepository = app.gameRepository,
                             careLogRepository = app.careLogRepository,
+                            carePlanRepository = app.carePlanRepository,
                             onBack = { navController.popBackStack() }
                         )
                     }

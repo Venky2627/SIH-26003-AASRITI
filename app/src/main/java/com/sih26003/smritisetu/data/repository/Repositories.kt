@@ -2,16 +2,20 @@ package com.sih26003.smritisetu.data.repository
 
 import com.google.gson.Gson
 import com.sih26003.smritisetu.data.local.dao.CareLogDao
+import com.sih26003.smritisetu.data.local.dao.CarePlanDao
 import com.sih26003.smritisetu.data.local.dao.DoctorAccessDao
 import com.sih26003.smritisetu.data.local.dao.GameSessionDao
+import com.sih26003.smritisetu.data.local.dao.MemoryItemDao
 import com.sih26003.smritisetu.data.local.dao.PatientDao
 import com.sih26003.smritisetu.data.local.dao.RelationshipDao
 import com.sih26003.smritisetu.data.local.dao.ReminderDao
 import com.sih26003.smritisetu.data.local.dao.SyncQueueDao
 import com.sih26003.smritisetu.data.local.dao.UserDao
 import com.sih26003.smritisetu.data.local.entities.CareLogEntity
+import com.sih26003.smritisetu.data.local.entities.CarePlanEntity
 import com.sih26003.smritisetu.data.local.entities.DoctorAccessEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
+import com.sih26003.smritisetu.data.local.entities.MemoryItemEntity
 import com.sih26003.smritisetu.data.local.entities.PatientEntity
 import com.sih26003.smritisetu.data.local.entities.RelationshipEntity
 import com.sih26003.smritisetu.data.local.entities.ReminderEntity
@@ -95,6 +99,15 @@ class GameRepository(
 
     suspend fun getAverageAccuracy(patientId: String): Float =
         gameSessionDao.getAverageAccuracy(patientId) ?: 0.0f
+
+    fun getRecentSessions(patientId: String, limit: Int = 10): Flow<List<GameSessionEntity>> =
+        gameSessionDao.getRecentSessions(patientId, limit)
+
+    suspend fun getTotalSessionsCount(patientId: String): Int =
+        gameSessionDao.getTotalSessionsCount(patientId)
+
+    suspend fun getSessionsSince(patientId: String, sinceTimestamp: Long): List<GameSessionEntity> =
+        gameSessionDao.getSessionsSince(patientId, sinceTimestamp)
 }
 
 class ReminderRepository(
@@ -177,6 +190,15 @@ class CareLogRepository(
     suspend fun getRecentLogs(patientId: String, limit: Int = 10): List<CareLogEntity> =
         careLogDao.getRecentLogsList(patientId, limit)
 
+    suspend fun getLogsSince(patientId: String, sinceTimestamp: Long): List<CareLogEntity> =
+        careLogDao.getLogsSince(patientId, sinceTimestamp)
+
+    suspend fun getLogsByCategory(patientId: String, category: String): List<CareLogEntity> =
+        careLogDao.getLogsByCategory(patientId, category)
+
+    suspend fun getUrgentLogsCount(patientId: String): Int =
+        careLogDao.getUrgentLogsCount(patientId)
+
     suspend fun saveLog(log: CareLogEntity) {
         careLogDao.insertLog(log)
         syncQueueDao.enqueue(
@@ -185,6 +207,70 @@ class CareLogRepository(
                 recordId = log.id,
                 operation = "INSERT",
                 payloadJson = Gson().toJson(log)
+            )
+        )
+    }
+}
+
+class CarePlanRepository(
+    private val carePlanDao: CarePlanDao,
+    private val syncQueueDao: SyncQueueDao
+) {
+    fun getLatestCarePlan(patientId: String): Flow<CarePlanEntity?> =
+        carePlanDao.getLatestCarePlanFlow(patientId)
+
+    suspend fun getLatestCarePlanDirect(patientId: String): CarePlanEntity? =
+        carePlanDao.getLatestCarePlan(patientId)
+
+    fun getAllCarePlans(patientId: String): Flow<List<CarePlanEntity>> =
+        carePlanDao.getAllCarePlansForPatient(patientId)
+
+    suspend fun saveCarePlan(carePlan: CarePlanEntity) {
+        carePlanDao.insertCarePlan(carePlan)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "care_plans",
+                recordId = carePlan.id,
+                operation = "INSERT",
+                payloadJson = Gson().toJson(carePlan)
+            )
+        )
+    }
+}
+
+class MemoryRepository(
+    private val memoryItemDao: MemoryItemDao,
+    private val syncQueueDao: SyncQueueDao
+) {
+    fun getMemories(patientId: String): Flow<List<MemoryItemEntity>> =
+        memoryItemDao.getMemoriesForPatient(patientId)
+
+    suspend fun getMemoriesList(patientId: String): List<MemoryItemEntity> =
+        memoryItemDao.getMemoriesList(patientId)
+
+    suspend fun getMemoryById(id: String): MemoryItemEntity? =
+        memoryItemDao.getMemoryById(id)
+
+    suspend fun saveMemory(memory: MemoryItemEntity) {
+        memoryItemDao.insertMemory(memory)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "memory_items",
+                recordId = memory.id,
+                operation = "INSERT",
+                payloadJson = Gson().toJson(memory)
+            )
+        )
+    }
+
+    suspend fun deleteMemory(id: String) {
+        memoryItemDao.deleteMemory(id)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "memory_items",
+                recordId = id,
+                operation = "DELETE",
+                payloadJson = Gson().toJson(mapOf("id" to id))
             )
         )
     }

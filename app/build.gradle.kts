@@ -76,6 +76,10 @@ dependencies {
     // JSON Parser for Decision Tree ML & Language Packs
     implementation(libs.google.gson)
 
+    // Firebase (Messenger / Optional sync only)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore.ktx)
+
     // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

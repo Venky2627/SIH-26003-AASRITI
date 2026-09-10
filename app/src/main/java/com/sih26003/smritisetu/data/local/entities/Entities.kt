@@ -189,3 +189,63 @@ data class CareLogEntity(
     val timestamp: Long = System.currentTimeMillis(),
     val isSynced: Boolean = false
 )
+
+/**
+ * Doctor clinical guidance and care plans. Persisted in Room SQLite.
+ */
+@Entity(
+    tableName = "care_plans",
+    foreignKeys = [
+        ForeignKey(
+            entity = PatientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["patientId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("patientId")]
+)
+data class CarePlanEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val patientId: String,
+    val doctorId: String = "",
+    val doctorName: String = "",
+    val clinicalStatus: String = "STABLE", // "STABLE", "MONITORING", "REVIEW_REQUIRED"
+    val reviewScheduleWeeks: Int = 4,
+    val guidanceNotes: String,
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isSynced: Boolean = false
+)
+
+/**
+ * Autobiographical memories and family reminiscence items for Memory Garden.
+ * Stored locally in app-private storage and Room SQLite.
+ */
+@Entity(
+    tableName = "memory_items",
+    foreignKeys = [
+        ForeignKey(
+            entity = PatientEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["patientId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("patientId")]
+)
+data class MemoryItemEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val patientId: String,
+    val titleIndic: String,
+    val titleEn: String,
+    val locationTag: String = "",
+    val yearTag: String = "",
+    val storyIndic: String,
+    val storyEn: String,
+    val relativeNarrator: String = "",
+    val photoPath: String? = null,
+    val audioDurationSec: Int = 18,
+    val audioClipPath: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val isSynced: Boolean = false
+)

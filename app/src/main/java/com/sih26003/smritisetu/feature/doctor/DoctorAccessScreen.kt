@@ -23,8 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sih26003.smritisetu.core.ui.theme.AasritiColorTokens
 import com.sih26003.smritisetu.data.local.entities.CareLogEntity
+import com.sih26003.smritisetu.data.local.entities.CarePlanEntity
 import com.sih26003.smritisetu.data.local.entities.GameSessionEntity
 import com.sih26003.smritisetu.data.repository.CareLogRepository
+import com.sih26003.smritisetu.data.repository.CarePlanRepository
 import com.sih26003.smritisetu.data.repository.DoctorAccessRepository
 import com.sih26003.smritisetu.data.repository.GameRepository
 import com.sih26003.smritisetu.data.repository.PatientRepository
@@ -56,6 +58,7 @@ fun DoctorAccessScreen(
     patientRepository: PatientRepository,
     gameRepository: GameRepository,
     careLogRepository: CareLogRepository? = null,
+    carePlanRepository: CarePlanRepository? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -72,6 +75,16 @@ fun DoctorAccessScreen(
     val realSessions by gameRepository.getSessionsForPatient(patientId).collectAsState(initial = emptyList())
     val realLogs by (careLogRepository?.getLogsForPatient(patientId) ?: kotlinx.coroutines.flow.flowOf(emptyList()))
         .collectAsState(initial = emptyList())
+    val existingCarePlan by (carePlanRepository?.getLatestCarePlan(patientId) ?: kotlinx.coroutines.flow.flowOf(null))
+        .collectAsState(initial = null)
+
+    LaunchedEffect(existingCarePlan) {
+        existingCarePlan?.let {
+            if (it.guidanceNotes.isNotBlank()) {
+                clinicianNote = it.guidanceNotes
+            }
+        }
+    }
 
     val computedTrend = remember(realSessions) {
         val domainSessions = realSessions.map {
@@ -743,7 +756,19 @@ fun DoctorAccessScreen(
                                     Button(
                                         onClick = {
                                             noteSavedConfirmation = true
-                                            Toast.makeText(context, "Clinician note saved locally.", Toast.LENGTH_SHORT).show()
+                                            scope.launch {
+                                                carePlanRepository?.saveCarePlan(
+                                                    CarePlanEntity(
+                                                        patientId = patientId,
+                                                        doctorId = "doc_kamrup_01",
+                                                        doctorName = "Dr. S. Sharma",
+                                                        clinicalStatus = "STABLE",
+                                                        reviewScheduleWeeks = 4,
+                                                        guidanceNotes = clinicianNote
+                                                    )
+                                                )
+                                            }
+                                            Toast.makeText(context, "Clinician guidance saved to Room SQLite.", Toast.LENGTH_SHORT).show()
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                                         shape = RoundedCornerShape(10.dp),
