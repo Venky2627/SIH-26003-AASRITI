@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-surface": "#2a170f", "secondary": "#865304", "surface-container-low": "#fff1ec", "surface-dim": "#f6d2c5", "on-surface-variant": "#574144", "tertiary-fixed-dim": "#baccb2", "on-tertiary-fixed": "#111f0e", "surface-variant": "#ffdbcd", "inverse-primary": "#ffb2bb", "on-secondary-container": "#764800", "on-secondary-fixed": "#2b1700", "on-tertiary-container": "#94a58d", "surface-container": "#ffe9e2", "on-primary-fixed-variant": "#891836", "on-primary-container": "#fd728b", "on-background": "#2a170f", "inverse-on-surface": "#ffede7", "surface": "#fff8f6", "on-error-container": "#93000a", "error": "#ba1a1a", "outline-variant": "#ddbfc2", "background": "#fff8f6", "surface-container-highest": "#ffdbcd", "primary-fixed": "#ffd9dd", "surface-container-lowest": "#ffffff", "primary": "#4b0016", "error-container": "#ffdad6", "tertiary": "#172514", "secondary-fixed": "#ffddb9", "on-error": "#ffffff", "surface-container-high": "#ffe2d8", "outline": "#8a7173", "on-primary-fixed": "#400012", "primary-container": "#720227", "on-tertiary-fixed-variant": "#3c4b37", "secondary-container": "#fdb967", "surface-bright": "#fff8f6", "on-secondary-fixed-variant": "#663e00", "surface-tint": "#a9324c", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "primary-fixed-dim": "#ffb2bb", "tertiary-container": "#2c3b28", "secondary-fixed-dim": "#fdb967", "tertiary-fixed": "#d6e8cd", "inverse-surface": "#412b22", "on-secondary": "#ffffff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-lg": "1.5rem", "margin-tablet": "2.5rem", "margin-desktop": "4rem", "margin-mobile": "1.25rem", "space-sm": "0.75rem", "space-md": "1rem", "space-xs": "0.5rem", "space-xl": "2rem", "space-3xl": "4rem", "space-xxs": "0.25rem", "gutter-mobile": "1rem", "space-2xl": "3rem", "gutter-desktop": "2rem", "gutter-tablet": "1.5rem" }, fontFamily: { "headline-md": ["Literata"], "label-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Literata"], "body-sm": ["Literata"], "body-lg": ["Literata"], "display-lg-mobile": ["Literata"], "body-md": ["Literata"], "headline-lg": ["Literata"], "label-sm": ["Plus Jakarta Sans"], "title-lg": ["Literata"], "headline-sm": ["Literata"], "title-md": ["Plus Jakarta Sans"], "display-lg": ["Literata"] }, fontSize: { "headline-md": ["24px", { "lineHeight": "34px", "fontWeight": "500" }], "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.03em", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "22px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "36px", "fontWeight": "600" }], "body-sm": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "400" }], "display-lg-mobile": ["30px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "headline-lg": ["32px", { "lineHeight": "44px", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "700" }], "title-lg": ["22px", { "lineHeight": "30px", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "30px", "fontWeight": "500" }], "title-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#fff8f6;color:#2a170f;-webkit-tap-highlight-color:transparent;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <script src="../js/store.js"></script>
+<script src="../js/nav.js"></script>
+</head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col"><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_4px_16px_-2px_rgba(43,24,16,0.06)] pt-safe"><div class="h-20 px-space-md flex flex-col justify-center gap-space-xxs"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary-container shadow-[0_2px_6px_-1px_rgba(43,24,16,0.08)]"><span class="material-symbols-outlined text-[22px]">cyclone</span></div><div><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight leading-none block">AASRITI</span><span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-widest leading-none">Care Companion</span></div></div><div class="flex items-center gap-space-xs"><button class="h-9 px-space-xs rounded-full bg-surface-container-high flex items-center gap-space-xxs text-on-surface shadow-[inset_0_1px_2px_rgba(43,24,16,0.08)]" type="button"><span class="material-symbols-outlined text-secondary text-[18px]">face_4</span><span class="font-label-sm text-label-sm">Aita (Mother)</span><span class="material-symbols-outlined text-outline text-[16px]">expand_more</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_2px_6px_-1px_rgba(43,24,16,0.12)]" src="https://lh3.googleusercontent.com/aida/AEtjO1WapgUzswLNTCBP1iZ_cglXt3z5v1LGhKfJvNpMnaJjU44sLtdH93ZR6Bp5WE2ToCJZj2_BJT-LQbCiVopuhkNB_AL7jsVXvxG2jUPD5oXOBAbo6_uVWDTBIohVTEYW50B8wATumMzzFc-TclX-9XUDgcOm35H3tDinmm9B7JlxedDS_z9r38S9ED1uHBmDE-ooSNLFb7l1MH8P6U5UIUQu2DQgXzbFrUazxs5JRaTMMO9KqbL16vEYRNJ7AARt_g2YZHVToyd3cQ"></div></div><div class="flex items-center justify-between px-space-xxs"><h1 class="font-title-lg text-title-lg text-on-surface tracking-tight truncate">Daily Log</h1><div class="inline-flex items-center gap-1.5 px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed shadow-[0_1px_4px_rgba(43,24,16,0.05)]"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span><span class="font-label-sm text-[11px]">Saved Locally</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-20 pb-24 bg-surface px-margin-mobile"><div class="flex flex-col w-full pb-8">
+<div class="flex items-center justify-between py-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight">Quick Care Log</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">1-tap mood &amp; care log</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] shadow-sm">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Today
+    </span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-xxs mb-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">sentiment_satisfied</span>
+<label class="font-title-md text-title-md text-on-surface">Mood</label>
+</div>
+<div aria-label="Mood" class="grid grid-cols-3 gap-space-xs" id="group-mood" role="radiogroup">
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-1 transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="Good" type="button">
+<span class="material-symbols-outlined text-[20px]">sentiment_very_satisfied</span>
+<span class="">Good</span>
+</button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-1 transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Okay" type="button">
+<span class="material-symbols-outlined text-[20px]">sentiment_neutral</span>
+<span class="">Okay</span>
+</button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-1 transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Low" type="button">
+<span class="material-symbols-outlined text-[20px]">sentiment_dissatisfied</span>
+<span class="">Low</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-xxs mb-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">bedtime</span>
+<label class="font-title-md text-title-md text-on-surface">Sleep</label>
+</div>
+<div aria-label="Sleep" class="grid grid-cols-3 gap-space-xs" id="group-sleep" role="radiogroup">
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Good" type="button">
+          Good
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="Okay" type="button">
+          Okay
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Poor" type="button">
+          Poor
+        </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-xxs mb-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">pill</span>
+<label class="font-title-md text-title-md text-on-surface">Medication</label>
+</div>
+<div aria-label="Medication" class="grid grid-cols-3 gap-space-xs" id="group-medication" role="radiogroup">
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="All" type="button">
+          All
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Some" type="button">
+          Some
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="None" type="button">
+          None
+        </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-xxs mb-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">warning</span>
+<label class="font-title-md text-title-md text-on-surface">Incident</label>
+</div>
+<div aria-label="Incident" class="grid grid-cols-2 gap-space-xs" id="group-incident" role="radiogroup">
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="None" type="button">
+          None
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Fall" type="button">
+          Fall
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Wandering" type="button">
+          Wandering
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Agitation" type="button">
+          Agitation
+        </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-xxs mb-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">front_hand</span>
+<label class="font-title-md text-title-md text-on-surface">Assistance</label>
+</div>
+<div aria-label="Assistance" class="grid grid-cols-3 gap-space-xs" id="group-assistance" role="radiogroup">
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="None" type="button">
+          None
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Some" type="button">
+          Some
+        </button>
+<button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Full" type="button">
+          Full
+        </button>
+</div>
+</div><div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm"><div class="flex items-center gap-space-xxs mb-space-xs"><span class="material-symbols-outlined text-[18px] text-secondary">directions_walk</span><label class="font-title-md text-title-md text-on-surface">Activity</label></div><div aria-label="Activity" class="grid grid-cols-2 gap-space-xs" id="group-activity" role="radiogroup"><button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-primary-container text-on-primary shadow-md" data-value="Done" type="button">Done</button><button class="log-pill h-14 rounded-xl font-label-lg text-label-lg flex items-center justify-center transition-all active:scale-95 bg-surface-container-low text-on-surface-variant" data-value="Not done" type="button">Not done</button></div></div>
+</div>
+<div class="mt-space-lg">
+<button class="w-full h-14 rounded-xl bg-primary-container text-on-primary font-title-md text-title-md flex items-center justify-center gap-space-xs shadow-md transition-all active:translate-y-0.5 active:shadow-sm" id="save-log-btn" type="button">
+<span class="material-symbols-outlined text-[24px]">bookmark_heart</span>
+<span class="">Save Care Log</span>
+</button>
+<p class="font-label-sm text-label-sm text-center text-secondary mt-space-xs opacity-0 transition-opacity duration-300" id="feedback-msg">
+      Care log updated peacefully • Syncing with Care Circle
+    </p>
+</div>
+</div>
+<script>
+  document.querySelectorAll('[role="radiogroup"]').forEach((group) => {
+    group.querySelectorAll('.log-pill').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.log-pill').forEach((other) => {
+          other.classList.remove('bg-primary-container', 'text-on-primary', 'shadow-md');
+          other.classList.add('bg-surface-container-low', 'text-on-surface-variant');
+        });
+        btn.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
+        btn.classList.add('bg-primary-container', 'text-on-primary', 'shadow-md');
+      });
+    });
+  });
+
+  const saveBtn = document.getElementById('save-log-btn');
+  const feedback = document.getElementById('feedback-msg');
+  saveBtn.addEventListener('click', () => {
+    saveBtn.classList.add('opacity-90');
+    feedback.classList.remove('opacity-0');
+    feedback.classList.add('opacity-100');
+    setTimeout(() => {
+      saveBtn.classList.remove('opacity-90');
+    }, 150);
+  });
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-4px_20px_-2px_rgba(43,24,16,0.08)]" data-active-classes="text-primary-container font-semibold scale-105"><div class="flex justify-around items-center h-20 px-space-xs max-w-lg mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[26px]">hevc</span><span class="font-label-sm text-label-sm">Dashboard</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] transition-all text-primary-container font-semibold scale-105" data-path="daily-log" href="#"><span class="material-symbols-outlined text-[26px]">menu_book</span><span class="font-label-sm text-label-sm">Log</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="routine-reminders" href="#"><span class="material-symbols-outlined text-[26px]">notifications_active</span><span class="font-label-sm text-label-sm">Reminders</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[56px] text-on-surface-variant transition-all hover:text-on-surface" data-path="care-circle" href="#"><span class="material-symbols-outlined text-[26px]">diversity_1</span><span class="font-label-sm text-label-sm">Care Circle</span></a></div></nav>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Category selections
+  document.querySelectorAll('button[class*="filter"], .filter-pill, [role="radio"], [role="tab"]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-selected]').forEach(function(b) { delete b.dataset.selected; });
+      btn.dataset.selected = true;
+    });
+  });
+  document.querySelectorAll('button').forEach(function(btn) {
+    var txt = btn.textContent.trim();
+    if (txt.includes('Save') || txt.includes('Log Care') || txt.includes('Submit') || txt.includes('Confirm')) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.AasritiStore.addQuickLog('Care', 'Routine Care Log', 'Noted and recorded');
+        window.showToast('Care log recorded', 'success');
+        setTimeout(function() { window.navigateToScreen(21); }, 400);
+      });
+    } else if (txt.includes('Back') || txt.includes('Home')) {
+      btn.addEventListener('click', function() { window.navigateToScreen(18); });
+    }
+  });
+  var hback = document.querySelector('header button, [aria-label="Go back"]');
+  if (hback) hback.addEventListener('click', function() { window.navigateToScreen(18); });
+});
+</script>
+</body></html>

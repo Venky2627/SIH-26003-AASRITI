@@ -11,7 +11,7 @@
   - Implement Room entities, DAOs, and Mappers for `Patient`, `GameSession`, and `CareLog`.
   - Ensure Room entities NEVER leak into UI composables; always map to `domain/model/`.
 * **Safe Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/data/local/`
-  - `app/src/main/java/com/sih26003/smritisetu/data/mapper/`
-  - `app/src/main/java/com/sih26003/smritisetu/data/repository/`
+  - `app/src/main/java/com/sih26003/aasriti/data/local/`
+  - `app/src/main/java/com/sih26003/aasriti/data/mapper/`
+  - `app/src/main/java/com/sih26003/aasriti/data/repository/`
 * **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

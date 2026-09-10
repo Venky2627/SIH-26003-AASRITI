@@ -14,7 +14,7 @@
 ## 📋 The 16-Step Walkthrough
 
 ### Act I: Caregiver Setup & Personalization (Offline)
-1. **Launch App**: Open SmritiSetu. Instant launch directly from local SQLite database (zero loading spinners or network timeouts).
+1. **Launch App**: Open AASRITI. Instant launch directly from local SQLite database (zero loading spinners or network timeouts).
 2. **Caregiver Authentication**: Select **Caregiver Mode** $\rightarrow$ Enter 6-digit local PIN (`123456`) $\rightarrow$ SHA-256 authenticates offline in $<5\text{ms}$.
 3. **Patient Profile**: Open Patient Profile (`AS-KAM-0042`, 68-year-old female, Kamrup Rural, Assam).
 4. **Personalization**: Caregiver adds a family member (Photo: Son *Rupam*, Relationship: *Son*). Persists to Room `relationships` table.

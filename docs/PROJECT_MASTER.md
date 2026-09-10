@@ -43,7 +43,7 @@ The entire SIH demo and 3-day sprint centers on this single end-to-end verified 
                     GAME TELEMETRY
                           │
                           ▼
-                    ROOM SQLITE (smritisetu.db)
+                    ROOM SQLITE (aasriti.db)
                           │
                           ▼
              COGNITIVE INSIGHT ORCHESTRATOR

@@ -12,7 +12,7 @@
 * **P0 Task (Vertical Slice V1)**:
   - Connect Caregiver Dashboard's "Today's Priority Card" directly to `PriorityEngine.evaluateTodayPriority()`.
 * **Safe Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/caregiver/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/asha/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/reminders/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/caregiver/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/asha/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/reminders/`
 * **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

@@ -49,7 +49,7 @@ Every feature in AASRITI connects to this single autonomous data pipeline. This 
 These models are **pure Kotlin data classes** with zero Android or Room dependencies. They live in `domain/model/` and are used across UI, ViewModels, and Engines.
 
 ```kotlin
-package com.sih26003.smritisetu.domain.model
+package com.sih26003.aasriti.domain.model
 
 /**
  * 1. PATIENT PROFILE (Anonymized & DPDPA Compliant)
@@ -149,9 +149,9 @@ data class DayTrendPoint(
 Frontend developers call these interfaces via Coroutine `suspend` functions or reactive `Flow`. Jasleen implements these on Room SQLite.
 
 ```kotlin
-package com.sih26003.smritisetu.domain.repository
+package com.sih26003.aasriti.domain.repository
 
-import com.sih26003.smritisetu.domain.model.*
+import com.sih26003.aasriti.domain.model.*
 import kotlinx.coroutines.flow.Flow
 
 interface PatientRepository {
@@ -189,9 +189,9 @@ Engine algorithms are pure Kotlin objects owned by **Venkatesh**. They receive d
 Evaluates game telemetry and decides the difficulty of the next round:
 
 ```kotlin
-package com.sih26003.smritisetu.engine.adaptive
+package com.sih26003.aasriti.engine.adaptive
 
-import com.sih26003.smritisetu.domain.model.GameSession
+import com.sih26003.aasriti.domain.model.GameSession
 
 data class AdaptiveResult(
     val nextLevel: Int,                 // 1 to 5
@@ -246,9 +246,9 @@ object AdaptiveEngine {
 Evaluates medication routines, hydration delays, and recent game hesitations to produce the Caregiver Priority Card and ASHA triage badge:
 
 ```kotlin
-package com.sih26003.smritisetu.engine.priority
+package com.sih26003.aasriti.engine.priority
 
-import com.sih26003.smritisetu.domain.model.*
+import com.sih26003.aasriti.domain.model.*
 
 object PriorityEngine {
     fun evaluateTodayPriority(
@@ -307,9 +307,9 @@ object PriorityEngine {
 Aggregates sessions into 7/30/90-day objective curves for clinicians:
 
 ```kotlin
-package com.sih26003.smritisetu.engine.trend
+package com.sih26003.aasriti.engine.trend
 
-import com.sih26003.smritisetu.domain.model.*
+import com.sih26003.aasriti.domain.model.*
 
 object TrendEngine {
     fun compute7DaySignals(patientId: String, sessions: List<GameSession>): LongitudinalTrend {
@@ -352,7 +352,7 @@ object TrendEngine {
 All Jetpack Compose screens route through these string identifiers:
 
 ```kotlin
-package com.sih26003.smritisetu.navigation
+package com.sih26003.aasriti.navigation
 
 object AppRoutes {
     const val ROLE_SELECT = "role_select"
@@ -397,9 +397,9 @@ object AppRoutes {
 Frontend developers (Krishna, Bhavya, Shravani, Kimaya) can immediately bind their composables to this mock provider while backend database tables are compiling:
 
 ```kotlin
-package com.sih26003.smritisetu.demo
+package com.sih26003.aasriti.demo
 
-import com.sih26003.smritisetu.domain.model.*
+import com.sih26003.aasriti.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

@@ -1,0 +1,205 @@
+/* AASRITI Prototype Global Shell & Utility Styles */
+
+:root {
+  --parchment-bg: #FAF4ED;
+  --parchment-dark: #2A1D15;
+  --crimson-primary: #720227;
+  --terracotta: #CB8067;
+  --amber-gold: #CE9042;
+  --sage-green: #A8B9A0;
+  --forest-green: #274133;
+  --border-cream: #D4C3AC;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #1a1412;
+  color: #FAF4ED;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Shell Header */
+.shell-header {
+  height: 56px;
+  background-color: #231b17;
+  border-bottom: 1px solid #3d302a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: relative;
+  z-index: 1000;
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shell-logo-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--crimson-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FAF4ED;
+  font-family: 'Literata', serif;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.shell-title {
+  font-family: 'Literata', serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: #FAF4ED;
+}
+
+.shell-screen-tag {
+  font-size: 12px;
+  background: #382c26;
+  color: var(--amber-gold);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #4a3b34;
+  font-weight: 600;
+}
+
+.shell-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shell-select {
+  background: #2d231e;
+  color: #FAF4ED;
+  border: 1px solid #4a3b34;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.shell-select:focus {
+  border-color: var(--amber-gold);
+}
+
+.shell-btn {
+  background: #2d231e;
+  color: #FAF4ED;
+  border: 1px solid #4a3b34;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.shell-btn:hover {
+  background: #382c26;
+  border-color: var(--amber-gold);
+}
+
+.shell-btn-primary {
+  background: var(--crimson-primary);
+  border-color: #8c1036;
+}
+
+.shell-btn-primary:hover {
+  background: #59011e;
+}
+
+/* Prototype Container & Phone Mockup */
+.prototype-stage {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: radial-gradient(circle at 50% 30%, #2a201c 0%, #17110f 100%);
+}
+
+.device-frame {
+  width: 412px;
+  height: 890px;
+  max-width: 100%;
+  max-height: 94vh;
+  background: #FAF4ED;
+  border-radius: 46px;
+  box-shadow: 
+    0 0 0 12px #2d2420,
+    0 0 0 14px #42352f,
+    0 24px 64px rgba(0, 0, 0, 0.65);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Device Frame Fullscreen Mode */
+.prototype-stage.fullscreen-mode {
+  padding: 0;
+}
+
+.prototype-stage.fullscreen-mode .device-frame {
+  width: 100%;
+  height: calc(100vh - 56px);
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Phone Bezel Header notch / speaker */
+.device-speaker-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 18px;
+  background: #2d2420;
+  border-radius: 10px;
+  z-index: 500;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.device-speaker-hole {
+  width: 48px;
+  height: 4px;
+  background: #17110f;
+  border-radius: 2px;
+}
+
+.prototype-stage.fullscreen-mode .device-speaker-notch {
+  display: none;
+}
+
+/* Viewport Iframe */
+#app-viewport {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: #FAF4ED;
+}

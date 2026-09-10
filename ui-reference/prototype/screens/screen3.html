@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIN Authentication</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f4f9; margin: 0; }
+    .pin-container { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+    .pin-box h2 { color: #720227; margin-top: 0; }
+    #pinInput { width: 100%; padding: 0.75rem; font-size: 1.25rem; text-align: center; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 1rem; box-sizing: border-box; }
+    .keypad {display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin:1.5rem 0;}
+.keypad button {background:#720227;color:#fff;border:none;border-radius:8px;padding:0.75rem;font-size:1.5rem;cursor:pointer;transition:background 0.2s;}
+.keypad button:hover {background:#5a001e;}
+    #pinSubmit { width: 100%; padding: 0.75rem; background: #720227; color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    #pinSubmit:hover { background: #5a001e; }
+    .error-msg { color: #d9534f; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2rem; }
+  </style>
+  </head>
+  <body>
+    <script src="../js/store.js"></script>
+    <script src="../js/nav.js"></script>
+    <div class="pin-container">
+    <div class="pin-box">
+      <h2>Enter Your PIN</h2>
+      <input type="password" id="pinInput" placeholder="4-digit PIN" maxlength="4" />
+      <div class="keypad">
+         <button type="button">1</button>
+         <button type="button">2</button>
+         <button type="button">3</button>
+         <button type="button">4</button>
+         <button type="button">5</button>
+         <button type="button">6</button>
+         <button type="button">7</button>
+         <button type="button">8</button>
+         <button type="button">9</button>
+         <button type="button">0</button>
+       </div>
+      <button id="pinSubmit">Unlock</button>
+      <div id="errorMsg" class="error-msg" aria-live="assertive"></div>
+    </div>
+  </div>
+  <script>
+  const rolePins = {
+    patient: '1234',
+    caregiver: '2345',
+    doctor: '3456'
+  };
+  // Keypad input handling
+  const pinInput = document.getElementById('pinInput');
+  const maxLength = pinInput.getAttribute('maxlength') || 4;
+  document.querySelectorAll('.keypad button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (pinInput.value.length < maxLength) {
+        pinInput.value += btn.textContent.trim();
+      }
+    });
+  });
+
+  document.getElementById('pinSubmit').addEventListener('click', function() {
+    const entered = pinInput.value.trim();
+    const errDiv = document.getElementById('errorMsg');
+    const store = window.AasritiStore ? window.AasritiStore.get() : {};
+    const role = store.role || 'patient';
+    const expectedPin = rolePins[role];
+    if (!entered) {
+      errDiv.textContent = 'Please enter your PIN.';
+      return;
+    }
+    if (entered !== expectedPin) {
+      errDiv.textContent = 'Incorrect PIN. Please try again.';
+      return;
+    }
+    const target = 2; // always go to screen 2
+    window.navigateToScreen(target);
+  });
+</script>
+</body>
+</html>

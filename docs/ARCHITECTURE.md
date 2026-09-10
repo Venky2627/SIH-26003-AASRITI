@@ -33,7 +33,7 @@ AASRITI is engineered as an offline-first, native Android application using Clea
 │                                      │                                      │
 │                                      ▼ (Mappers: toEntity() / toDomain())   │
 │   DATA & PERSISTENCE LAYER (Local-First Single Source of Truth)             │
-│   ├── Room SQLite Database (smritisetu.db — 7 DAOs, WAL Mode)              │
+│   ├── Room SQLite Database (aasriti.db — 7 DAOs, WAL Mode)              │
 │   ├── Local File Storage (context.filesDir/media/ for photos & voice)       │
 │   ├── Offline Sync Queue (sync_queue SQLite table)                          │
 │   └── AlarmManager & Broadcast Receivers (Offline local reminders)          │
@@ -63,9 +63,9 @@ AASRITI is engineered as an offline-first, native Android application using Clea
 The codebase is organized by feature rather than layer to allow 6 developers to work concurrently with minimal merge conflicts:
 
 ```text
-com.sih26003.smritisetu/
+com.sih26003.aasriti/
 ├── MainActivity.kt                  # Single-activity NavHost wrapped in AasritiTheme
-├── SmritiSetuApplication.kt         # Application container & dependency wiring
+├── AasritiApplication.kt         # Application container & dependency wiring
 ├── core/
 │   ├── ui/                          # Canonical design system (Theme, Color, Type, Shape, Spacing)
 │   ├── security/                    # CryptoUtils, PIN hashing, SHA-256
@@ -74,7 +74,7 @@ com.sih26003.smritisetu/
 │   ├── local/
 │   │   ├── dao/                     # 7 Room DAOs (PatientDao, GameDao, LogDao, etc.)
 │   │   ├── entity/                  # Room SQLite Entities (Zero UI imports allowed)
-│   │   └── database/                # AppDatabase singleton (smritisetu.db)
+│   │   └── database/                # AppDatabase singleton (aasriti.db)
 │   ├── mapper/                      # Explicit Entity <-> Domain Model extension functions
 │   ├── repository/                  # Concrete repository implementations
 │   └── firebase/                    # Secondary Firestore sync messenger

@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="en" style=""><head></head><body class="bg-[#F6EDE0] font-body-md text-[#2A1D15] flex flex-col min-h-screen selection:bg-[#720227] selection:text-white"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#F6EDE0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline": "#8a7173", "secondary-container": "#fdb967", "surface-bright": "#FAF4ED", "on-background": "#2a170f", "primary-fixed-dim": "#ffb2bb", "surface-variant": "#ffdbcd", "on-tertiary": "#ffffff", "surface-container-low": "#FAF4ED", "surface": "#F6EDE0", "tertiary": "#274133", "inverse-surface": "#412b22", "on-primary-container": "#fd728b", "surface-container-lowest": "#ffffff", "primary": "#720227", "on-primary": "#ffffff", "outline-variant": "#D4C3AC", "secondary": "#865304", "tertiary-container": "#A8B9A0", "surface-container": "#EDE0D0", "on-surface-variant": "#574144", "primary-container": "#720227", "surface-container-highest": "#E4D4C0", "on-surface": "#2A1D15", "surface-container-high": "#E8D9C6" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.25rem", "full": "9999px" }, "fontFamily": { "headline-lg": ["Literata", "serif"], "title-lg": ["Literata", "serif"], "label-lg": ["Plus Jakarta Sans", "sans-serif"], "label-md": ["Plus Jakarta Sans", "sans-serif"], "body-md": ["Literata", "serif"] }, "fontSize": { "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }], "label-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }] } } } }</script><main class="flex flex-col relative w-full pt-safe pb-safe bg-gradient-to-b from-[#FAF4ED] via-[#F6EDE0] to-[#EDDCC5] min-h-screen"><div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden"><div class="absolute -top-32 -left-20 w-96 h-96 rounded-full bg-[#CB8067]/15 blur-3xl"></div><div class="absolute top-1/3 -right-24 w-80 h-80 rounded-full bg-[#CE9042]/12 blur-3xl"></div><div class="absolute bottom-20 -left-16 w-88 h-88 rounded-full bg-[#A8B9A0]/15 blur-3xl"></div><svg class="absolute inset-0 w-full h-full opacity-[0.045] mix-blend-multiply" xmlns="http://www.w3.org/2000/svg"><defs><pattern height="40" id="woven-parchment-motif" patternUnits="userSpaceOnUse" width="40"><path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="#720227" stroke-width="1"></path><circle cx="20" cy="20" fill="#CE9042" r="1.75"></circle><path d="M20,6 L34,20 L20,34 L6,20 Z" fill="none" opacity="0.7" stroke="#CB8067" stroke-width="0.75"></path></pattern></defs><rect fill="url(#woven-parchment-motif)" height="100%" width="100%"></rect></svg></div><div class="flex flex-col w-full px-5 pb-10 relative z-10">
+<!-- Top Utility Bar: Language Selector & Calm Connectivity Indicator -->
+<div class="flex items-center justify-between py-2.5 w-full">
+<!-- Language Toggle Pill -->
+<div aria-label="Language selection" class="inline-flex items-center bg-[#EDE0D0] border border-[#D4C3AC] rounded-full p-1 shadow-sm" role="radiogroup">
+<button aria-checked="true" class="px-4 py-1.5 rounded-full bg-[#720227] text-[#FAF4ED] font-label-md text-label-md shadow-sm transition-all" id="lang-eng" onclick="toggleLanguage('eng')" role="radio" type="button">
+        ENG
+      </button>
+<button aria-checked="false" class="px-4 py-1.5 rounded-full text-[#574144] font-label-md text-label-md transition-all hover:text-[#2A1D15]" id="lang-as" onclick="toggleLanguage('as')" role="radio" type="button">
+        অসমীয়া
+      </button>
+</div>
+<!-- Calm Reassurance Pill (Offline/Sync status) -->
+<div class="flex items-center gap-2 px-3.5 py-1.5 bg-[#FAF4ED]/90 border border-[#D4C3AC] rounded-full text-[#274133] shadow-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-[#5E8354]"></span>
+<span class="font-label-md text-xs tracking-wide font-medium">Saved Locally</span>
+</div>
+</div>
+<!-- Traditional Gamusa Geometric Woven Accent Band -->
+<div aria-hidden="true" class="w-full my-3 flex items-center justify-center"><svg class="max-w-md w-full" fill="none" height="20" viewBox="0 0 360 20" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern height="20" id="phulam-top-motif" patternUnits="userSpaceOnUse" width="30"><polygon fill="none" points="15,1 27,10 15,19 3,10" stroke="#CB8067" stroke-width="1.5"></polygon><polygon fill="#720227" opacity="0.85" points="15,4 22,10 15,16 8,10"></polygon><circle cx="15" cy="10" fill="#CE9042" r="2"></circle><path d="M15,1 L15,4 M15,16 L15,19 M3,10 L8,10 M22,10 L27,10" stroke="#CE9042" stroke-width="1"></path><circle cx="0" cy="10" fill="#CB8067" r="1.5"></circle><circle cx="30" cy="10" fill="#CB8067" r="1.5"></circle></pattern></defs><rect fill="url(#phulam-top-motif)" height="20" width="100%"></rect></svg></div>
+<!-- Hero Identity Block -->
+<div class="flex flex-col items-center text-center mt-2 mb-4">
+<!-- Authentic AASRITI spiral logo framed gently in an ivory/cream circular badge -->
+<div class="relative w-28 h-28 rounded-full bg-[#FAF4ED] overflow-hidden p-2 flex items-center justify-center shadow-md border-[2.5px] border-[#D4C3AC] mb-2"><img alt="AASRITI terracotta spiral logo" class="w-full h-full object-contain rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ7Awu7Qbw44uNFqtXpeAEbvorbM7k6qvApw3ByO7lvbA4XbmmqB65B3obvQUr-TmCq0Maewgmwuoz4mbbcQnA8Bs-EENrOIfB6B7AhinJI6GGonvBb4IZgNPYF5OWqB_m-egFfwVtzEMbxeu__OZTEfNxqHxkCFXow8WX0g3xGZWk9ec4TDrQSdZNgk15GcJeBMpVzRxEt4s09se9AvoNByj70VTp0pkyyfnfC5rUBzVcMf8YlBzekpEcIdYZO_aDGg"></div>
+<!-- App Title & Dignity Tagline -->
+<h1 class="font-headline-lg text-headline-lg text-[#2A1D15] tracking-wide mt-1 drop-shadow-xs">
+      AASRITI
+    </h1>
+</div><div aria-hidden="true" class="w-full mb-5 flex items-center justify-center"><svg class="max-w-md w-full" fill="none" height="20" viewBox="0 0 360 20" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern height="20" id="phulam-bottom-motif" patternUnits="userSpaceOnUse" width="30"><polygon fill="none" points="15,1 27,10 15,19 3,10" stroke="#CB8067" stroke-width="1.5"></polygon><polygon fill="#720227" opacity="0.85" points="15,4 22,10 15,16 8,10"></polygon><circle cx="15" cy="10" fill="#CE9042" r="2"></circle><path d="M15,1 L15,4 M15,16 L15,19 M3,10 L8,10 M22,10 L27,10" stroke="#CE9042" stroke-width="1"></path><circle cx="0" cy="10" fill="#CB8067" r="1.5"></circle><circle cx="30" cy="10" fill="#CB8067" r="1.5"></circle></pattern></defs><rect fill="url(#phulam-bottom-motif)" height="20" width="100%"></rect></svg></div>
+<!-- Primary Focal Area: Elder / Patient Safe Portal (Dominant Interaction) -->
+<div class="w-full bg-[#FAF4ED]/95 border-[1.5px] border-[#D4C3AC] rounded-2xl p-4 shadow-sm mb-5 flex flex-col gap-2 relative overflow-hidden">
+<!-- Warm Ambient Corner Glow -->
+<div aria-hidden="true" class="absolute -top-10 -right-10 w-36 h-36 bg-[#CE9042]/15 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Unmissable Patient Touch Target (CTA >= 64px) in Deep Rich Crimson/Wine -->
+<button class="w-full min-h-[64px] bg-[#720227] text-[#FAF4ED] rounded-xl font-label-lg text-label-lg flex items-center justify-between px-6 shadow-md hover:bg-[#5e0120] transition-all active:scale-[0.98] border border-[#a9324c]/40 cursor-pointer" type="button"><span class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl text-[#FAF4ED]" style="font-variation-settings: 'FILL' 1;">spa</span><span class="tracking-wide">ENTER</span></span><span class="material-symbols-outlined text-3xl">arrow_forward</span></button>
+</div>
+<!-- Secondary Role Access Cards (Large touch height >= 60px, warm vintage parchment borders) -->
+<div class="flex flex-col gap-3 w-full">
+<!-- Card 2: Family Caregiver -->
+
+<!-- Card 3: ASHA / Community Worker -->
+<button class="w-full min-h-[62px] bg-[#FAF4ED] border-[1.5px] border-[#D4C3AC] rounded-xl px-4 py-3 flex items-center justify-between text-left hover:bg-[#EDE0D0] active:scale-[0.99] transition-all shadow-xs" type="button"><div class="flex items-center gap-3.5"><div class="w-11 h-11 rounded-full bg-[#EDE0D0] border border-[#CE9042]/50 flex items-center justify-center text-[#865304]"><span class="material-symbols-outlined text-2xl text-[#865304]">diversity_1</span></div><span class="font-label-lg text-label-lg text-[#2A1D15]">ASHA / Caregiver</span></div><span class="material-symbols-outlined text-[#8a7173]">arrow_forward_ios</span></button>
+<!-- Card 4: Doctor / Healthcare Worker -->
+<button class="w-full min-h-[62px] bg-[#FAF4ED] border-[1.5px] border-[#D4C3AC] rounded-xl px-4 py-3 flex items-center justify-between text-left hover:bg-[#EDE0D0] active:scale-[0.99] transition-all shadow-xs" type="button"><div class="flex items-center gap-3.5"><div class="w-11 h-11 rounded-full bg-[#EDE0D0] border border-[#CB8067]/50 flex items-center justify-center text-[#720227]"><span class="material-symbols-outlined text-2xl text-[#720227]">stethoscope</span></div><span class="font-label-lg text-label-lg text-[#2A1D15]">Doctor</span></div><span class="material-symbols-outlined text-[#8a7173]">arrow_forward_ios</span></button>
+</div>
+</div>
+<script>
+  function toggleLanguage(lang) {
+    const engBtn = document.getElementById('lang-eng');
+    const asBtn = document.getElementById('lang-as');
+    
+    if (lang === 'as') {
+      asBtn.className = 'px-4 py-1.5 rounded-full bg-[#720227] text-[#FAF4ED] font-label-md text-label-md shadow-sm transition-all';
+      asBtn.setAttribute('aria-checked', 'true');
+      engBtn.className = 'px-4 py-1.5 rounded-full text-[#574144] font-label-md text-label-md transition-all hover:text-[#2A1D15]';
+      engBtn.setAttribute('aria-checked', 'false');
+    } else {
+      engBtn.className = 'px-4 py-1.5 rounded-full bg-[#720227] text-[#FAF4ED] font-label-md text-label-md shadow-sm transition-all';
+      engBtn.setAttribute('aria-checked', 'true');
+      asBtn.className = 'px-4 py-1.5 rounded-full text-[#574144] font-label-md text-label-md transition-all hover:text-[#2A1D15]';
+      asBtn.setAttribute('aria-checked', 'false');
+    }
+  }
+</script></main>
+
+</body></html>

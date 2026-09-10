@@ -12,6 +12,6 @@
 * **P0 Task (Vertical Slice V1)**:
   - Implement `CognitiveInsightOrchestrator` to accept `GameSession` telemetry and emit unified `CognitiveInsight`.
 * **Safe Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/engine/`
-  - `app/src/main/java/com/sih26003/smritisetu/navigation/`
+  - `app/src/main/java/com/sih26003/aasriti/engine/`
+  - `app/src/main/java/com/sih26003/aasriti/navigation/`
 * **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

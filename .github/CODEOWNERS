@@ -24,7 +24,7 @@
 /app/build.gradle.kts                                               @Venkatesh @Jasleen
 /app/src/main/AndroidManifest.xml                                   @Venkatesh @Shravani
 /app/src/main/java/**/MainActivity.kt                               @Jasleen @Venkatesh
-/app/src/main/java/**/SmritiSetuApplication.kt                      @Jasleen @Venkatesh
+/app/src/main/java/**/AasritiApplication.kt                      @Jasleen @Venkatesh
 /app/src/main/java/**/navigation/                                   @Jasleen @Venkatesh
 /app/src/main/java/**/data/local/database/                          @Jasleen @Venkatesh
 /app/src/main/java/**/core/ui/theme/                                @Bhavya @Krishna

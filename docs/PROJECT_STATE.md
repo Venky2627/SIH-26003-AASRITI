@@ -33,7 +33,7 @@
 * **UI Design System Active**: `AasritiTheme`, 13 canonical color tokens, shapes, spacing, and typography verified in Compose.
 * **Security & Privacy Governance**: Full-product RBAC, local SHA-256 PIN hashing, and DPDPA 2023 compliance frozen in [`/SECURITY.md`](../SECURITY.md).
 * **Native Android Core**: Kotlin 1.9.23, Jetpack Compose Material 3, Android SDK 34 (`minSdk = 24`).
-* **Local Persistence Engine**: Room SQLite database (`smritisetu.db`) with 7 DAOs and `sync_queue` table.
+* **Local Persistence Engine**: Room SQLite database (`aasriti.db`) with 7 DAOs and `sync_queue` table.
 * **Authentication Subsystem**: Local 6-digit PIN for Caregiver/Doctor; direct photo/avatar tap for Patient (Zero PIN).
 * **Six Cognitive Games (Engine & Logic)**:
   - Game 1: Family Trivia (Levels 1–5, Room relationship binding)
