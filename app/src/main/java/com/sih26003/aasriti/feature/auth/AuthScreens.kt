@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.auth
+package com.sih26003.aasriti.feature.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.sih26003.aasriti.core.security.CryptoUtils
+import com.sih26003.aasriti.core.ui.components.AasritiLogoBadge
+import com.sih26003.aasriti.core.ui.components.CalmConnectivityPill
+import com.sih26003.aasriti.core.ui.components.LanguageTogglePill
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.PatientEntity
 import com.sih26003.aasriti.data.local.entities.UserEntity
@@ -44,7 +47,8 @@ fun RoleAndModeSelectScreen(
     onPatientSelected: (PatientEntity) -> Unit,
     onCaregiverLoginSelected: () -> Unit,
     onAshaLoginSelected: () -> Unit,
-    onDoctorLoginSelected: () -> Unit
+    onDoctorLoginSelected: () -> Unit,
+    onConsentSelected: (() -> Unit)? = null
 ) {
     var showDevMenu by remember { mutableStateOf(false) }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
@@ -63,68 +67,11 @@ fun RoleAndModeSelectScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Language Toggle Pill
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(AasritiColorTokens.WarmSunkenSurface)
-                    .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
-                    .padding(3.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (!isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
-                        .clickable { DemoStateHolder.currentLanguage = "en" }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        "ENG",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (!isAssamese) Color.White else AasritiColorTokens.WarmSlate
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
-                        .clickable { DemoStateHolder.currentLanguage = "as" }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        "অসমীয়া",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isAssamese) Color.White else AasritiColorTokens.WarmSlate
-                    )
-                }
-            }
-
-            // Calm Reassurance Pill
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(AasritiColorTokens.SoftCream)
-                    .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .clip(CircleShape)
-                            .background(AasritiColorTokens.DeepNortheastForest)
-                    )
-                    Text(
-                        text = "Saved Locally",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AasritiColorTokens.DeepNortheastForest
-                    )
-                }
-            }
+            LanguageTogglePill(
+                currentLanguage = DemoStateHolder.currentLanguage,
+                onLanguageSelected = { DemoStateHolder.currentLanguage = it }
+            )
+            CalmConnectivityPill(isAssamese = isAssamese)
         }
 
         // 1. App Heritage Branding Header
@@ -132,21 +79,12 @@ fun RoleAndModeSelectScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(top = 4.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(AasritiColorTokens.SoftCream)
-                    .border(2.dp, AasritiColorTokens.WarmStoneBorder, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🌀", fontSize = 32.sp)
-            }
+            AasritiLogoBadge(size = 62.dp)
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "আশ্ৰিতি (AASRITI)",
+                text = "আশ্ৰীতি (AASRITI)",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = AasritiColorTokens.DeepCharcoal
@@ -325,19 +263,31 @@ fun RoleAndModeSelectScreen(
             }
         }
 
-        // 4. Subtle Footer with Discreet Developer / Demo Reset Trigger
-        Row(
+        // 4. Subtle Footer with Discreet Developer / Demo Reset Trigger & Privacy Link
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            onConsentSelected?.let { onConsent ->
+                Text(
+                    text = if (isAssamese) "🔒 যত্ন আৰু গোপনীয়তা নীতি (Care & Privacy • DPDPA 2023) ➔" else "🔒 Care & Privacy • DPDPA 2023 ➔",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AasritiColorTokens.DeepNortheastForest,
+                    modifier = Modifier
+                        .clickable { onConsent() }
+                        .padding(vertical = 4.dp)
+                )
+            }
+
             Text(
                 text = "AASRITI • SIH-26003 • Kamrup Rural Pilot",
                 fontSize = 12.sp,
                 color = AasritiColorTokens.WarmSlate.copy(alpha = 0.7f),
                 modifier = Modifier
                     .clickable { showDevMenu = true }
-                    .padding(8.dp)
+                    .padding(4.dp)
             )
         }
     }

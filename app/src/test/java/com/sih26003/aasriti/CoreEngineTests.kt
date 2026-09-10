@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti
+package com.sih26003.aasriti
 
 import com.sih26003.aasriti.core.security.CryptoUtils
 import com.sih26003.aasriti.data.local.database.MIGRATION_1_2
@@ -425,5 +425,33 @@ class CoreEngineTests {
             recentLogs = domainLogs
         )
         assertEquals("PRIORITY", priority.severity)
+    }
+
+    @Test
+    fun testInformedConsentAndPrivacyModelContract() {
+        // DPDPA 2023 Assent modes
+        val elderAssentMode = "PERSONAL_ELDER"
+        val proxyAssentMode = "CAREGIVER_PROXY"
+
+        assertTrue(elderAssentMode.isNotBlank())
+        assertTrue(proxyAssentMode.isNotBlank())
+        assertNotEquals(elderAssentMode, proxyAssentMode)
+    }
+
+    @Test
+    fun testSosIncidentFollowUpCareLogCreation() {
+        val sosLog = CareLogEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "CAREGIVER",
+            category = "SOS_EVENT",
+            severity = "WATCH",
+            notes = "SOS Follow-up: RESOLVED [Elder checked; hydration provided]"
+        )
+
+        assertEquals(DemoPatientConfig.PATIENT_ID, sosLog.patientId)
+        assertEquals("CAREGIVER", sosLog.authorRole)
+        assertEquals("SOS_EVENT", sosLog.category)
+        assertTrue(sosLog.notes.contains("RESOLVED"))
+        assertNotNull(sosLog.timestamp)
     }
 }

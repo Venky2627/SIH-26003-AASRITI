@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.patient
+package com.sih26003.aasriti.feature.patient
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +32,7 @@ import com.sih26003.aasriti.voice.playback.VoicePromptManager
 @Composable
 fun SosScreen(
     voicePromptManager: VoicePromptManager?,
+    onOpenFollowUp: (() -> Unit)? = null,
     onBack: () -> Unit
 ) {
     val isAssamese = DemoStateHolder.currentLanguage == "as"
@@ -163,20 +164,40 @@ fun SosScreen(
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                DemoStateHolder.dismissSos()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.WarmSunkenSurface),
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier.height(52.dp)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = if (isAssamese) "সতৰ্কতা বন্ধ কৰক (Dismiss)" else "Dismiss Alert",
-                                color = AasritiColorTokens.DeepCharcoal,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            if (onOpenFollowUp != null) {
+                                Button(
+                                    onClick = onOpenFollowUp,
+                                    colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                                    shape = RoundedCornerShape(14.dp),
+                                    modifier = Modifier.height(52.dp)
+                                ) {
+                                    Text(
+                                        text = if (isAssamese) "অনুসৰণ (Follow-up) ➔" else "Follow-up ➔",
+                                        color = AasritiColorTokens.WarmIvory,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = {
+                                    DemoStateHolder.dismissSos()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.WarmSunkenSurface),
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.height(52.dp)
+                            ) {
+                                Text(
+                                    text = if (isAssamese) "বন্ধ কৰক (Dismiss)" else "Dismiss Alert",
+                                    color = AasritiColorTokens.DeepCharcoal,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
