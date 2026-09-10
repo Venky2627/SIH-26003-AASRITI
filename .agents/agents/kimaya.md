@@ -12,7 +12,7 @@
 * **P0 Task (Vertical Slice V1)**:
   - Wire Doctor Portal to `TrendEngine` with 7 / 30 / 90-day toggle and ensure Elder Home smoothly launches Flower Match.
 * **Safe Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/patient/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/memoryalbum/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/doctor/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/patient/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/memoryalbum/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/doctor/`
 * **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

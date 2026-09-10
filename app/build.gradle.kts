@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.sih26003.smritisetu"
+    namespace = "com.sih26003.aasriti"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.sih26003.smritisetu"
+        applicationId = "com.sih26003.aasriti"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

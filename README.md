@@ -70,14 +70,14 @@ AASRITI/
 ├── UI_ACCESSIBILITY_RULES.md            # WCAG 2.2 AAA standards & >=64dp touch targets
 │
 ├── app/
-│   └── src/main/java/com/sih26003/smritisetu/
+│   └── src/main/java/com/sih26003/aasriti/
 │       ├── MainActivity.kt              # Single-activity NavHost wrapped in AasritiTheme
-│       ├── SmritiSetuApplication.kt     # Application container & dependency wiring
+│       ├── AasritiApplication.kt     # Application container & dependency wiring
 │       ├── core/
 │       │   ├── ui/theme/                # AasritiTheme, Color, Type, Shape, Spacing tokens
 │       │   └── security/                # CryptoUtils, SHA-256 local PIN hashing
 │       ├── data/
-│       │   ├── local/database/          # Room SQLite Database singleton (smritisetu.db)
+│       │   ├── local/database/          # Room SQLite Database singleton (aasriti.db)
 │       │   ├── local/entity/            # Room SQLite Entities (Zero UI imports)
 │       │   ├── local/dao/               # 7 Room DAOs
 │       │   └── mapper/                  # Entity <-> Domain Model extension mappers

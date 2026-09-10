@@ -1,5 +1,5 @@
 """
-Decision Tree Training Script for SmritiSetu Adaptive Difficulty.
+Decision Tree Training Script for AASRITI Adaptive Difficulty.
 Trains a scikit-learn DecisionTreeClassifier on game performance signals
 and exports the tree structure as JSON for local on-device Kotlin inference.
 

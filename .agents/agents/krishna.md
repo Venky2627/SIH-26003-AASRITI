@@ -10,9 +10,9 @@
 * **P0 Task (Vertical Slice V1)**:
   - Wire Flower Match to emit real `GameSession` telemetry (reactionTimeMs, hesitationCount, accuracy) to `CognitiveInsightOrchestrator`.
 * **Safe Directories**:
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/framework/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/flowermatch/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/familytrivia/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/voicecuecard/`
-  - `app/src/main/java/com/sih26003/smritisetu/feature/games/sequencing/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/games/framework/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/games/flowermatch/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/games/familytrivia/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/games/voicecuecard/`
+  - `app/src/main/java/com/sih26003/aasriti/feature/games/sequencing/`
 * **Rules**: Always verify with `./gradlew testDebugUnitTest` before committing.

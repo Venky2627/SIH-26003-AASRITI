@@ -11,7 +11,7 @@
 AASRITI manages sensitive health and cognitive telemetry for elderly dementia patients, family care notes, clinical records, and autobiographical family photographs.
 
 ### Core Security Tenets:
-1. **Local Isolation First**: SQLite Room database (`smritisetu.db`) is stored strictly in app-private storage (`context.getDatabasePath()`).
+1. **Local Isolation First**: SQLite Room database (`aasriti.db`) is stored strictly in app-private storage (`context.getDatabasePath()`).
 2. **Zero Plaintext Secrets**: Passwords, PINs, access tokens, and encryption salts must never exist in plaintext in code, logs, or databases.
 3. **No Patient Authentication Barrier**: Patient UX uses direct photo selection (Zero PIN) to preserve cognitive dignity, but the Patient role has strictly **Read-Only / Self-Session-Write** privileges. Administrative, medication, and clinical settings are completely barricaded behind authenticated roles.
 4. **Zero Diagnostic Claims**: To prevent clinical liability and patient distress, no automated diagnostic scores are generated or stored.
@@ -59,7 +59,7 @@ Authorization is enforced at the Repository and ViewModel layers. The frontend h
 ## 🗄️ 4. DATA STORAGE & MEDIA PRIVACY
 
 1. **Local SQLite Storage**:
-   - SQLite database files (`smritisetu.db`, `smritisetu.db-wal`, `smritisetu.db-shm`) are located in `/data/data/com.sih26003.smritisetu/databases/`.
+   - SQLite database files (`aasriti.db`, `aasriti.db-wal`, `aasriti.db-shm`) are located in `/data/data/com.sih26003.aasriti/databases/`.
    - External SD-card or public storage storage of database files is strictly prohibited.
 2. **Memory Garden Media (Photos & Voice Recordings)**:
    - Media files are stored in `context.filesDir/media/memories/`.

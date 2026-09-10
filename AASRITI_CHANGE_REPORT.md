@@ -21,11 +21,11 @@
   * `81cf4f1` test(data): add repository persistence contract tests
   * `e87c4b8` test(data): harden sync and repository persistence contracts
 * **Files Changed / Added**:
-  * `app/src/main/java/com/sih26003/smritisetu/SmritiSetuApplication.kt`
-  * `app/src/main/java/com/sih26003/smritisetu/data/repository/Repositories.kt`
-  * `app/src/main/java/com/sih26003/smritisetu/data/sync/SyncManager.kt`
-  * `app/src/test/java/com/sih26003/smritisetu/data/repository/RepositoryPersistenceTest.kt`
-  * `app/src/test/java/com/sih26003/smritisetu/data/sync/SyncManagerTest.kt`
+  * `app/src/main/java/com/sih26003/aasriti/AasritiApplication.kt`
+  * `app/src/main/java/com/sih26003/aasriti/data/repository/Repositories.kt`
+  * `app/src/main/java/com/sih26003/aasriti/data/sync/SyncManager.kt`
+  * `app/src/test/java/com/sih26003/aasriti/data/repository/RepositoryPersistenceTest.kt`
+  * `app/src/test/java/com/sih26003/aasriti/data/sync/SyncManagerTest.kt`
 * **Functionality**:
   * Durable local `SyncQueue` processor (`SyncManager`) draining batches up to 25 items, marking acknowledged state, tracking retry counter, and guarding re-entrancy.
   * Repository persistence contract extensions (`getAllSessionsList()`, `getRecentLogs()`).
@@ -45,10 +45,10 @@
   * `8d5b5ba` fix(caregiver): restore accessible priority action touch targets
   * `2caa463` feat(caregiver): integrate real game session telemetry into caregiver dashboard
 * **Files Changed / Added**:
-  * `app/src/main/java/com/sih26003/smritisetu/feature/asha/AshaDashboardScreen.kt`
-  * `app/src/main/java/com/sih26003/smritisetu/feature/caregiver/CaregiverDashboardScreen.kt`
-  * `app/src/main/java/com/sih26003/smritisetu/feature/reminders/RemindersScreen.kt`
-  * `app/src/test/java/com/sih26003/smritisetu/CaregiverAshaWorkflowTests.kt`
+  * `app/src/main/java/com/sih26003/aasriti/feature/asha/AshaDashboardScreen.kt`
+  * `app/src/main/java/com/sih26003/aasriti/feature/caregiver/CaregiverDashboardScreen.kt`
+  * `app/src/main/java/com/sih26003/aasriti/feature/reminders/RemindersScreen.kt`
+  * `app/src/test/java/com/sih26003/aasriti/CaregiverAshaWorkflowTests.kt`
 * **Functionality**:
   * Real `GameSession` telemetry and `CareLog` bindings in `CaregiverDashboardScreen`.
   * Strict >= 64dp touch target ergonomics and priority triage actions.

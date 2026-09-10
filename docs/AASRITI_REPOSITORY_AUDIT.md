@@ -51,7 +51,7 @@ Total Workspace Files (excluding ignored build/.gradle/.idea): **198** (includes
 
 | Category | File Count | Description & Key Locations |
 | :--- | :---: | :--- |
-| **SOURCE** | 47 | Production Kotlin files under `app/src/main/java/com/sih26003/smritisetu/` |
+| **SOURCE** | 47 | Production Kotlin files under `app/src/main/java/com/sih26003/aasriti/` |
 | **TEST** | 4 | Unit test suites under `app/src/test/` (44 test methods total) |
 | **CONFIG** | 8 | Build and project configs (`build.gradle.kts`, `settings.gradle.kts`, `gradle.properties`, `libs.versions.toml`, `AndroidManifest.xml`, `file_paths.xml`, etc.) |
 | **DOCUMENTATION** | 34 | Markdown and governance docs (`README.md`, `AGENTS.md`, `PROJECT_CONTEXT.md`, `OWNERSHIP.md`, `docs/**`) |
