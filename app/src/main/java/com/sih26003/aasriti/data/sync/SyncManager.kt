@@ -1,5 +1,6 @@
-﻿package com.sih26003.aasriti.data.sync
+package com.sih26003.aasriti.data.sync
 
+import com.sih26003.aasriti.data.firebase.FirestoreSyncAdapter
 import com.sih26003.aasriti.data.local.dao.SyncQueueDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,19 +9,14 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Durable local SyncQueue processing and state management layer for AASRITI.
  *
- * PHASE 1 LOCAL QUEUE ACKNOWLEDGEMENT STUB:
- * This class provides local queue buffer processing and state management for offline mutation tracking
- * in Room SQLite (`sync_queue` table).
+ * Drives opportunistic remote cloud synchronization to Cloud Firestore via FirestoreSyncAdapter.
  *
- * It uses the existing Room schema status semantics ("PENDING" -> "SYNCED") to process and drain
- * locally acknowledged mutation batches.
- *
- * NOTE: This processor operates 100% locally. It does NOT perform remote Firebase or cloud network
- * synchronization, nor does it represent remote cloud delivery. Actual remote transport dispatching
- * is reserved for Phase 2 integration adapters built on top of this local queue.
+ * Room SQLite remains the King and single source of truth.
+ * Items in `sync_queue` are marked `SYNCED` ONLY after successful Cloud Firestore acknowledgement.
  */
 class SyncManager(
-    private val syncQueueDao: SyncQueueDao
+    private val syncQueueDao: SyncQueueDao,
+    private val firestoreSyncAdapter: FirestoreSyncAdapter? = null
 ) {
     private val _isProcessing = MutableStateFlow(false)
     val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
@@ -31,33 +27,40 @@ class SyncManager(
     /**
      * Processes pending mutation items in the local Room sync queue.
      *
-     * In Phase 1 local offline mode:
-     * - Drains pending batch items from `SyncQueueDao.getPendingSyncBatches()`.
-     * - Marks items as locally acknowledged (`SYNCED`) in Room SQLite.
-     * - Increments retry counter if local DAO update encounters an error.
-     * - Prunes acknowledged items from the local queue and returns total processed count.
+     * For each pending item:
+     * - If `tableName == "game_sessions"` and `firestoreSyncAdapter` is provided:
+     *   Calls `firestoreSyncAdapter.uploadSyncQueueItem(item)`.
+     *   On Remote ACK success: calls `syncQueueDao.markSynced(item.id)`.
+     *   On Remote failure/error: calls `syncQueueDao.incrementRetry(item.id)`.
+     * - Unsupported table names or missing adapter: does NOT mark `SYNCED` (preserves PENDING state).
      *
-     * This does NOT represent remote cloud synchronization.
+     * Prunes acknowledged (`SYNCED`) items from the local queue upon batch completion.
      */
     suspend fun processPendingBatch(): Int {
         if (_isProcessing.value) return 0
         _isProcessing.value = true
         var processedCount = 0
 
+        val supportedTables = setOf("game_sessions", "patients", "relationships", "reminders", "care_logs")
+
         try {
             val pendingItems = syncQueueDao.getPendingSyncBatches()
             for (item in pendingItems) {
-                try {
-                    // Local queue state transition: mark item as locally acknowledged (SYNCED)
+                val success = if (supportedTables.contains(item.tableName)) {
+                    firestoreSyncAdapter?.uploadSyncQueueItem(item) ?: false
+                } else {
+                    false
+                }
+
+                if (success) {
                     syncQueueDao.markSynced(item.id)
                     processedCount++
-                } catch (e: Exception) {
-                    // Increment retry counter on local processing error
+                } else {
                     syncQueueDao.incrementRetry(item.id)
                 }
             }
             if (processedCount > 0) {
-                // Prune locally acknowledged items from queue
+                // Prune remotely acknowledged items from queue
                 syncQueueDao.clearCompleted()
             }
             _lastProcessedCount.value = processedCount

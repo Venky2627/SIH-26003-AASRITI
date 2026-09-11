@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -75,6 +76,14 @@ dependencies {
 
     // JSON Parser for Decision Tree ML & Language Packs
     implementation(libs.google.gson)
+
+    // Firebase Sync Messenger
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.auth.ktx)
+
+    // WorkManager Opportunistic Sync
+    implementation(libs.androidx.work.runtime.ktx)
 
     // Test dependencies
     testImplementation(libs.junit)

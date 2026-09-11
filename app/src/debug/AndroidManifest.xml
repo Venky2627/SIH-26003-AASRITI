@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sih26003.aasriti">
+
+    <application>
+        <activity
+            android:name="com.sih26003.aasriti.debug.DebugSyncActivity"
+            android:exported="true"
+            android:label="AASRITI Debug Sync Tester"
+            android:theme="@android:style/Theme.DeviceDefault.Light">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

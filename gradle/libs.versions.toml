@@ -16,6 +16,7 @@ coroutines = "1.8.0"
 googleServices = "4.4.1"
 firebaseBom = "32.8.0"
 gson = "2.10.1"
+workRuntime = "2.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,9 +48,13 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # Firebase (Messenger / Optional sync only)
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 
 # JSON for Decision Tree & language packs
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# WorkManager for Background Cloud Sync
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

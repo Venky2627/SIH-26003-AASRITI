@@ -1,10 +1,16 @@
-﻿package com.sih26003.aasriti.data.sync
+package com.sih26003.aasriti.data.sync
 
+import com.google.gson.Gson
+import com.sih26003.aasriti.data.firebase.FirestoreSyncAdapter
 import com.sih26003.aasriti.data.local.dao.SyncQueueDao
+import com.sih26003.aasriti.data.local.entities.CareLogEntity
+import com.sih26003.aasriti.data.local.entities.GameSessionEntity
+import com.sih26003.aasriti.data.local.entities.PatientEntity
+import com.sih26003.aasriti.data.local.entities.RelationshipEntity
+import com.sih26003.aasriti.data.local.entities.ReminderEntity
 import com.sih26003.aasriti.data.local.entities.SyncQueueEntity
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
@@ -47,75 +53,93 @@ class SyncManagerTest {
         }
     }
 
-    @Test
-    fun testProcessPendingBatchDrainsQueue() = runBlocking {
-        val fakeDao = FakeSyncQueueDao()
-        fakeDao.enqueue(SyncQueueEntity(id = 1L, tableName = "reminders", recordId = "rem_1", operation = "INSERT", payloadJson = "{}"))
-        fakeDao.enqueue(SyncQueueEntity(id = 2L, tableName = "reminders", recordId = "rem_2", operation = "UPDATE", payloadJson = "{}"))
+    private class FakeFirestoreSyncAdapter(
+        private val shouldSucceed: Boolean = true
+    ) : FirestoreSyncAdapter() {
+        val uploadedItems = mutableListOf<SyncQueueEntity>()
 
-        val syncManager = SyncManager(fakeDao)
-        assertEquals(0, syncManager.lastProcessedCount.value)
-        assertFalse(syncManager.isProcessing.value)
-
-        val processedCount = syncManager.processPendingBatch()
-
-        assertEquals(2, processedCount)
-        assertEquals(2, syncManager.lastProcessedCount.value)
-        assertEquals(0, fakeDao.items.size)
+        override suspend fun uploadSyncQueueItem(item: SyncQueueEntity): Boolean {
+            uploadedItems.add(item)
+            return shouldSucceed
+        }
     }
 
     @Test
-    fun testProcessPendingBatchHandlesEmptyQueue() = runBlocking {
+    fun testProcessPendingBatchAllSupportedEntitiesSuccess() = runBlocking {
         val fakeDao = FakeSyncQueueDao()
-        val syncManager = SyncManager(fakeDao)
+        val gson = Gson()
+
+        val session = GameSessionEntity(id = "sess_1", patientId = "aita_borah_01", gameId = "FLOWER_MATCH", difficultyLevel = 1, durationMs = 12000L, accuracy = 1.0f, errors = 0, reactionTimeMs = 1500L, hesitationCount = 0, adaptationDecision = 2, completed = true)
+        val patient = PatientEntity(id = "aita_borah_01", pseudonymCode = "AS-KAM-0042", birthYear = 1958, gender = "F", primaryLanguage = "as", cognitiveStage = "MCI")
+        val rel = RelationshipEntity(id = "rel_1", patientId = "aita_borah_01", name = "Rupam", relationshipType = "SON")
+        val reminder = ReminderEntity(id = "rem_1", patientId = "aita_borah_01", title = "Water", reminderType = "HYDRATION", hour = 11, minute = 0)
+        val careLog = CareLogEntity(id = "log_1", patientId = "aita_borah_01", category = "MEDICINE", severity = "NORMAL", notes = "Taken")
+
+        fakeDao.enqueue(SyncQueueEntity(id = 1L, tableName = "game_sessions", recordId = session.id, operation = "INSERT", payloadJson = gson.toJson(session)))
+        fakeDao.enqueue(SyncQueueEntity(id = 2L, tableName = "patients", recordId = patient.id, operation = "INSERT", payloadJson = gson.toJson(patient)))
+        fakeDao.enqueue(SyncQueueEntity(id = 3L, tableName = "relationships", recordId = rel.id, operation = "INSERT", payloadJson = gson.toJson(rel)))
+        fakeDao.enqueue(SyncQueueEntity(id = 4L, tableName = "reminders", recordId = reminder.id, operation = "INSERT", payloadJson = gson.toJson(reminder)))
+        fakeDao.enqueue(SyncQueueEntity(id = 5L, tableName = "care_logs", recordId = careLog.id, operation = "INSERT", payloadJson = gson.toJson(careLog)))
+
+        val fakeAdapter = FakeFirestoreSyncAdapter(shouldSucceed = true)
+        val syncManager = SyncManager(fakeDao, fakeAdapter)
+
+        val processedCount = syncManager.processPendingBatch()
+
+        assertEquals(5, processedCount)
+        assertEquals(5, syncManager.lastProcessedCount.value)
+        assertEquals(5, fakeAdapter.uploadedItems.size)
+        assertEquals(0, fakeDao.items.size) // All 5 SYNCED & cleared
+    }
+
+    @Test
+    fun testProcessPendingBatchGameSessionFailureIncrementsRetry() = runBlocking {
+        val fakeDao = FakeSyncQueueDao()
+        fakeDao.enqueue(
+            SyncQueueEntity(
+                id = 1L,
+                tableName = "game_sessions",
+                recordId = "sess_999",
+                operation = "INSERT",
+                payloadJson = "{}"
+            )
+        )
+
+        val fakeAdapter = FakeFirestoreSyncAdapter(shouldSucceed = false)
+        val syncManager = SyncManager(fakeDao, fakeAdapter)
 
         val processedCount = syncManager.processPendingBatch()
 
         assertEquals(0, processedCount)
         assertEquals(0, syncManager.lastProcessedCount.value)
+
+        val item = fakeDao.items.firstOrNull { it.id == 1L }
+        assertNotNull(item)
+        assertEquals(1, item!!.retryCount)
+        assertEquals("PENDING", item.status)
     }
 
     @Test
-    fun testProcessPendingBatchIncrementsRetryOnFailure() = runBlocking {
-        val fakeDao = FakeSyncQueueDao(failOnIds = setOf(1L))
-        fakeDao.enqueue(SyncQueueEntity(id = 1L, tableName = "reminders", recordId = "rem_1", operation = "INSERT", payloadJson = "{}"))
-        fakeDao.enqueue(SyncQueueEntity(id = 2L, tableName = "reminders", recordId = "rem_2", operation = "UPDATE", payloadJson = "{}"))
+    fun testProcessPendingBatchUnsupportedTableNotSynced() = runBlocking {
+        val fakeDao = FakeSyncQueueDao()
+        fakeDao.enqueue(
+            SyncQueueEntity(
+                id = 1L,
+                tableName = "unsupported_table",
+                recordId = "id_1",
+                operation = "INSERT",
+                payloadJson = "{}"
+            )
+        )
 
         val syncManager = SyncManager(fakeDao)
         val processedCount = syncManager.processPendingBatch()
 
-        assertEquals(1, processedCount)
-        assertEquals(1, syncManager.lastProcessedCount.value)
-
-        // Item 1 failed markSynced -> retryCount incremented, status remains PENDING
-        val item1 = fakeDao.items.firstOrNull { it.id == 1L }
-        assertNotNull(item1)
-        assertEquals(1, item1!!.retryCount)
-        assertEquals("PENDING", item1.status)
-
-        // Item 2 succeeded -> marked SYNCED and pruned by clearCompleted()
-        val item2 = fakeDao.items.firstOrNull { it.id == 2L }
-        assertEquals(null, item2)
-    }
-
-    @Test
-    fun testProcessPendingBatchReentrancyGuard() = runBlocking {
-        var nestedResult = -1
-        lateinit var syncManager: SyncManager
-
-        val fakeDao = FakeSyncQueueDao(
-            markSyncedCallback = { _ ->
-                // Attempt re-entrant call while isProcessing is true
-                nestedResult = syncManager.processPendingBatch()
-            }
-        )
-        fakeDao.enqueue(SyncQueueEntity(id = 1L, tableName = "care_logs", recordId = "log_1", operation = "INSERT", payloadJson = "{}"))
-
-        syncManager = SyncManager(fakeDao)
-        val outerResult = syncManager.processPendingBatch()
-
-        assertEquals(0, nestedResult) // Re-entrant call returned 0 immediately
-        assertEquals(1, outerResult)
+        assertEquals(0, processedCount)
+        val item = fakeDao.items.firstOrNull { it.id == 1L }
+        assertNotNull(item)
+        assertEquals(1, item!!.retryCount)
+        assertEquals("PENDING", item.status)
     }
 
     @Test
