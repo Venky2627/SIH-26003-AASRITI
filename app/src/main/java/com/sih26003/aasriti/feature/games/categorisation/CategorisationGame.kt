@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.categorisation
+package com.sih26003.aasriti.feature.games.categorisation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,9 +24,53 @@ import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
+
 data class CategorisationItem(val name: String, val categoryId: String, val emoji: String)
 
 data class CategoryDefinition(val id: String, val labelIndic: String, val emoji: String)
+
+object CategorisationGameData {
+    val defaultCategories = listOf(
+        CategoryDefinition("FRUIT", "ফল-মূল (Fruits)", "🍎"),
+        CategoryDefinition("VEGETABLE", "শাক-পাচলি (Vegetables)", "🥬"),
+        CategoryDefinition("ANIMAL", "পোহনীয়া জীৱ (Animals)", "🐄"),
+        CategoryDefinition("CLOTH", "পৰম্পৰাগত সাজ (Traditional Handloom)", "🧣"),
+        CategoryDefinition("MUSIC", "লোকবাদ্য (Folk Music)", "🪕")
+    )
+
+    val defaultItemPool = listOf(
+        // Authentic regional fruits
+        CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭"),
+        CategorisationItem("মালভোগ কল (Malbhog Banana)", "FRUIT", "🍌"),
+        CategorisationItem("খাচী সুমথিৰা (Khasi Mandarin)", "FRUIT", "🍊"), // Meghalaya
+        CategorisationItem("কাজি নেমু (Assam Lemon)", "FRUIT", "🍋"), // Assam
+
+        // Authentic regional vegetables & greens
+        CategorisationItem("তিতা কেৰেলা (Bitter Gourd)", "VEGETABLE", "🥒"),
+        CategorisationItem("জাতি লাউ (Bottle Gourd)", "VEGETABLE", "🥬"),
+        CategorisationItem("বাঁহৰ গাজ (Bamboo Shoot)", "VEGETABLE", "🎍"), // Assam & Meghalaya
+        CategorisationItem("ভূত জলকীয়া (Bhut Jolokia)", "VEGETABLE", "🌶️"), // Assam
+
+        // Domestic & regional fauna
+        CategorisationItem("ঘৰচীয়া গাই (Domestic Cow)", "ANIMAL", "🐄"),
+        CategorisationItem("পানী ম'হ (Water Buffalo)", "ANIMAL", "🐃"),
+        CategorisationItem("মেঠুন (Mithun)", "ANIMAL", "🐂"),
+
+        // Traditional Handloom & Heritage Wear (Assam, Manipur, Meghalaya)
+        CategorisationItem("ফুলাম গামোচা (Phulam Gamosa)", "CLOTH", "🧣"), // Assam
+        CategorisationItem("মৈৰাং ফী (Moirang Phee Shawl)", "CLOTH", "🥻"), // Manipur
+        CategorisationItem("ৰিন্ডিয়া এৰী বস্ত্ৰ (Ryndia Eri Silk)", "CLOTH", "🧵"), // Meghalaya
+        CategorisationItem("বাঁহৰ জাপি (Bamboo Jaapi)", "CLOTH", "👒"), // Assam
+
+        // Traditional Folk Instruments
+        CategorisationItem("দুতৰা বাদ্য (Duitara)", "MUSIC", "🪕"), // Meghalaya
+        CategorisationItem("পেনা বাদ্য (Pena)", "MUSIC", "🎻"), // Manipur
+        CategorisationItem("বিহু ঢোল (Bihu Dhol)", "MUSIC", "🥁") // Assam
+    )
+}
 
 class CategorisationEngine(
     patientId: String,
@@ -60,42 +104,31 @@ fun CategorisationGameScreen(
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
 
-    val categories = remember {
-        listOf(
-            CategoryDefinition("FRUIT", "ফল-মূল (Fruits)", "🍎"),
-            CategoryDefinition("VEGETABLE", "শাক-পাচলি (Vegetables)", "🥬"),
-            CategoryDefinition("ANIMAL", "পোহনীয়া জীৱ (Animals)", "🐄"),
-            CategoryDefinition("CLOTH", "কাপোৰ (Traditional Wear)", "🧣")
-        )
-    }
-
-    val itemPool = remember {
-        listOf(
-            CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭"),
-            CategorisationItem("মালভোগ কল (Banana)", "FRUIT", "🍌"),
-            CategorisationItem("তিতা কেৰেলা (Bitter Gourd)", "VEGETABLE", "🥒"),
-            CategorisationItem("জাতি লাউ (Bottle Gourd)", "VEGETABLE", "🥬"),
-            CategorisationItem("ঘৰচীয়া গাই (Cow)", "ANIMAL", "🐄"),
-            CategorisationItem("ফুলাম গামোচা (Gamosa)", "CLOTH", "🧣")
-        )
-    }
-
-    val activeCategoryList = remember(difficulty) {
-        when (difficulty) {
-            1 -> categories.take(2)
-            2 -> categories.take(3)
-            else -> categories
-        }
-    }
+    val categories = remember { CategorisationGameData.defaultCategories }
+    val itemPool = remember { CategorisationGameData.defaultItemPool }
 
     val currentItem = remember(difficulty, roundCount) {
         itemPool[(roundCount - 1) % itemPool.size]
     }
 
+    // Ensure target category is always in the active list, with distractors scaled by difficulty
+    val activeCategoryList = remember(difficulty, currentItem) {
+        val targetCat = categories.first { it.id == currentItem.categoryId }
+        val otherCats = categories.filter { it.id != currentItem.categoryId }
+        val categoryCount = when (difficulty) {
+            1 -> 2
+            2 -> 3
+            3 -> 4
+            else -> categories.size
+        }
+        val selectedDistractors = otherCats.take(categoryCount - 1)
+        (listOf(targetCat) + selectedDistractors).sortedBy { it.id }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -108,13 +141,26 @@ fun CategorisationGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.defaultMinSize(minHeight = 52.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            AasritiVoicePill(
+                state = AasritiVoicePillState.IDLE,
+                onClick = { engine.speakInstructions() },
+                customText = "🔊 শুনক"
+            )
+
+            Text(
+                "স্তৰ $difficulty",
+                color = AasritiColorTokens.DeepNortheastForest,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         when (phase) {
@@ -122,7 +168,8 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -130,7 +177,7 @@ fun CategorisationGameScreen(
                         "🧺 শ্ৰেণীবিভাজন (Categorisation)",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -143,15 +190,15 @@ fun CategorisationGameScreen(
                             else -> "মনোযোগেৰে আৰু ক্ষিপ্ৰভাৱে শ্ৰেণী নিৰ্বাচন কৰক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.WarmSlate,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.startRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -169,14 +216,20 @@ fun CategorisationGameScreen(
                     // Item to classify with high contrast border
                     Box(
                         modifier = Modifier
-                            .size(150.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(20.dp))
-                            .border(3.dp, Color(0xFFFFD700), RoundedCornerShape(20.dp)),
+                            .size(160.dp)
+                            .background(AasritiColorTokens.SoftCream, RoundedCornerShape(24.dp))
+                            .border(2.5.dp, AasritiColorTokens.MugaGold, RoundedCornerShape(24.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(currentItem.emoji, fontSize = 58.sp)
-                            Text(currentItem.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(currentItem.emoji, fontSize = 60.sp)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                currentItem.name,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.DeepCharcoal
+                            )
                         }
                     }
 
@@ -185,30 +238,30 @@ fun CategorisationGameScreen(
                         "এইটো কিহৰ দলত পৰে? (Which group?)",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700)
+                        color = AasritiColorTokens.DeepCharcoal
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Large Category Target Buttons
+                    // Large Category Target Buttons (>= 64dp touch targets)
                     activeCategoryList.forEach { category ->
                         Button(
                             onClick = {
                                 val isCorrect = (category.id == currentItem.categoryId)
                                 engine.onAnswerAttempt(isCorrect)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
-                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(62.dp)
+                                .height(64.dp)
                                 .padding(vertical = 4.dp)
-                                .border(2.dp, Color(0xFF424242), RoundedCornerShape(14.dp))
                         ) {
                             Text(
-                                "${category.emoji} ${category.labelIndic}",
+                                "${category.emoji}  ${category.labelIndic}",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = AasritiColorTokens.DeepCharcoal
                             )
                         }
                     }
@@ -219,7 +272,8 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -229,19 +283,19 @@ fun CategorisationGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
                 }
             }
@@ -250,18 +304,19 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
+                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = AasritiColorTokens.DeepCharcoal)
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -275,3 +330,4 @@ fun CategorisationGameScreen(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+

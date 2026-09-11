@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.villagemarket
+package com.sih26003.aasriti.feature.games.villagemarket
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +24,38 @@ import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
+
 data class MarketItem(val id: String, val name: String, val emoji: String)
+
+object VillageMarketData {
+    val defaultStallGoods = listOf(
+        // Assam staples & GI heritage
+        MarketItem("rice", "জহা চাউল (Joha Scented Rice)", "🌾"),
+        MarketItem("lemon", "কাজি নেমু (Assam Lemon)", "🍋"),
+        MarketItem("tea", "অসম চাহ (Assam Orthodox Tea)", "🍵"),
+        MarketItem("pitha", "ঘিলা পিঠা (Ghila Pitha)", "🥞"),
+        MarketItem("jaapi", "বাঁহৰ জাপি (Bamboo Jaapi)", "👒"),
+
+        // Manipur regional specialties
+        MarketItem("chakhao", "চাক-হাও চাউল (Chak-hao Black Rice)", "🍚"),
+        MarketItem("singju", "ছিংজু চালাড (Singju Salad)", "🥗"),
+        MarketItem("fish", "লোকেল মাছ (Fresh River Fish)", "🐟"),
+
+        // Meghalaya specialties
+        MarketItem("orange", "খাচী সুমথিৰা (Khasi Mandarin)", "🍊"),
+        MarketItem("bamboo", "বাঁহৰ গাজ (Bamboo Shoot)", "🎍"),
+        MarketItem("ginger", "আদা (Nadia Ginger)", "🫚"),
+        MarketItem("ryndia", "ৰিন্ডিয়া এৰী কাপোৰ (Ryndia Shawl)", "🧵"),
+
+        // North Eastern universal pantry
+        MarketItem("chilli", "ভূত জলকীয়া (Bhut Jolokia)", "🌶️"),
+        MarketItem("betel", "তামোল-পান (Tamul Paan)", "🍃"),
+        MarketItem("oil", "সৰিয়হ তেল (Mustard Oil)", "🫙")
+    )
+}
 
 class VillageMarketEngine(
     patientId: String,
@@ -63,19 +94,7 @@ fun VillageMarketGameScreen(
     val roundCount by engine.roundCount.collectAsState()
 
     // Authentic North Eastern Village Market inventory
-    val allStallGoods = remember {
-        listOf(
-            MarketItem("rice", "জহা চাউল (Joha Rice)", "🌾"),
-            MarketItem("lemon", "কাজি নেমু (Assam Lemon)", "🍋"),
-            MarketItem("chilli", "ভূত জলকীয়া (Bhut Jolokia)", "🌶️"),
-            MarketItem("betel", "তামোল-পান (Paan)", "🍃"),
-            MarketItem("tea", "অসম চাহ (Assam Tea)", "🍵"),
-            MarketItem("fish", "লোকেল মাছ (River Fish)", "🐟"),
-            MarketItem("oil", "সৰিয়হ তেল (Mustard Oil)", "🫙"),
-            MarketItem("bamboo", "বাঁহৰ গাজ (Bamboo Shoot)", "🎍"),
-            MarketItem("ginger", "আদা (Ginger)", "🫚")
-        )
-    }
+    val allStallGoods = remember { VillageMarketData.defaultStallGoods }
 
     val (shoppingList, activeStall) = remember(difficulty, roundCount) {
         val count = when (difficulty) {
@@ -85,12 +104,16 @@ fun VillageMarketGameScreen(
             4 -> 4
             else -> 5
         }
-        val targetList = allStallGoods.take(count)
+        val offset = ((roundCount - 1) * 2) % allStallGoods.size
+        val rotated = allStallGoods.drop(offset) + allStallGoods.take(offset)
+        val targetList = rotated.take(count)
+        val remaining = rotated.drop(count)
         val stall = when (difficulty) {
-            1 -> targetList + allStallGoods.drop(count).take(2) // 4 items total in stall
-            2 -> targetList + allStallGoods.drop(count).take(3) // 6 items in stall
+            1 -> targetList + remaining.take(2) // 4 items total in stall
+            2 -> targetList + remaining.take(3) // 6 items in stall
+            3 -> targetList + remaining.take(5) // 8 items in stall
             else -> allStallGoods // full market stall
-        }.shuffled()
+        }.shuffled(java.util.Random(roundCount.toLong()))
         Pair(targetList, stall)
     }
 
@@ -100,7 +123,7 @@ fun VillageMarketGameScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -113,13 +136,26 @@ fun VillageMarketGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.defaultMinSize(minHeight = 52.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            AasritiVoicePill(
+                state = AasritiVoicePillState.IDLE,
+                onClick = { engine.speakList(shoppingList.joinToString(", ") { it.name }) },
+                customText = "🔊 তালিকা"
+            )
+
+            Text(
+                "স্তৰ $difficulty",
+                color = AasritiColorTokens.DeepNortheastForest,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         when (phase) {
@@ -127,7 +163,8 @@ fun VillageMarketGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -135,7 +172,7 @@ fun VillageMarketGameScreen(
                         "🛍️ গাঁওৰ বজাৰ (Village Market)",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -148,7 +185,7 @@ fun VillageMarketGameScreen(
                             else -> "মনোযোগেৰে ৫ টা বস্তু মনত ৰাখি বাছক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.WarmSlate,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
@@ -160,8 +197,8 @@ fun VillageMarketGameScreen(
                             engine.startRound()
                             engine.speakList(shoppingList.joinToString(", ") { it.name })
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -177,8 +214,8 @@ fun VillageMarketGameScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(18.dp))
-                            .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(18.dp))
+                            .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                            .border(2.dp, AasritiColorTokens.MugaGold, RoundedCornerShape(20.dp))
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -186,7 +223,7 @@ fun VillageMarketGameScreen(
                             "📝 মনত ৰাখিবলগীয়া তালিকা:",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFD700)
+                            color = AasritiColorTokens.DeepCharcoal
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -194,7 +231,7 @@ fun VillageMarketGameScreen(
                             Text(
                                 "• ${item.emoji} ${item.name}",
                                 fontSize = 18.sp,
-                                color = Color.White,
+                                color = AasritiColorTokens.DeepCharcoal,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
@@ -203,8 +240,8 @@ fun VillageMarketGameScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
                             onClick = { showListPhase = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
-                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(60.dp)
@@ -222,7 +259,7 @@ fun VillageMarketGameScreen(
                             "বজাৰৰ পৰা বস্তুবোৰ স্পৰ্শ কৰক: (${collectedItems.size}/${shoppingList.size})",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFD700),
+                            color = AasritiColorTokens.DeepCharcoal,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
 
@@ -238,15 +275,15 @@ fun VillageMarketGameScreen(
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(90.dp)
+                                            .height(96.dp)
                                             .background(
-                                                if (isCollected) Color(0xFF1B5E20) else Color(0xFF1E1E1E),
-                                                RoundedCornerShape(14.dp)
+                                                if (isCollected) AasritiColorTokens.SupportingSage.copy(alpha = 0.4f) else AasritiColorTokens.SoftCream,
+                                                RoundedCornerShape(16.dp)
                                             )
                                             .border(
                                                 2.dp,
-                                                if (isCollected) Color(0xFF00E676) else Color(0xFF424242),
-                                                RoundedCornerShape(14.dp)
+                                                if (isCollected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
+                                                RoundedCornerShape(16.dp)
                                             )
                                             .clickable(enabled = !isCollected) {
                                                 val isTarget = shoppingList.any { it.id == item.id }
@@ -268,7 +305,7 @@ fun VillageMarketGameScreen(
                                                 item.name,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (isCollected) Color(0xFF00E676) else Color.White
+                                                color = if (isCollected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
                                             )
                                         }
                                     }
@@ -283,7 +320,8 @@ fun VillageMarketGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -293,19 +331,19 @@ fun VillageMarketGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
                 }
             }
@@ -314,18 +352,19 @@ fun VillageMarketGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
+                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = AasritiColorTokens.DeepCharcoal)
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -339,3 +378,4 @@ fun VillageMarketGameScreen(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+

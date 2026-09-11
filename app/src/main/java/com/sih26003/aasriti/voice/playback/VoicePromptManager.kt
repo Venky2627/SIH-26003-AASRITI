@@ -43,6 +43,7 @@ class VoicePromptManager(private val context: Context) : TextToSpeech.OnInitList
         val locale = when (langCode) {
             "as" -> Locale("as", "IN")
             "mn" -> Locale("mni", "IN")
+            "kha" -> Locale("en", "IN") // Khasi standard Latin script fallback
             "br" -> Locale("brx", "IN")
             "hi" -> Locale("hi", "IN")
             else -> Locale("en", "IN")

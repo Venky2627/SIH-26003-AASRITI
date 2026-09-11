@@ -1,5 +1,6 @@
-﻿package com.sih26003.aasriti.feature.games.patternrecognition
+package com.sih26003.aasriti.feature.games.patternrecognition
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.repository.GameRepository
 import com.sih26003.aasriti.feature.games.framework.BaseGameEngine
 import com.sih26003.aasriti.feature.games.framework.GameId
@@ -23,12 +27,94 @@ import com.sih26003.aasriti.feature.games.framework.GamePhase
 import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+data class PatternItem(
+    val id: String,
+    val symbol: String,
+    val nameIndic: String,
+    val originRegion: String
+)
 
 data class PatternChallenge(
     val sequence: List<String>,
     val correctAnswer: String,
-    val choices: List<String>
+    val choices: List<String>,
+    val descriptionIndic: String = ""
 )
+
+object PatternGameData {
+    val culturalMotifs = listOf(
+        PatternItem("kopou", "🌸", "কপৌ ফুল (Kopou Orchid)", "Assam"),
+        PatternItem("jaapi", "👒", "বাঁহৰ জাপি (Bamboo Jaapi)", "Assam"),
+        PatternItem("dhol", "🪕", "লোকবাদ্য (Folk Instrument)", "North East"),
+        PatternItem("tea", "🍵", "অসম চাহ (Assam Tea Leaf)", "Assam"),
+        PatternItem("gamosa", "🧣", "ফুলাম গামোচা (Gamosa)", "Assam"),
+        PatternItem("lemon", "🍋", "কাজি নেমু (Assam Lemon)", "Assam"),
+        PatternItem("lotus", "🪷", "নীলকমল (Blue Lily)", "Assam"),
+        PatternItem("mandarin", "🍊", "খাচী সুমথিৰা (Khasi Mandarin)", "Meghalaya")
+    )
+
+    fun getChallengeForLevel(difficulty: Int, roundCount: Int): PatternChallenge {
+        return when (difficulty) {
+            1 -> {
+                // Alternating pair of authentic regional items (A B A B ?)
+                if (roundCount % 2 == 1) {
+                    PatternChallenge(
+                        sequence = listOf("🌸", "👒", "🌸", "👒", "❓"),
+                        correctAnswer = "🌸",
+                        choices = listOf("🌸", "👒"),
+                        descriptionIndic = "কপৌ ফুল (🌸) আৰু বাঁহৰ জাপি (👒)"
+                    )
+                } else {
+                    PatternChallenge(
+                        sequence = listOf("🍵", "🧣", "🍵", "🧣", "❓"),
+                        correctAnswer = "🍵",
+                        choices = listOf("🍵", "🧣"),
+                        descriptionIndic = "অসম চাহ (🍵) আৰু ফুলাম গামোচা (🧣)"
+                    )
+                }
+            }
+            2 -> {
+                // 3-item regional rotation (A B C A B ?)
+                PatternChallenge(
+                    sequence = listOf("🌸", "👒", "🪕", "🌸", "👒", "❓"),
+                    correctAnswer = "🪕",
+                    choices = listOf("🌸", "👒", "🪕"),
+                    descriptionIndic = "তিনিটা সাংস্কৃতিক সামগ্ৰীৰ ক্ৰম: ফুল, জাপি, আৰু লোকবাদ্য"
+                )
+            }
+            3 -> {
+                // Step / rhythmic handloom repetition (A A B A A ?)
+                PatternChallenge(
+                    sequence = listOf("🧣", "🧣", "🪷", "🧣", "🧣", "❓"),
+                    correctAnswer = "🪷",
+                    choices = listOf("🧣", "🪷", "🍋"),
+                    descriptionIndic = "তাঁতশালৰ পাৰিৰ আৰ্হি: দুটা গামোচা আৰু এটা নীলকমল"
+                )
+            }
+            4 -> {
+                // Multi-item sequence with distractors (A B B A B ?)
+                PatternChallenge(
+                    sequence = listOf("🍋", "🍊", "🍊", "🍋", "🍊", "❓"),
+                    correctAnswer = "🍊",
+                    choices = listOf("🍋", "🍊", "🌸", "👒"),
+                    descriptionIndic = "উত্তৰ-পূবৰ টেঙা ফলৰ ক্ৰম: কাজি নেমু আৰু খাচী সুমথিৰা"
+                )
+            }
+            else -> {
+                // Level 5: Interleaved sequence (A B A C A B ?)
+                PatternChallenge(
+                    sequence = listOf("🌸", "👒", "🌸", "🪕", "🌸", "👒", "❓"),
+                    correctAnswer = "🌸",
+                    choices = listOf("🌸", "👒", "🪕", "🍵"),
+                    descriptionIndic = "সাংস্কৃতিক আৰ্হিৰ বিশেষ চক্ৰ"
+                )
+            }
+        }
+    }
+}
 
 class PatternRecognitionEngine(
     patientId: String,
@@ -47,7 +133,7 @@ class PatternRecognitionEngine(
     override fun speakInstructions() {
         voicePromptManager.speakPromptKey(
             "pattern_instructions",
-            "আৰ্হিটো লক্ষ্য কৰক আৰু খালী ঠাইত কি বহিব বাছক। (Observe the pattern sequence and select what comes next.)"
+            "আৰ্হিটো লক্ষ্য কৰক আৰু খালী ঠাইত কি বহিব বাছক। (Observe the cultural pattern sequence and select what comes next.)"
         )
     }
 }
@@ -61,60 +147,71 @@ fun PatternRecognitionGameScreen(
     val difficulty by engine.currentDifficulty.collectAsState()
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    var isVoicePlaying by remember { mutableStateOf(false) }
 
-    // Level-scaled pattern challenges
+    // Level-scaled cultural pattern challenge
     val challenge = remember(difficulty, roundCount) {
-        when (difficulty) {
-            1 -> {
-                // Simple 2-item alternating pattern
-                if (roundCount % 2 == 1) {
-                    PatternChallenge(listOf("🟡", "🔷", "🟡", "🔷", "❓"), "🟡", listOf("🟡", "🔷"))
-                } else {
-                    PatternChallenge(listOf("🔴", "🟢", "🔴", "🟢", "❓"), "🔴", listOf("🔴", "🟢"))
-                }
-            }
-            2 -> {
-                // 3-item pattern
-                PatternChallenge(listOf("🟡", "🔷", "🟩", "🟡", "🔷", "❓"), "🟩", listOf("🟡", "🔷", "🟩"))
-            }
-            3 -> {
-                // Longer sequence with step rhythm
-                PatternChallenge(listOf("🔺", "🔺", "🔵", "🔺", "🔺", "❓"), "🔵", listOf("🔺", "🔵", "🟡"))
-            }
-            4 -> {
-                // Complex pattern + distractors
-                PatternChallenge(listOf("🔶", "🔷", "🔷", "🔶", "🔷", "❓"), "🔷", listOf("🔶", "🔷", "🔺", "🟩"))
-            }
-            else -> {
-                // Level 5: Abstract sequence requiring fast evaluation
-                PatternChallenge(listOf("🔴", "🔺", "🔵", "🔺", "🔴", "🔺", "❓"), "🔵", listOf("🔴", "🔵", "🔺", "🟡"))
-            }
-        }
+        PatternGameData.getChallengeForLevel(difficulty, roundCount)
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(20.dp),
+            .background(AasritiColorTokens.WarmIvory)
+            .padding(18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Header
+        // Top Header Row with Navigation, Level Indicator, and Canonical Voice Pill
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.defaultMinSize(minHeight = 44.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "← উভতি যাওক",
+                    color = AasritiColorTokens.DeepCharcoal,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            Box(
+                modifier = Modifier
+                    .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+                    .border(1.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = "স্তৰ $difficulty (Level $difficulty)",
+                    color = AasritiColorTokens.DeepNortheastForest,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            AasritiVoicePill(
+                state = if (isVoicePlaying) AasritiVoicePillState.PLAYING else AasritiVoicePillState.IDLE,
+                onClick = {
+                    isVoicePlaying = true
+                    engine.speakInstructions()
+                    coroutineScope.launch {
+                        delay(2500)
+                        isVoicePlaying = false
+                    }
+                },
+                modifier = Modifier.height(44.dp)
+            )
         }
 
         when (phase) {
@@ -122,41 +219,53 @@ fun PatternRecognitionGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "🔷 আৰ্হি চিনাক্তকৰণ (Pattern Recognition)",
-                        fontSize = 22.sp,
+                        text = "🌸 সাংস্কৃতিক আৰ্হি চিনাক্তকৰণ",
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        when (difficulty) {
-                            1 -> "আৰ্হিটো চাওক আৰু প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি হ'ব বাছক।"
-                            2 -> "তিনিটা ৰঙৰ ক্ৰমটো মন দি বুজি লওক।"
-                            3 -> "দীঘলীয়া আৰ্হিৰ পিছৰ বস্তুটো নিৰ্ণয় কৰক।"
-                            4 -> "জটিল ক্ৰমৰ মাজৰ পৰা সঠিক উত্তৰ বিচাৰক।"
-                            else -> "ক্ষিপ্ৰভাৱে আৰ্হিটো পৰীক্ষা কৰি বাছক।"
+                        text = "(Cultural Pattern Recognition)",
+                        fontSize = 14.sp,
+                        color = AasritiColorTokens.WarmSlate,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = when (difficulty) {
+                            1 -> "সাংস্কৃতিক আৰ্হিটো মন দি চাওক আৰু প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি বহিব বাছক।"
+                            2 -> "তিনিটা সাংস্কৃতিক সামগ্ৰীৰ ক্ৰমটো মন দি বুজি লওক।"
+                            3 -> "তাঁতশালৰ পাৰিৰ দৰে আৰ্হিৰ পিছৰ বস্তুটো নিৰ্ণয় কৰক।"
+                            4 -> "জটিল ক্ৰমৰ মাজৰ পৰা সঠিক উত্তৰ বাছক।"
+                            else -> "ক্ষিপ্ৰভাৱে আৰ্হিটো পৰীক্ষা কৰি সঠিক চিন বাছক।"
                         },
-                        fontSize = 18.sp,
-                        color = Color.White,
+                        fontSize = 17.sp,
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center,
-                        lineHeight = 26.sp
+                        lineHeight = 25.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.startRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
+                            .height(58.dp)
                     ) {
-                        Text("আৰ্হি মিলাওক (Start Round) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            text = "আৰ্হি মিলাওক (Start Round) ▶",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
@@ -167,43 +276,52 @@ fun PatternRecognitionGameScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "প্ৰশ্নবোধক (?) চিনৰ ঠাইত কি বহিব? (What comes next?)",
-                        fontSize = 19.sp,
+                        text = "প্ৰশ্নবোধক (?) ঠাইত কি বহিব?",
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "What comes next in the sequence?",
+                        fontSize = 13.sp,
+                        color = AasritiColorTokens.WarmSlate,
+                        textAlign = TextAlign.Center
+                    )
 
-                    // Sequence Display Row with High Contrast
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Sequence Display Row with Muga Gold Accent
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
-                            .border(2.dp, Color(0xFF424242), RoundedCornerShape(16.dp))
-                            .padding(vertical = 16.dp, horizontal = 8.dp),
+                            .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                            .border(2.dp, AasritiColorTokens.MugaGold, RoundedCornerShape(20.dp))
+                            .padding(vertical = 18.dp, horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         challenge.sequence.forEach { symbol ->
                             Text(
-                                symbol,
-                                fontSize = if (symbol == "❓") 36.sp else 30.sp,
-                                color = if (symbol == "❓") Color(0xFFFFD700) else Color.White
+                                text = symbol,
+                                fontSize = if (symbol == "❓") 38.sp else 32.sp,
+                                color = if (symbol == "❓") AasritiColorTokens.MutedHeritageTerracotta else AasritiColorTokens.DeepCharcoal,
+                                fontWeight = if (symbol == "❓") FontWeight.Bold else FontWeight.Normal
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     Text(
-                        "তলৰ যিকোনো এটা স্পৰ্শ কৰক: (Tap choice)",
-                        fontSize = 17.sp,
-                        color = Color(0xFFE0E0E0),
-                        modifier = Modifier.padding(bottom = 14.dp)
+                        text = "তলৰ পৰা শুদ্ধ ছবিখন স্পৰ্শ কৰক:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepCharcoal,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    // Big Tappable Choice Targets
+                    // Big Tappable Choice Targets for Elderly Usability (>= 72dp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -211,16 +329,16 @@ fun PatternRecognitionGameScreen(
                         challenge.choices.forEach { choice ->
                             Box(
                                 modifier = Modifier
-                                    .size(72.dp)
-                                    .background(Color(0xFF262626), RoundedCornerShape(16.dp))
-                                    .border(2.5.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
+                                    .size(76.dp)
+                                    .background(AasritiColorTokens.SoftCream, RoundedCornerShape(18.dp))
+                                    .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(18.dp))
                                     .clickable {
                                         val isCorrect = (choice == challenge.correctAnswer)
                                         engine.onAnswerAttempt(isCorrect)
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(choice, fontSize = 36.sp)
+                                Text(text = choice, fontSize = 38.sp)
                             }
                         }
                     }
@@ -231,29 +349,35 @@ fun PatternRecognitionGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("🌟", fontSize = 64.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = "🌟", fontSize = 56.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        feedbackMsg,
-                        fontSize = 22.sp,
+                        text = feedbackMsg,
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
+                            .height(58.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text(
+                            text = "পৰৱৰ্তী স্তৰ (Next Round) ➔",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
@@ -262,28 +386,43 @@ fun PatternRecognitionGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.MugaGold, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text(
+                        text = "✅ আৰ্হি খেল সম্পন্ন হৈছে",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty",
+                        fontSize = 17.sp,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
+                            .height(58.dp)
                     ) {
-                        Text("আকৌ খেলক (Play Again)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            text = "আকৌ খেলক (Play Again)",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

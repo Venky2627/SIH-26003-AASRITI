@@ -1,0 +1,19 @@
+{
+  "language": "kha",
+  "language_name": "Khasi (Meghalaya)",
+  "prompts": {
+    "welcome": "Pdiang sngewbha sha AASRITI. Jied ia ka jingialehkai jong phi.",
+    "tap_photo": "Khyndiat ktah ia ka dur jong phi.",
+    "family_trivia_instructions": "Peit bniah ia ka dur bad jied ia uba phi ithuh.",
+    "voice_cue_card_instructions": "Sngap ia ka sur bad ktah ia ka mar kaba dei.",
+    "sequencing_instructions": "Buh ryntih ia ki kam katkum ka jingbuh ryntih.",
+    "categorisation_instructions": "Buh lang ia ki mar kiba iasyriem ha kajuh ka kynhun.",
+    "village_market_instructions": "Kynmaw ia ka lynnong iew bad jied ia ki mar na iew.",
+    "pattern_instructions": "Peit ia ka nuksa bad jied ia ka mar kaban bud.",
+    "correct_feedback": "Kaba bha shibun! Phi la jubab da kaba dei.",
+    "encourage_feedback": "Kam pher, ngin pyrshang biang sa shisien.",
+    "next_round": "Ngin leit sha ka kyrdan kaba bud.",
+    "medicine_reminder": "Ka la dei ka por ban dih dawai.",
+    "hydration_reminder": "Ka la dei ka por ban dih um shiklat."
+  }
+}

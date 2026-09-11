@@ -1,0 +1,19 @@
+{
+  "language": "mn",
+  "language_name": "মৈতৈলোন্ (Manipuri)",
+  "prompts": {
+    "welcome": "আশ্ৰিতিদা তরাম্না ওকচরি। নহাক্কী শান্নপোৎ খনবীয়ু।",
+    "tap_photo": "নহাক্কী ফোতো অদু থমজিনবীয়ু।",
+    "family_trivia_instructions": "ফোতো অসি ফজনা য়েংবীয়ু অমসুং খঙনবা মীওই অদু খনবীয়ু।",
+    "voice_cue_card_instructions": "খোল্লাউ অসি তাবীয়ু অমসুং অচুম্বা পোৎশক অদু থমজিনবীয়ু।",
+    "sequencing_instructions": "থবকশিং অসি মথং-মনাও শেম্বীয়ু।",
+    "categorisation_instructions": "চাপ মান্নবা পোৎশকশিং অসি পুন্না থম্বীয়ু।",
+    "village_market_instructions": "কৈথেলগী লিষ্ট অদু নীংশিংদুনা পোৎলমশিং খনবীয়ু।",
+    "pattern_instructions": "প্যাটার্ন অসি য়েংবীয়ু অমসুং মথংগী পোৎশক অদু খনবীয়ু।",
+    "correct_feedback": "য়াম্না ফরে! নহাক্না অচুম্বা পাউখুম পীবীরে।",
+    "encourage_feedback": "করি অমত্তা নত্তে, অমুক্কা হন্না হোৎনবীয়ু।",
+    "next_round": "মথংগী তাঙ্কক্তা চঙশিল্লসি।",
+    "medicine_reminder": "হিদাক চাবগী মতম ওইরে।",
+    "hydration_reminder": "ঈশিং গ্লাস অমা থকপগী মতম ওইরে।"
+  }
+}
