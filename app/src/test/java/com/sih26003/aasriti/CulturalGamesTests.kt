@@ -360,4 +360,61 @@ class CulturalGamesTests {
             }
         }
     }
+
+    // =========================================================================
+    // 6. PATTERN RECOGNITION GAME CULTURAL MOTIFS & DIFFICULTY TESTS
+    // =========================================================================
+
+    @Test
+    fun testPatternGameDataCulturalMotifsIntegrity() {
+        val motifs = com.sih26003.aasriti.feature.games.patternrecognition.PatternGameData.culturalMotifs
+        assertTrue("Must have at least 6 cultural motifs", motifs.size >= 6)
+
+        val ids = motifs.map { it.id }
+        assertEquals("Motif IDs must be unique", ids.size, ids.toSet().size)
+
+        motifs.forEach { motif ->
+            assertFalse("ID cannot be blank", motif.id.isBlank())
+            assertFalse("Symbol cannot be blank", motif.symbol.isBlank())
+            assertFalse("Indic name cannot be blank", motif.nameIndic.isBlank())
+            assertFalse("Origin region cannot be blank", motif.originRegion.isBlank())
+        }
+
+        // Verify authentic regional elements
+        assertTrue(motifs.any { it.id == "kopou" && it.originRegion == "Assam" })
+        assertTrue(motifs.any { it.id == "jaapi" && it.originRegion == "Assam" })
+        assertTrue(motifs.any { it.id == "gamosa" && it.originRegion == "Assam" })
+        assertTrue(motifs.any { it.id == "mandarin" && it.originRegion == "Meghalaya" })
+    }
+
+    @Test
+    fun testPatternChallengeScalingAndCorrectAnswerIntegrity() {
+        for (difficulty in 1..5) {
+            for (round in 1..8) {
+                val challenge = com.sih26003.aasriti.feature.games.patternrecognition.PatternGameData.getChallengeForLevel(difficulty, round)
+
+                // Sequence must end with question mark
+                assertEquals("❓", challenge.sequence.last())
+                assertTrue("Sequence must have >= 5 elements", challenge.sequence.size >= 5)
+
+                // Correct answer must be among choices
+                assertTrue(
+                    "Correct answer '${challenge.correctAnswer}' must be in choices: ${challenge.choices}",
+                    challenge.choices.contains(challenge.correctAnswer)
+                )
+
+                // Choices must be distinct
+                assertEquals(challenge.choices.size, challenge.choices.distinct().size)
+
+                // Choices count must scale with difficulty
+                when (difficulty) {
+                    1 -> assertEquals(2, challenge.choices.size)
+                    2 -> assertEquals(3, challenge.choices.size)
+                    3 -> assertEquals(3, challenge.choices.size)
+                    4 -> assertEquals(4, challenge.choices.size)
+                    5 -> assertEquals(4, challenge.choices.size)
+                }
+            }
+        }
+    }
 }
