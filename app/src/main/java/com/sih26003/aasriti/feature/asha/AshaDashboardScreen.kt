@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.asha
+package com.sih26003.aasriti.feature.asha
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,11 +24,18 @@ import com.sih26003.aasriti.AasritiApplication
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.repository.CareLogRepository
-import com.sih26003.aasriti.data.repository.PatientRepository
+import com.sih26003.aasriti.data.repository.GameRepository
+import com.sih26003.aasriti.data.repository.ReminderRepository
 import com.sih26003.aasriti.demo.AasritiDemoData
 import com.sih26003.aasriti.demo.DemoAshaRosterItem
 import com.sih26003.aasriti.demo.DemoPatientConfig
 import com.sih26003.aasriti.demo.DemoStateHolder
+import com.sih26003.aasriti.domain.model.CareLog
+import com.sih26003.aasriti.domain.model.GameSession
+import com.sih26003.aasriti.domain.model.Patient
+import com.sih26003.aasriti.domain.model.Reminder
+import com.sih26003.aasriti.domain.model.TodayPriority
+import com.sih26003.aasriti.engine.priority.PriorityEngine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,11 +50,7 @@ import java.util.Locale
  * should be written or read under a fabricated ID.
  */
 private fun resolveRoomPatientId(rosterItem: DemoAshaRosterItem): String? {
-    return if (rosterItem.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE) {
-        DemoPatientConfig.PATIENT_ID
-    } else {
-        null // No Room PatientEntity seeded for this demo roster entry.
-    }
+    return AshaSyntheticRoster.resolveRoomPatientId(rosterItem)
 }
 
 /**
@@ -64,14 +67,17 @@ fun AshaDashboardScreen(
     onOpenPatientView: () -> Unit,
     onBackToRoles: () -> Unit,
     careLogRepository: CareLogRepository? = null,
-    patientRepository: PatientRepository? = null
+    gameRepository: GameRepository? = null,
+    reminderRepository: ReminderRepository? = null
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as? AasritiApplication
     val resolvedCareLogRepo = careLogRepository ?: app?.careLogRepository
+    val resolvedGameRepo = gameRepository ?: app?.gameRepository
+    val resolvedReminderRepo = reminderRepository ?: app?.reminderRepository
     val scope = rememberCoroutineScope()
 
-    val roster = remember { AasritiDemoData.ashaRoster }
+    val roster = remember { AshaSyntheticRoster.roster }
     var selectedFilter by remember { mutableStateOf("ALL") } // "ALL", "WATCH", "PRIORITY"
     var activeVisitLogPatient by remember { mutableStateOf<DemoAshaRosterItem?>(null) }
     var activeHistoryPatient by remember { mutableStateOf<DemoAshaRosterItem?>(null) }
@@ -93,10 +99,96 @@ fun AshaDashboardScreen(
         }
     )
 
-    val filteredRoster = remember(selectedFilter) {
+    // Wire Room SQLite data for canonical demo patient (Aita Borah, AS-KAM-0042) to PriorityEngine
+    val canonicalPatientId = DemoPatientConfig.PATIENT_ID
+    val canonicalSessions by (resolvedGameRepo?.getSessionsForPatient(canonicalPatientId)?.collectAsState(initial = emptyList())
+        ?: remember { mutableStateOf(emptyList()) })
+    val canonicalCareLogs by (resolvedCareLogRepo?.getLogsForPatient(canonicalPatientId)?.collectAsState(initial = emptyList())
+        ?: remember { mutableStateOf(emptyList()) })
+    val canonicalRoomReminders by (resolvedReminderRepo?.getActiveReminders(canonicalPatientId)?.collectAsState(initial = emptyList())
+        ?: remember { mutableStateOf(emptyList()) })
+
+    val canonicalReminders = remember(canonicalRoomReminders, DemoStateHolder.completedRoutineIds.size) {
+        canonicalRoomReminders.map { entity ->
+            Reminder(
+                id = entity.id,
+                patientId = entity.patientId,
+                titleIndic = entity.title,
+                titleEn = entity.title,
+                timeLabel = "${entity.hour}:${if (entity.minute < 10) "0" else ""}${entity.minute}",
+                isMedicine = entity.reminderType.equals("MEDICINE", ignoreCase = true),
+                isCompleted = DemoStateHolder.completedRoutineIds.contains(entity.id)
+            )
+        }
+    }
+
+    val evaluatedCanonicalPriority = remember(canonicalSessions, canonicalCareLogs, canonicalReminders) {
+        val domainSessions = canonicalSessions.map {
+            GameSession(
+                id = it.id,
+                patientId = it.patientId,
+                gameId = it.gameId,
+                difficultyLevel = it.difficultyLevel,
+                accuracy = it.accuracy,
+                reactionTimeMs = it.reactionTimeMs,
+                hesitationCount = it.hesitationCount,
+                errorCount = it.errors,
+                durationMs = it.durationMs,
+                timestamp = it.timestamp
+            )
+        }
+        val domainLogs = canonicalCareLogs.map {
+            CareLog(
+                id = it.id,
+                patientId = it.patientId,
+                authorRole = it.authorRole,
+                category = it.category,
+                severity = it.severity,
+                notes = it.notes,
+                timestamp = it.timestamp
+            )
+        }
+        val domainPatient = Patient(
+            id = canonicalPatientId,
+            pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
+            displayName = AasritiDemoData.patient.displayName,
+            displaySubtitle = AasritiDemoData.patient.displaySubtitle,
+            birthYear = 1958,
+            gender = "F",
+            villageLocation = AasritiDemoData.patient.villageLocation,
+            primaryLanguage = "as",
+            cognitiveStage = AasritiDemoData.patient.cognitiveStage
+        )
+        PriorityEngine.evaluateTodayPriority(
+            patient = domainPatient,
+            reminders = canonicalReminders,
+            recentSessions = domainSessions,
+            recentLogs = domainLogs
+        )
+    }
+
+    // Helper to determine effective triage tier:
+    // Room-backed patient (Aita Borah) dynamically computes tier from PriorityEngine.
+    // Non-Room roster entries preserve static demo status honestly without pretending to be live.
+    fun getEffectiveStatusTier(item: DemoAshaRosterItem): String {
+        return if (resolveRoomPatientId(item) != null) {
+            evaluatedCanonicalPriority.severity
+        } else {
+            item.statusTier
+        }
+    }
+
+    val watchCount = remember(evaluatedCanonicalPriority.severity) {
+        roster.count { getEffectiveStatusTier(it) == "WATCH" }
+    }
+    val priorityCount = remember(evaluatedCanonicalPriority.severity) {
+        roster.count { getEffectiveStatusTier(it) == "PRIORITY" }
+    }
+
+    val filteredRoster = remember(selectedFilter, evaluatedCanonicalPriority.severity) {
         when (selectedFilter) {
-            "WATCH" -> roster.filter { it.statusTier == "WATCH" }
-            "PRIORITY" -> roster.filter { it.statusTier == "PRIORITY" }
+            "WATCH" -> roster.filter { getEffectiveStatusTier(it) == "WATCH" }
+            "PRIORITY" -> roster.filter { getEffectiveStatusTier(it) == "PRIORITY" }
             else -> roster
         }
     }
@@ -136,7 +228,7 @@ fun AshaDashboardScreen(
                     color = AasritiColorTokens.DeepCharcoal
                 )
                 Text(
-                    text = "কামৰূপ গ্ৰাম্য (Kamrup Rural) • ${roster.size} গৰাকী জ্যেষ্ঠ",
+                    text = if (isAssamese) "কামৰূপ গ্ৰাম্য (Kamrup Rural) • ${roster.size} গৰাকী জ্যেষ্ঠ (ডেম' ৰষ্টাৰ)" else "Kamrup Rural • ${roster.size} Elders (Demo Roster)",
                     fontSize = 12.sp,
                     color = AasritiColorTokens.WarmSlate
                 )
@@ -148,7 +240,7 @@ fun AshaDashboardScreen(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "100% Offline • Room SQLite Local Source of Truth",
+                        text = "100% Offline • 1 Live Room Elder + 13 Synthetic Demo Elders",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.DeepNortheastForest
@@ -167,7 +259,7 @@ fun AshaDashboardScreen(
             FilterChip(
                 selected = selectedFilter == "ALL",
                 onClick = { selectedFilter = "ALL" },
-                label = { Text("সকলো (${roster.size})") },
+                label = { Text(if (isAssamese) "সকলো (${roster.size})" else "All (${roster.size})") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
                     selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -178,7 +270,7 @@ fun AshaDashboardScreen(
             FilterChip(
                 selected = selectedFilter == "WATCH",
                 onClick = { selectedFilter = "WATCH" },
-                label = { Text("নজৰাধীন (Watch)") },
+                label = { Text(if (isAssamese) "নজৰাধীন ($watchCount)" else "Watch ($watchCount)") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AasritiColorTokens.WarmAmberWarning,
                     selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -189,7 +281,7 @@ fun AshaDashboardScreen(
             FilterChip(
                 selected = selectedFilter == "PRIORITY",
                 onClick = { selectedFilter = "PRIORITY" },
-                label = { Text("প্ৰাথমিকতা (Priority)") },
+                label = { Text(if (isAssamese) "প্ৰাথমিকতা ($priorityCount)" else "Priority ($priorityCount)") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AasritiColorTokens.DeepCranberryEmergency,
                     selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -209,8 +301,15 @@ fun AshaDashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(filteredRoster) { item ->
+                val isRoomBacked = resolveRoomPatientId(item) != null
+                val effectiveTier = getEffectiveStatusTier(item)
+                val livePriority = if (isRoomBacked) evaluatedCanonicalPriority else null
+
                 AshaPatientCard(
                     patient = item,
+                    effectiveStatusTier = effectiveTier,
+                    isRoomBacked = isRoomBacked,
+                    livePriority = livePriority,
                     isAssamese = isAssamese,
                     onLogVisit = { activeVisitLogPatient = item },
                     onViewHistory = { activeHistoryPatient = item },
@@ -270,12 +369,15 @@ fun AshaDashboardScreen(
 @Composable
 private fun AshaPatientCard(
     patient: DemoAshaRosterItem,
+    effectiveStatusTier: String,
+    isRoomBacked: Boolean,
+    livePriority: TodayPriority?,
     isAssamese: Boolean,
     onLogVisit: () -> Unit,
     onViewHistory: () -> Unit,
     onOpenCompanion: () -> Unit
 ) {
-    val statusColor = when (patient.statusTier) {
+    val statusColor = when (effectiveStatusTier) {
         "PRIORITY" -> AasritiColorTokens.DeepCranberryEmergency
         "WATCH" -> AasritiColorTokens.WarmAmberWarning
         else -> AasritiColorTokens.DeepNortheastForest
@@ -293,9 +395,9 @@ private fun AshaPatientCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = if (isAssamese) patient.nameIndic else patient.nameEn,
@@ -312,44 +414,103 @@ private fun AshaPatientCard(
                         )
                     }
                     Text(
-                        text = "চুবুৰী: ${patient.hamlet}",
+                        text = if (isAssamese) "চুবুৰী: ${patient.hamlet}" else "Hamlet: ${patient.hamlet}",
                         fontSize = 13.sp,
                         color = AasritiColorTokens.WarmSlate
                     )
                 }
 
-                // Triage Badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(statusColor.copy(alpha = 0.15f))
-                        .border(1.dp, statusColor, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = patient.statusTier,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = statusColor
-                    )
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Triage & Provenance Badges
+                Column(horizontalAlignment = Alignment.End) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(statusColor.copy(alpha = 0.15f))
+                            .border(1.dp, statusColor, RoundedCornerShape(8.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = effectiveStatusTier,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = statusColor
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                if (isRoomBacked) AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f)
+                                else AasritiColorTokens.WarmSlate.copy(alpha = 0.12f)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = if (isRoomBacked) {
+                                if (isAssamese) "প্ৰাথমিকতা ইঞ্জিন • সক্ৰিয় (Room)" else "PriorityEngine • Live (Room)"
+                            } else {
+                                if (isAssamese) "কাল্পনিক তথ্য • স্থিৰ (Synthetic Demo)" else "Synthetic Demo (No Telemetry)"
+                            },
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isRoomBacked) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSlate
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "শেহতীয়া পৰিদৰ্শন: ${patient.lastVisitedDate}",
+                text = if (isAssamese) "শেহতীয়া পৰিদৰ্শন: ${patient.lastVisitedDate}" else "Last Visited: ${patient.lastVisitedDate}",
                 fontSize = 12.sp,
                 color = AasritiColorTokens.WarmSlate
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = "মন্তব্য: ${patient.notes}",
-                fontSize = 13.sp,
-                color = AasritiColorTokens.DeepCharcoal
-            )
+            // Observation / Live Priority Display
+            if (isRoomBacked && livePriority != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(AasritiColorTokens.WarmIvory)
+                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = if (isAssamese) "শেহতীয়া মূল্যাঙ্কন: ${livePriority.titleIndic}" else "Live Evaluation: ${livePriority.titleEn}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AasritiColorTokens.DeepCharcoal
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (isAssamese) livePriority.explanationIndic else livePriority.explanationEn,
+                        fontSize = 11.sp,
+                        color = AasritiColorTokens.WarmSlate
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isAssamese) "পৰামৰ্শ (Action): ${livePriority.suggestedAction}" else "Action: ${livePriority.suggestedAction}",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = statusColor
+                    )
+                }
+            } else {
+                Text(
+                    text = if (isAssamese) "মন্তব্য: ${patient.notes}" else "Notes: ${patient.notes}",
+                    fontSize = 13.sp,
+                    color = AasritiColorTokens.DeepCharcoal
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -675,7 +836,7 @@ private fun AshaPatientHistoryDialog(
                 ) {
                     Column {
                         Text(
-                            text = "পৰ্যবেক্ষণ ইতিহাস (Care History)",
+                            text = if (isAssamese) "পৰ্যবেক্ষণ ইতিহাস (Care History)" else "Care History",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = AasritiColorTokens.DeepCharcoal
