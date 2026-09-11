@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.onboarding
+package com.sih26003.aasriti.feature.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,16 +26,18 @@ import com.sih26003.aasriti.voice.playback.VoicePromptManager
 
 data class CulturalThemeOption(
     val id: String,
+    val regionSubtitle: String,
     val titleNative: String,
     val titleEnglish: String,
-    val description: String,
+    val motifDescription: String,
+    val accentColor: Color,
     val iconEmoji: String,
     val languageCode: String
 )
 
 /**
  * SCREEN 2: Cultural Theme Selection.
- * Matches prototype screen2.html.
+ * Faithfully matches prototype screen2.html.
  * Allows elders or caregivers to select authentic Northeast regional motifs
  * (Assam, Manipur, Meghalaya) to calibrate voice guidance and visual motifs.
  */
@@ -51,35 +55,49 @@ fun CulturalThemeScreen(
     val themeOptions = listOf(
         CulturalThemeOption(
             id = "ASSAM",
+            regionSubtitle = "Brahmaputra Valley",
             titleNative = "অসম (Assam)",
-            titleEnglish = "Assam Brahmaputra Valley",
-            description = "Phulam Gamusa diamond motifs, Kaziranga flora, and Assamese voice guidance.",
+            titleEnglish = "Assam",
+            motifDescription = "Phulam Gamusa & Jaapi motif",
+            accentColor = AasritiColorTokens.CrimsonDeep,
             iconEmoji = "🦏",
             languageCode = "as"
         ),
         CulturalThemeOption(
             id = "MANIPUR",
+            regionSubtitle = "Loktak Lakeside",
             titleNative = "মণিপুৰ (Manipur)",
-            titleEnglish = "Manipur Imphal Valley",
-            description = "Moirang Phee temple motifs, Loktak water blooms, and Meitei voice guidance.",
+            titleEnglish = "Manipur",
+            motifDescription = "Moirang Phee temple motif",
+            accentColor = AasritiColorTokens.SoftClay,
             iconEmoji = "🌸",
             languageCode = "mn"
         ),
         CulturalThemeOption(
             id = "MEGHALAYA",
+            regionSubtitle = "Khasi Highlands",
             titleNative = "মেঘালয় (Meghalaya)",
-            titleEnglish = "Meghalaya Pine Hills",
-            description = "Khasi woven bamboo patterns, living root bridges, and Khasi voice guidance.",
+            titleEnglish = "Meghalaya",
+            motifDescription = "Khasi tribal banded weave",
+            accentColor = AasritiColorTokens.SoftClay,
             iconEmoji = "🌲",
             languageCode = "kha"
+        )
+    )
+
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            AasritiColorTokens.ParchmentSurface,
+            AasritiColorTokens.ParchmentBase,
+            AasritiColorTokens.ParchmentDeep
         )
     )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
+            .background(backgroundGradient)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -89,7 +107,7 @@ fun CulturalThemeScreen(
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header with Back and Logo Badge
+            // Header with Back, Logo Badge, and Spoken Listen Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -98,10 +116,10 @@ fun CulturalThemeScreen(
                 IconButton(
                     onClick = onBackClicked,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.ParchmentSurface)
+                        .border(1.5.dp, AasritiColorTokens.ParchmentBorder, CircleShape)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                 }
@@ -116,10 +134,9 @@ fun CulturalThemeScreen(
                         voicePromptManager.speak(prompt)
                     },
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.SoftClay)
                 ) {
                     Text("🔊", fontSize = 20.sp)
                 }
@@ -128,108 +145,126 @@ fun CulturalThemeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = if (isAssamese) "সাংস্কৃতিক পৰিমণ্ডল বাছক" else "Choose Cultural Theme",
-                fontSize = 26.sp,
+                text = if (isAssamese) "সাংস্কৃতিক পৰিমণ্ডল বাছক" else "Choose Theme",
+                fontSize = 28.sp,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.DeepCharcoal
+                color = AasritiColorTokens.TextDark
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = if (isAssamese) "আপোনাৰ চিনাকি পৰিৱেশ অনুসৰি দৃশ্যপট আৰু মাত নিৰ্বাচন কৰক"
-                else "Select authentic regional motifs and vocal warmth familiar to the elder.",
+                else "Select theme / language familiar to the elder",
                 fontSize = 14.sp,
-                color = AasritiColorTokens.WarmSlate
+                color = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.85f),
+                fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Theme Cards List
+            // Cultural Motif Cards (Matching screen2.html)
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 themeOptions.forEach { opt ->
                     val isSelected = (activeRegion == opt.id)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(if (isSelected) AasritiColorTokens.SoftCream else AasritiColorTokens.WarmIvory)
-                            .border(
-                                width = if (isSelected) 2.5.dp else 1.5.dp,
-                                color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
-                                shape = RoundedCornerShape(18.dp)
-                            )
-                            .clickable {
-                                activeRegion = opt.id
-                                onRegionSelected(opt.id, opt.languageCode)
-                            }
-                            .padding(16.dp)
+                    Surface(
+                        onClick = {
+                            activeRegion = opt.id
+                            onRegionSelected(opt.id, opt.languageCode)
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        color = AasritiColorTokens.CardSurface,
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.5.dp,
+                            color = if (isSelected) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.ParchmentBorder
+                        ),
+                        shadowElevation = if (isSelected) 3.dp else 1.dp,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        Column {
+                            // Top Woven Motif Accent Stripe
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(10.dp)
+                                    .background(
+                                        if (isSelected) AasritiColorTokens.CrimsonDeep
+                                        else opt.accentColor.copy(alpha = 0.25f)
+                                    )
+                            )
+
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    // Thumbnail Container
+                                    Box(
+                                        modifier = Modifier
+                                            .size(54.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(AasritiColorTokens.ParchmentSurface)
+                                            .border(1.dp, AasritiColorTokens.ParchmentBorder, RoundedCornerShape(10.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(opt.iconEmoji, fontSize = 28.sp)
+                                    }
+
+                                    Column {
+                                        Text(
+                                            text = opt.regionSubtitle.uppercase(),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 1.sp,
+                                            color = if (isSelected) AasritiColorTokens.CrimsonDeep else opt.accentColor
+                                        )
+                                        Text(
+                                            text = opt.titleEnglish,
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily.Serif,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.TextDark
+                                        )
+                                        Text(
+                                            text = opt.motifDescription,
+                                            fontSize = 12.sp,
+                                            color = AasritiColorTokens.WarmSlate,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+
+                                // Selection Indicator Stamp
                                 Box(
                                     modifier = Modifier
-                                        .size(54.dp)
+                                        .size(32.dp)
                                         .clip(CircleShape)
                                         .background(
-                                            if (isSelected) AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.15f)
-                                            else AasritiColorTokens.WarmSunkenSurface
+                                            if (isSelected) AasritiColorTokens.CrimsonDeep else Color.Transparent
+                                        )
+                                        .border(
+                                            2.dp,
+                                            if (isSelected) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.ParchmentBorder,
+                                            CircleShape
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(opt.iconEmoji, fontSize = 28.sp)
-                                }
-
-                                Spacer(modifier = Modifier.width(14.dp))
-
-                                Column {
-                                    Text(
-                                        text = opt.titleNative,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
-                                    )
-                                    Text(
-                                        text = opt.titleEnglish,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = AasritiColorTokens.WarmSlate
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = opt.description,
-                                        fontSize = 12.sp,
-                                        color = AasritiColorTokens.DeepCharcoal.copy(alpha = 0.8f),
-                                        lineHeight = 16.sp
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isSelected) AasritiColorTokens.DeepNortheastForest else Color.Transparent
-                                    )
-                                    .border(
-                                        2.dp,
-                                        if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
-                                        CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isSelected) {
-                                    Text("✓", color = AasritiColorTokens.WarmIvory, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    if (isSelected) {
+                                        Text(
+                                            text = "✓",
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -238,26 +273,36 @@ fun CulturalThemeScreen(
             }
         }
 
-        // Action CTA
+        // Primary 64dp Elder-Friendly Touch Anchor (CONTINUE in CrimsonDeep)
         Button(
             onClick = {
                 val opt = themeOptions.firstOrNull { it.id == activeRegion } ?: themeOptions.first()
                 onRegionSelected(opt.id, opt.languageCode)
                 onContinueClicked()
             },
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.CrimsonDeep),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
-                .padding(top = 10.dp)
+                .padding(top = 8.dp)
         ) {
-            Text(
-                text = if (isAssamese) "আগবাঢ়ক (Continue) ➔" else "Continue to Language ➔",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.WarmIvory
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isAssamese) "আগবাঢ়ক (CONTINUE)" else "CONTINUE",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("➔", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
         }
     }
 }

@@ -11,7 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -462,10 +464,18 @@ fun PinAuthScreen(
         isNewSetup = !exists
     }
 
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            AasritiColorTokens.ParchmentSurface,
+            AasritiColorTokens.ParchmentBase,
+            AasritiColorTokens.ParchmentDeep
+        )
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
+            .background(backgroundGradient)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -473,9 +483,9 @@ fun PinAuthScreen(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.ParchmentSurface),
                 shape = RoundedCornerShape(14.dp),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder)
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.ParchmentBorder)
             ) {
                 Text(
                     text = if (isAssamese) "← উভতি যাওক" else "← Back",
@@ -497,8 +507,9 @@ fun PinAuthScreen(
                     if (isAssamese) "🩺 চিকিৎসকৰ পিন (Doctor PIN)" else "🩺 Doctor Local PIN"
                 },
                 fontSize = 24.sp,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.DeepCharcoal,
+                color = AasritiColorTokens.CrimsonDeep,
                 textAlign = TextAlign.Center
             )
 
@@ -530,11 +541,11 @@ fun PinAuthScreen(
                     .fillMaxWidth()
                     .height(68.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
-                    unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder,
+                    focusedBorderColor = AasritiColorTokens.CrimsonDeep,
+                    unfocusedBorderColor = AasritiColorTokens.ParchmentBorder,
                     focusedTextColor = AasritiColorTokens.DeepCharcoal,
                     unfocusedTextColor = AasritiColorTokens.DeepCharcoal,
-                    cursorColor = AasritiColorTokens.DeepNortheastForest
+                    cursorColor = AasritiColorTokens.CrimsonDeep
                 ),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     fontSize = 26.sp,
@@ -611,7 +622,7 @@ fun PinAuthScreen(
             },
             enabled = !isLockedOut,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isLockedOut) AasritiColorTokens.WarmSunkenSurface else AasritiColorTokens.DeepNortheastForest,
+                containerColor = if (isLockedOut) AasritiColorTokens.WarmSunkenSurface else AasritiColorTokens.CrimsonDeep,
                 disabledContainerColor = AasritiColorTokens.WarmSunkenSurface
             ),
             shape = RoundedCornerShape(16.dp),
@@ -629,7 +640,7 @@ fun PinAuthScreen(
                 },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isLockedOut) AasritiColorTokens.WarmSlate else AasritiColorTokens.WarmIvory
+                color = if (isLockedOut) AasritiColorTokens.WarmSlate else Color.White
             )
         }
     }

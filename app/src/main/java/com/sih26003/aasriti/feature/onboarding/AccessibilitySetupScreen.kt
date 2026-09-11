@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.onboarding
+package com.sih26003.aasriti.feature.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,7 +27,7 @@ import com.sih26003.aasriti.voice.playback.VoicePromptManager
 
 /**
  * SCREEN 5: Accessibility and Visual Personalisation.
- * Matches prototype screen5.html.
+ * Faithfully matches prototype screen5.html.
  * Allows tailoring text scaling, live preview, and voice assistance switches
  * calibrated for elderly cognition.
  */
@@ -41,11 +44,19 @@ fun AccessibilitySetupScreen(
     var extraLarge by remember { mutableStateOf(isExtraLargeFont) }
     var voiceEnabled by remember { mutableStateOf(isVoiceAssistanceEnabled) }
 
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            AasritiColorTokens.ParchmentSurface,
+            AasritiColorTokens.ParchmentBase,
+            AasritiColorTokens.ParchmentDeep
+        )
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
+            .background(backgroundGradient)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -64,10 +75,10 @@ fun AccessibilitySetupScreen(
                 IconButton(
                     onClick = onBackClicked,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.ParchmentSurface)
+                        .border(1.5.dp, AasritiColorTokens.ParchmentBorder, CircleShape)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                 }
@@ -84,10 +95,9 @@ fun AccessibilitySetupScreen(
                         voicePromptManager.speak(text)
                     },
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.SoftClay)
                 ) {
                     Text("🔊", fontSize = 20.sp)
                 }
@@ -97,9 +107,10 @@ fun AccessibilitySetupScreen(
 
             Text(
                 text = if (isAssamese) "সহজ পঠন আৰু যত্নৰ সুবিধা" else "Accessibility & Comfort",
-                fontSize = 26.sp,
+                fontSize = 28.sp,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.DeepCharcoal
+                color = AasritiColorTokens.TextDark
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -108,16 +119,18 @@ fun AccessibilitySetupScreen(
                 text = if (isAssamese) "চকুৰ আৰাম আৰু সহজে বুজিব পৰাকৈ আখৰৰ আকাৰ নিৰ্ধাৰণ কৰক।"
                 else "Tailor high-contrast reading comfort and spoken voice companion assistance.",
                 fontSize = 14.sp,
-                color = AasritiColorTokens.WarmSlate
+                color = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.85f),
+                fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // 1. Text Size Selection Card
-            Card(
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = AasritiColorTokens.SoftCream),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = AasritiColorTokens.CardSurface,
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.ParchmentBorder),
+                shadowElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -130,11 +143,12 @@ fun AccessibilitySetupScreen(
                             Text(
                                 text = if (isAssamese) "আখৰৰ আকাৰ (Text Size)" else "Text Size",
                                 fontSize = 18.sp,
+                                fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
+                                color = AasritiColorTokens.TextDark
                             )
                             Text(
-                                text = if (isAssamese) "পঢ়াৰ সুবিধা অনুসৰি বাছক" else "Choose reading comfort",
+                                text = if (isAssamese) "পঢ়াৰ সুবিধা অনুসৰি বাছক" else "Choose your reading comfort",
                                 fontSize = 12.sp,
                                 color = AasritiColorTokens.WarmSlate
                             )
@@ -143,20 +157,21 @@ fun AccessibilitySetupScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
+                                .background(AasritiColorTokens.WarmSunkenSurface)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (extraLarge) "Extra Large (অতি ডাঙৰ)" else "Large (ডাঙৰ)",
-                                fontSize = 11.sp,
+                                text = if (extraLarge) "Extra Large" else "Large",
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepNortheastForest
+                                color = AasritiColorTokens.CrimsonDeep
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    // Tactile Pills (Min 60px target height, matching screen5.html)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -167,20 +182,32 @@ fun AccessibilitySetupScreen(
                                 extraLarge = false
                                 onPreferencesChanged(false, voiceEnabled)
                             },
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (!extraLarge) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface
+                                containerColor = if (!extraLarge) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.WarmSunkenSurface
                             ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (!extraLarge) 2.dp else 0.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(62.dp)
                         ) {
-                            Text(
-                                text = "A  Large",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (!extraLarge) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(
+                                    text = "A",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (!extraLarge) Color.White else AasritiColorTokens.TextDark
+                                )
+                                Text(
+                                    text = "Large",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (!extraLarge) Color.White else AasritiColorTokens.TextDark
+                                )
+                                if (!extraLarge) {
+                                    Text("✓", fontSize = 16.sp, color = Color.White)
+                                }
+                            }
                         }
 
                         // Extra Large Button
@@ -189,20 +216,32 @@ fun AccessibilitySetupScreen(
                                 extraLarge = true
                                 onPreferencesChanged(true, voiceEnabled)
                             },
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (extraLarge) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmSunkenSurface
+                                containerColor = if (extraLarge) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.WarmSunkenSurface
                             ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (extraLarge) 2.dp else 0.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(62.dp)
                         ) {
-                            Text(
-                                text = "AA  Extra Large",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (extraLarge) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(
+                                    text = "AA",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (extraLarge) Color.White else AasritiColorTokens.TextDark
+                                )
+                                Text(
+                                    text = "Extra Large",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (extraLarge) Color.White else AasritiColorTokens.TextDark
+                                )
+                                if (extraLarge) {
+                                    Text("✓", fontSize = 16.sp, color = Color.White)
+                                }
+                            }
                         }
                     }
 
@@ -212,9 +251,9 @@ fun AccessibilitySetupScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(AasritiColorTokens.WarmIvory)
-                            .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(AasritiColorTokens.ParchmentSurface)
+                            .border(1.dp, AasritiColorTokens.ParchmentBorder, RoundedCornerShape(10.dp))
                             .padding(14.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -226,7 +265,7 @@ fun AccessibilitySetupScreen(
                             },
                             fontSize = if (extraLarge) 20.sp else 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = AasritiColorTokens.DeepCharcoal,
+                            color = AasritiColorTokens.TextDark,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -236,10 +275,11 @@ fun AccessibilitySetupScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 2. Voice Assistance Switch Card
-            Card(
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = AasritiColorTokens.SoftCream),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = AasritiColorTokens.CardSurface,
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.ParchmentBorder),
+                shadowElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -257,23 +297,25 @@ fun AccessibilitySetupScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f)),
+                                .background(AasritiColorTokens.WarmSunkenSurface)
+                                .border(1.dp, AasritiColorTokens.MugaGold.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("🗣️", fontSize = 24.sp)
+                            Text("🗣️", fontSize = 22.sp)
                         }
 
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column {
                             Text(
-                                text = if (isAssamese) "মাতৰ সহায় (Voice Assistance)" else "Voice Assistance",
+                                text = if (isAssamese) "মাতৰ সহায় (Voice Assistance)" else "Voice",
                                 fontSize = 17.sp,
+                                fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
+                                color = AasritiColorTokens.TextDark
                             )
                             Text(
-                                text = if (isAssamese) "প্ৰতিটো নিৰ্দেশনা মুখেৰে ক'ব" else "Speaks every prompt and encouragement aloud",
+                                text = if (isAssamese) "প্ৰতিটো নিৰ্দেশনা মুখেৰে ক'ব" else "Speaks every prompt aloud",
                                 fontSize = 12.sp,
                                 color = AasritiColorTokens.WarmSlate
                             )
@@ -290,8 +332,8 @@ fun AccessibilitySetupScreen(
                             }
                         },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = AasritiColorTokens.WarmIvory,
-                            checkedTrackColor = AasritiColorTokens.DeepNortheastForest,
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = AasritiColorTokens.CrimsonDeep,
                             uncheckedThumbColor = AasritiColorTokens.WarmSlate,
                             uncheckedTrackColor = AasritiColorTokens.WarmSunkenSurface
                         )
@@ -305,9 +347,9 @@ fun AccessibilitySetupScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(AasritiColorTokens.SoftCream.copy(alpha = 0.6f))
-                    .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(AasritiColorTokens.ParchmentSurface)
+                    .border(1.dp, AasritiColorTokens.ParchmentBorder, RoundedCornerShape(12.dp))
                     .padding(12.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -315,33 +357,64 @@ fun AccessibilitySetupScreen(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = if (isAssamese) "WCAG AAA অনুৰূপ • জ্যেষ্ঠজনৰ চকুৰ কোনো ভাগৰ নপৰে।"
-                        else "WCAG AAA Compliant • High Contrast • Non-glare Warm Ivory.",
+                        else "WCAG AAA Compliant • High Contrast • Non-glare Warm Parchment.",
                         fontSize = 12.sp,
-                        color = AasritiColorTokens.WarmSlate
+                        color = AasritiColorTokens.DeepNortheastForest,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
         }
 
-        // Action CTA
-        Button(
-            onClick = {
-                onPreferencesChanged(extraLarge, voiceEnabled)
-                onContinueClicked()
-            },
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(top = 10.dp)
+        // Bottom Navigation Action Deck
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = if (isAssamese) "আগবাঢ়ক (Continue) ➔" else "Continue to Elder Profile ➔",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.WarmIvory
-            )
+            Button(
+                onClick = {
+                    onPreferencesChanged(extraLarge, voiceEnabled)
+                    onContinueClicked()
+                },
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.CrimsonDeep),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("✓", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = if (isAssamese) "নিশ্চিত কৰক (Confirm)" else "Confirm",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = Color.White
+                    )
+                }
+            }
+
+            OutlinedButton(
+                onClick = onBackClicked,
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.ParchmentBorder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = if (isAssamese) "উভতি যাওক (Back)" else "Back",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AasritiColorTokens.WarmSlate
+                )
+            }
         }
     }
 }

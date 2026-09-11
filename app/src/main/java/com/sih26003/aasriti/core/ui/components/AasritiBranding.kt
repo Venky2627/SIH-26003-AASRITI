@@ -13,6 +13,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import com.sih26003.aasriti.R
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +25,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.animation.core.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -131,6 +135,171 @@ fun AasritiLogoImage(
 }
 
 /**
+ * Traditional Phulam Gamusa Geometric Woven Accent Band.
+ * Faithfully replicates the authentic Assamese Phulam Gamusa motif from the HTML prototype:
+ * Repeating diamond weaves in SoftClay (#CB8067) with Crimson (#720227) inner diamonds
+ * and Muga Gold (#CE9042) central accents.
+ */
+@Composable
+fun PhulamGamusaWovenBand(
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .height(20.dp),
+    primaryCrimson: Color = AasritiColorTokens.CrimsonDeep,
+    accentClay: Color = AasritiColorTokens.SoftClay,
+    goldAccent: Color = AasritiColorTokens.MugaGold
+) {
+    Canvas(modifier = modifier) {
+        val patternUnitWidth = 30.dp.toPx()
+        val h = size.height
+        val repeatCount = (size.width / patternUnitWidth).toInt() + 2
+
+        for (i in -1..repeatCount) {
+            val offsetX = i * patternUnitWidth
+            val cy = h / 2f
+
+            // 1. Outer Diamond Outline
+            val outerPath = Path().apply {
+                moveTo(offsetX + patternUnitWidth * 0.5f, 1.dp.toPx())
+                lineTo(offsetX + patternUnitWidth * 0.9f, cy)
+                lineTo(offsetX + patternUnitWidth * 0.5f, h - 1.dp.toPx())
+                lineTo(offsetX + patternUnitWidth * 0.1f, cy)
+                close()
+            }
+            drawPath(
+                path = outerPath,
+                color = accentClay,
+                style = Stroke(width = 1.3.dp.toPx())
+            )
+
+            // 2. Inner Filled Diamond
+            val innerPath = Path().apply {
+                moveTo(offsetX + patternUnitWidth * 0.5f, 4.dp.toPx())
+                lineTo(offsetX + patternUnitWidth * 0.73f, cy)
+                lineTo(offsetX + patternUnitWidth * 0.5f, h - 4.dp.toPx())
+                lineTo(offsetX + patternUnitWidth * 0.27f, cy)
+                close()
+            }
+            drawPath(
+                path = innerPath,
+                color = primaryCrimson.copy(alpha = 0.88f)
+            )
+
+            // 3. Central Gold Core Circle
+            drawCircle(
+                color = goldAccent,
+                radius = 2.dp.toPx(),
+                center = Offset(offsetX + patternUnitWidth * 0.5f, cy)
+            )
+
+            // 4. Gold Connecting Ticks
+            drawLine(
+                color = goldAccent,
+                start = Offset(offsetX + patternUnitWidth * 0.5f, 1.dp.toPx()),
+                end = Offset(offsetX + patternUnitWidth * 0.5f, 4.dp.toPx()),
+                strokeWidth = 1.dp.toPx()
+            )
+            drawLine(
+                color = goldAccent,
+                start = Offset(offsetX + patternUnitWidth * 0.5f, h - 4.dp.toPx()),
+                end = Offset(offsetX + patternUnitWidth * 0.5f, h - 1.dp.toPx()),
+                strokeWidth = 1.dp.toPx()
+            )
+            drawLine(
+                color = goldAccent,
+                start = Offset(offsetX + patternUnitWidth * 0.1f, cy),
+                end = Offset(offsetX + patternUnitWidth * 0.27f, cy),
+                strokeWidth = 1.dp.toPx()
+            )
+            drawLine(
+                color = goldAccent,
+                start = Offset(offsetX + patternUnitWidth * 0.73f, cy),
+                end = Offset(offsetX + patternUnitWidth * 0.9f, cy),
+                strokeWidth = 1.dp.toPx()
+            )
+
+            // 5. Unit Boundary Circles
+            drawCircle(
+                color = accentClay,
+                radius = 1.5.dp.toPx(),
+                center = Offset(offsetX, cy)
+            )
+        }
+    }
+}
+
+/**
+ * Authentic AASRITI Hero Logo Badge with Ambient Breathing Halo.
+ * Replicates the circular cream hero badge (w-28 h-28 / 112dp) from screen1.html
+ * with a serene breathing gold/clay ambient glow for living dementia-friendly warmth.
+ */
+@Composable
+fun AasritiHeroBadge(
+    modifier: Modifier = Modifier,
+    size: Dp = 112.dp,
+    animated: Boolean = true
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "AasritiHeroPulse")
+    val pulseScale by if (animated) {
+        infiniteTransition.animateFloat(
+            initialValue = 1.0f,
+            targetValue = 1.08f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2400, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseScale"
+        )
+    } else {
+        remember { mutableStateOf(1.0f) }
+    }
+    val pulseAlpha by if (animated) {
+        infiniteTransition.animateFloat(
+            initialValue = 0.12f,
+            targetValue = 0.32f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2400, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseAlpha"
+        )
+    } else {
+        remember { mutableStateOf(0.2f) }
+    }
+
+    Box(
+        modifier = modifier.size(size + 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Ambient breathing glow halo
+        Box(
+            modifier = Modifier
+                .size((size.value * pulseScale).dp)
+                .clip(CircleShape)
+                .background(AasritiColorTokens.MugaGold.copy(alpha = pulseAlpha))
+        )
+
+        // Core Badge
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(AasritiColorTokens.ParchmentSurface)
+                .border(2.5.dp, AasritiColorTokens.ParchmentBorder, CircleShape)
+                .padding(size * 0.12f),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_aasriti_logo),
+                contentDescription = "AASRITI Terracotta Spiral Emblem",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
+}
+
+/**
  * Reusable AASRITI Brand Emblem Badge with container styling.
  * Uses the authentic brand logo inside a warm heritage circular badge.
  */
@@ -162,6 +331,7 @@ fun AasritiLogoBadge(
 /**
  * Calm Connectivity Pill:
  * Signals 100% offline-first local security without anxiety.
+ * Matches prototype: bg-[#FAF4ED]/90 border border-[#D4C3AC] text-[#274133] green dot [#5E8354]
  */
 @Composable
 fun CalmConnectivityPill(
@@ -170,10 +340,10 @@ fun CalmConnectivityPill(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(AasritiColorTokens.SoftCream)
-            .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(AasritiColorTokens.ParchmentSurface.copy(alpha = 0.95f))
+            .border(1.dp, AasritiColorTokens.ParchmentBorder, RoundedCornerShape(20.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -183,12 +353,12 @@ fun CalmConnectivityPill(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(AasritiColorTokens.DeepNortheastForest)
+                    .background(AasritiColorTokens.PeacefulGreen)
             )
             Text(
-                text = if (isAssamese) "স্থানীয়ভাৱে সংৰক্ষিত (Saved Locally)" else "Saved Locally",
+                text = if (isAssamese) "স্থানীয়ভাৱে সংৰক্ষিত" else "Saved Locally",
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = AasritiColorTokens.DeepNortheastForest
             )
         }
@@ -197,6 +367,9 @@ fun CalmConnectivityPill(
 
 /**
  * Language Selector Pill (ENG / অসমীয়া)
+ * Matches prototype: bg-[#EDE0D0] border border-[#D4C3AC] rounded-full
+ * Selected: bg-[#720227] text-[#FAF4ED]
+ * Unselected: text-[#574144]
  */
 @Composable
 fun LanguageTogglePill(
@@ -210,36 +383,36 @@ fun LanguageTogglePill(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(AasritiColorTokens.WarmSunkenSurface)
-            .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
+            .border(1.dp, AasritiColorTokens.ParchmentBorder, RoundedCornerShape(20.dp))
             .padding(3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(if (!isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
+                .background(if (!isAssamese) AasritiColorTokens.CrimsonDeep else Color.Transparent)
                 .clickable { onLanguageSelected("en") }
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .padding(horizontal = 12.dp, vertical = 5.dp)
         ) {
             Text(
                 "ENG",
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (!isAssamese) Color.White else AasritiColorTokens.WarmSlate
+                color = if (!isAssamese) AasritiColorTokens.ParchmentSurface else AasritiColorTokens.WarmSlate
             )
         }
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(if (isAssamese) AasritiColorTokens.MutedHeritageTerracotta else Color.Transparent)
+                .background(if (isAssamese) AasritiColorTokens.CrimsonDeep else Color.Transparent)
                 .clickable { onLanguageSelected("as") }
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .padding(horizontal = 12.dp, vertical = 5.dp)
         ) {
             Text(
                 "অসমীয়া",
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isAssamese) Color.White else AasritiColorTokens.WarmSlate
+                color = if (isAssamese) AasritiColorTokens.ParchmentSurface else AasritiColorTokens.WarmSlate
             )
         }
     }

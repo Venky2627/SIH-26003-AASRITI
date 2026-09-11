@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.onboarding
+package com.sih26003.aasriti.feature.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,7 +33,7 @@ data class LanguageOption(
 
 /**
  * SCREEN 4: Language Selection.
- * Matches prototype screen4.html.
+ * Faithfully matches prototype screen4.html.
  * Allows choosing regional audio packs (Assamese, English, Khasi, Meitei)
  * with instant audio previews.
  */
@@ -73,11 +75,19 @@ fun LanguageSelectScreen(
         )
     )
 
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            AasritiColorTokens.ParchmentSurface,
+            AasritiColorTokens.ParchmentBase,
+            AasritiColorTokens.ParchmentDeep
+        )
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
+            .background(backgroundGradient)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -96,10 +106,10 @@ fun LanguageSelectScreen(
                 IconButton(
                     onClick = onBackClicked,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.ParchmentSurface)
+                        .border(1.5.dp, AasritiColorTokens.ParchmentBorder, CircleShape)
                 ) {
                     Text("←", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                 }
@@ -112,10 +122,9 @@ fun LanguageSelectScreen(
                         voicePromptManager.speak(currentOpt.sampleGreeting)
                     },
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(CircleShape)
-                        .background(AasritiColorTokens.SoftCream)
-                        .border(1.dp, AasritiColorTokens.WarmStoneBorder, CircleShape)
+                        .background(AasritiColorTokens.SoftClay)
                 ) {
                     Text("🔊", fontSize = 20.sp)
                 }
@@ -125,9 +134,10 @@ fun LanguageSelectScreen(
 
             Text(
                 text = if (isAssamese) "ভাষা নিৰ্বাচন কৰক" else "Choose Language",
-                fontSize = 26.sp,
+                fontSize = 28.sp,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.DeepCharcoal
+                color = AasritiColorTokens.TextDark
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -136,53 +146,59 @@ fun LanguageSelectScreen(
                 text = if (isAssamese) "জ্যেষ্ঠজনে যি ভাষাত সকলো নিৰ্দেশনা আৰু উৎসাহজনক কথা শুনিবলৈ ভাল পায়।"
                 else "Select the language in which all voice guidance and memory cues will be spoken.",
                 fontSize = 14.sp,
-                color = AasritiColorTokens.WarmSlate
+                color = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.85f),
+                fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Language Cards
+            // Language Cards (Matching screen4.html)
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 languages.forEach { lang ->
                     val isSelected = (activeLang == lang.code)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(if (isSelected) AasritiColorTokens.SoftCream else AasritiColorTokens.WarmIvory)
-                            .border(
-                                width = if (isSelected) 2.5.dp else 1.5.dp,
-                                color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
-                                shape = RoundedCornerShape(18.dp)
-                            )
-                            .clickable {
-                                activeLang = lang.code
-                                onLanguageSelected(lang.code)
-                                DemoStateHolder.currentLanguage = lang.code
-                                voicePromptManager.setLanguage(lang.code)
-                            }
-                            .padding(16.dp)
+                    Surface(
+                        onClick = {
+                            activeLang = lang.code
+                            onLanguageSelected(lang.code)
+                            DemoStateHolder.currentLanguage = lang.code
+                            voicePromptManager.setLanguage(lang.code)
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        color = if (isSelected) AasritiColorTokens.CardSurface else AasritiColorTokens.ParchmentSurface,
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 1.5.dp,
+                            color = if (isSelected) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.ParchmentBorder
+                        ),
+                        shadowElevation = if (isSelected) 3.dp else 1.dp,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = lang.nativeLabel,
                                     fontSize = 20.sp,
+                                    fontFamily = FontFamily.Serif,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
+                                    color = if (isSelected) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.TextDark
                                 )
                                 Text(
                                     text = lang.englishLabel,
                                     fontSize = 13.sp,
-                                    color = AasritiColorTokens.WarmSlate
+                                    color = AasritiColorTokens.WarmSlate,
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                                 // Spoken Audio Preview Button
                                 IconButton(
                                     onClick = {
@@ -190,31 +206,31 @@ fun LanguageSelectScreen(
                                         voicePromptManager.speak(lang.sampleGreeting)
                                     },
                                     modifier = Modifier
-                                        .size(44.dp)
+                                        .size(42.dp)
                                         .clip(CircleShape)
                                         .background(AasritiColorTokens.WarmSunkenSurface)
+                                        .border(1.dp, AasritiColorTokens.MugaGold.copy(alpha = 0.5f), CircleShape)
                                 ) {
                                     Text("📢", fontSize = 18.sp)
                                 }
 
-                                Spacer(modifier = Modifier.width(12.dp))
-
+                                // Selection Indicator Stamp
                                 Box(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .size(32.dp)
                                         .clip(CircleShape)
                                         .background(
-                                            if (isSelected) AasritiColorTokens.DeepNortheastForest else Color.Transparent
+                                            if (isSelected) AasritiColorTokens.CrimsonDeep else Color.Transparent
                                         )
                                         .border(
                                             2.dp,
-                                            if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
+                                            if (isSelected) AasritiColorTokens.CrimsonDeep else AasritiColorTokens.ParchmentBorder,
                                             CircleShape
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (isSelected) {
-                                        Text("✓", color = AasritiColorTokens.WarmIvory, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                        Text("✓", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -224,27 +240,57 @@ fun LanguageSelectScreen(
             }
         }
 
-        // Action CTA
-        Button(
-            onClick = {
-                onLanguageSelected(activeLang)
-                DemoStateHolder.currentLanguage = activeLang
-                voicePromptManager.setLanguage(activeLang)
-                onContinueClicked()
-            },
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(top = 10.dp)
+        // Action Deck (Continue & Back)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = if (isAssamese) "আগবাঢ়ক (Continue) ➔" else "Continue to Accessibility ➔",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.WarmIvory
-            )
+            Button(
+                onClick = {
+                    onLanguageSelected(activeLang)
+                    DemoStateHolder.currentLanguage = activeLang
+                    voicePromptManager.setLanguage(activeLang)
+                    onContinueClicked()
+                },
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.CrimsonDeep),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isAssamese) "আগবাঢ়ক (CONTINUE)" else "CONTINUE",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("➔", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
+
+            OutlinedButton(
+                onClick = onBackClicked,
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.ParchmentBorder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = if (isAssamese) "উভতি যাওক (Back)" else "Back",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AasritiColorTokens.WarmSlate
+                )
+            }
         }
     }
 }
