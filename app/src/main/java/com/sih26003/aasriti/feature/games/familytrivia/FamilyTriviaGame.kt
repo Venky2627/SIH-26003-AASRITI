@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.familytrivia
+package com.sih26003.aasriti.feature.games.familytrivia
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,12 +20,15 @@ import androidx.compose.ui.draw.clip
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.RelationshipEntity
 import com.sih26003.aasriti.data.repository.GameRepository
+import com.sih26003.aasriti.data.repository.PatientRepository
+import com.sih26003.aasriti.feature.caregiver.AddFamilyMemberDialog
 import com.sih26003.aasriti.feature.games.framework.BaseGameEngine
 import com.sih26003.aasriti.feature.games.framework.GameId
 import com.sih26003.aasriti.feature.games.framework.GamePhase
 import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class FamilyTriviaEngine(
     patientId: String,
@@ -59,6 +62,7 @@ class FamilyTriviaEngine(
 @Composable
 fun FamilyTriviaGameScreen(
     engine: FamilyTriviaEngine,
+    patientRepository: PatientRepository? = null,
     onBack: () -> Unit
 ) {
     val phase by engine.gamePhase.collectAsState()
@@ -66,11 +70,19 @@ fun FamilyTriviaGameScreen(
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
     val lastMetrics by engine.lastMetrics.collectAsState()
+    val scope = rememberCoroutineScope()
+
+    var showAddMemberDialog by remember { mutableStateOf(false) }
+
+    // Live reactive relationship list from Room SQLite (if patientRepository is available)
+    val liveRelationships by (patientRepository?.getRelationships(engine.patientId)?.collectAsState(initial = engine.relationships)
+        ?: remember { mutableStateOf(engine.relationships) })
 
     // Real relationships from Room SQLite, with fallback if not yet configured
-    val members = remember(engine.relationships) {
-        if (engine.relationships.isNotEmpty()) {
-            engine.relationships
+    val members = remember(liveRelationships, engine.relationships) {
+        val active = if (liveRelationships.isNotEmpty()) liveRelationships else engine.relationships
+        if (active.isNotEmpty()) {
+            active
         } else {
             listOf(
                 RelationshipEntity(patientId = engine.patientId, name = "ৰূপম বৰা (Rupam)", relationshipType = "পুত্ৰ (Son)"),
@@ -82,14 +94,17 @@ fun FamilyTriviaGameScreen(
 
     val currentTarget = members[(roundCount - 1) % members.size]
 
-    // Formulate choices based on difficulty level
-    val choices = remember(difficulty, currentTarget) {
-        val otherNames = listOf("অৰুণ শৰ্মা", "দীপক ডেকা", "বিমল বৰুৱা", "নৱ কলিতা")
-            .filter { it != currentTarget.name }
+    // Formulate choices based on difficulty level, prioritizing real family members
+    val choices = remember(difficulty, currentTarget, members) {
+        val otherFamilyNames = members.filter { it.name != currentTarget.name }.map { it.name }
+        val fallbackDistractors = listOf("অৰুণ শৰ্মা", "দীপক ডেকা", "বিমল বৰুৱা", "নৱ কলিতা")
+            .filter { it != currentTarget.name && !otherFamilyNames.contains(it) }
+        val candidatePool = (otherFamilyNames + fallbackDistractors)
+
         when (difficulty) {
-            1 -> listOf(currentTarget.name, otherNames[0]).shuffled()
-            2 -> listOf(currentTarget.name, otherNames[0], otherNames[1]).shuffled()
-            3, 4 -> listOf(currentTarget.name, otherNames[0], otherNames[1], otherNames[2]).shuffled()
+            1 -> (listOf(currentTarget.name) + candidatePool.take(1)).shuffled()
+            2 -> (listOf(currentTarget.name) + candidatePool.take(2)).shuffled()
+            3, 4 -> (listOf(currentTarget.name) + candidatePool.take(3)).shuffled()
             else -> emptyList() // Level 5 is direct recall without choices
         }
     }
@@ -159,7 +174,15 @@ fun FamilyTriviaGameScreen(
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "${members.size} গৰাকী পৰিয়ালৰ সদস্য অন্তৰ্ভুক্ত (${members.size} family members loaded)",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AasritiColorTokens.MutedHeritageTerracotta,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(18.dp))
                     Button(
                         onClick = {
                             level5Revealed = false
@@ -176,6 +199,26 @@ fun FamilyTriviaGameScreen(
                     ) {
                         Text("খেল আৰম্ভ কৰক (Start) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
+
+                    if (patientRepository != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = { showAddMemberDialog = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                            shape = RoundedCornerShape(14.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.MutedHeritageTerracotta),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Text(
+                                "➕ সদস্য যোগ কৰক (Add Family Member)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.MutedHeritageTerracotta
+                            )
+                        }
+                    }
                 }
             }
 
@@ -184,7 +227,7 @@ fun FamilyTriviaGameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Photo Placeholder with High Contrast Frame
+                    // Photo Placeholder with High Contrast Frame & Relationship Avatar
                     Box(
                         modifier = Modifier
                             .size(160.dp)
@@ -193,7 +236,16 @@ fun FamilyTriviaGameScreen(
                             .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("👤", fontSize = 68.sp)
+                        val avatarEmoji = when {
+                            currentTarget.relationshipType.contains("নাতি", ignoreCase = true) || currentTarget.relationshipType.contains("Grandson", ignoreCase = true) -> "👦"
+                            currentTarget.relationshipType.contains("নাতিনী", ignoreCase = true) || currentTarget.relationshipType.contains("Granddaughter", ignoreCase = true) -> "👧"
+                            currentTarget.relationshipType.contains("পুত্ৰ", ignoreCase = true) || currentTarget.relationshipType.contains("Son", ignoreCase = true) -> "👨"
+                            currentTarget.relationshipType.contains("কন্যা", ignoreCase = true) || currentTarget.relationshipType.contains("Daughter", ignoreCase = true) -> "👩"
+                            currentTarget.relationshipType.contains("বোৱাৰী", ignoreCase = true) -> "👩"
+                            currentTarget.relationshipType.contains("স্বামী", ignoreCase = true) || currentTarget.relationshipType.contains("পত্নী", ignoreCase = true) -> "👵"
+                            else -> "👤"
+                        }
+                        Text(avatarEmoji, fontSize = 68.sp)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -387,5 +439,17 @@ fun FamilyTriviaGameScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (showAddMemberDialog) {
+        AddFamilyMemberDialog(
+            patientId = engine.patientId,
+            onDismiss = { showAddMemberDialog = false },
+            onSave = { newMember ->
+                scope.launch {
+                    patientRepository?.addRelationship(newMember)
+                }
+            }
+        )
     }
 }
