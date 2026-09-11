@@ -30,6 +30,46 @@ data class CategorisationItem(val name: String, val categoryId: String, val emoj
 
 data class CategoryDefinition(val id: String, val labelIndic: String, val emoji: String)
 
+object CategorisationGameData {
+    val defaultCategories = listOf(
+        CategoryDefinition("FRUIT", "ফল-মূল (Fruits)", "🍎"),
+        CategoryDefinition("VEGETABLE", "শাক-পাচলি (Vegetables)", "🥬"),
+        CategoryDefinition("ANIMAL", "পোহনীয়া জীৱ (Animals)", "🐄"),
+        CategoryDefinition("CLOTH", "পৰম্পৰাগত সাজ (Traditional Handloom)", "🧣"),
+        CategoryDefinition("MUSIC", "লোকবাদ্য (Folk Music)", "🪕")
+    )
+
+    val defaultItemPool = listOf(
+        // Authentic regional fruits
+        CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭"),
+        CategorisationItem("মালভোগ কল (Malbhog Banana)", "FRUIT", "🍌"),
+        CategorisationItem("খাচী সুমথিৰা (Khasi Mandarin)", "FRUIT", "🍊"), // Meghalaya
+        CategorisationItem("কাজি নেমু (Assam Lemon)", "FRUIT", "🍋"), // Assam
+
+        // Authentic regional vegetables & greens
+        CategorisationItem("তিতা কেৰেলা (Bitter Gourd)", "VEGETABLE", "🥒"),
+        CategorisationItem("জাতি লাউ (Bottle Gourd)", "VEGETABLE", "🥬"),
+        CategorisationItem("বাঁহৰ গাজ (Bamboo Shoot)", "VEGETABLE", "🎍"), // Assam & Meghalaya
+        CategorisationItem("ভূত জলকীয়া (Bhut Jolokia)", "VEGETABLE", "🌶️"), // Assam
+
+        // Domestic & regional fauna
+        CategorisationItem("ঘৰচীয়া গাই (Domestic Cow)", "ANIMAL", "🐄"),
+        CategorisationItem("পানী ম'হ (Water Buffalo)", "ANIMAL", "🐃"),
+        CategorisationItem("মেঠুন (Mithun)", "ANIMAL", "🐂"),
+
+        // Traditional Handloom & Heritage Wear (Assam, Manipur, Meghalaya)
+        CategorisationItem("ফুলাম গামোচা (Phulam Gamosa)", "CLOTH", "🧣"), // Assam
+        CategorisationItem("মৈৰাং ফী (Moirang Phee Shawl)", "CLOTH", "🥻"), // Manipur
+        CategorisationItem("ৰিন্ডিয়া এৰী বস্ত্ৰ (Ryndia Eri Silk)", "CLOTH", "🧵"), // Meghalaya
+        CategorisationItem("বাঁহৰ জাপি (Bamboo Jaapi)", "CLOTH", "👒"), // Assam
+
+        // Traditional Folk Instruments
+        CategorisationItem("দুতৰা বাদ্য (Duitara)", "MUSIC", "🪕"), // Meghalaya
+        CategorisationItem("পেনা বাদ্য (Pena)", "MUSIC", "🎻"), // Manipur
+        CategorisationItem("বিহু ঢোল (Bihu Dhol)", "MUSIC", "🥁") // Assam
+    )
+}
+
 class CategorisationEngine(
     patientId: String,
     gameRepository: GameRepository,
@@ -62,36 +102,25 @@ fun CategorisationGameScreen(
     val feedbackMsg by engine.feedbackMessage.collectAsState()
     val roundCount by engine.roundCount.collectAsState()
 
-    val categories = remember {
-        listOf(
-            CategoryDefinition("FRUIT", "ফল-মূল (Fruits)", "🍎"),
-            CategoryDefinition("VEGETABLE", "শাক-পাচলি (Vegetables)", "🥬"),
-            CategoryDefinition("ANIMAL", "পোহনীয়া জীৱ (Animals)", "🐄"),
-            CategoryDefinition("CLOTH", "কাপোৰ (Traditional Wear)", "🧣")
-        )
-    }
-
-    val itemPool = remember {
-        listOf(
-            CategorisationItem("পকা আম (Ripe Mango)", "FRUIT", "🥭"),
-            CategorisationItem("মালভোগ কল (Banana)", "FRUIT", "🍌"),
-            CategorisationItem("তিতা কেৰেলা (Bitter Gourd)", "VEGETABLE", "🥒"),
-            CategorisationItem("জাতি লাউ (Bottle Gourd)", "VEGETABLE", "🥬"),
-            CategorisationItem("ঘৰচীয়া গাই (Cow)", "ANIMAL", "🐄"),
-            CategorisationItem("ফুলাম গামোচা (Gamosa)", "CLOTH", "🧣")
-        )
-    }
-
-    val activeCategoryList = remember(difficulty) {
-        when (difficulty) {
-            1 -> categories.take(2)
-            2 -> categories.take(3)
-            else -> categories
-        }
-    }
+    val categories = remember { CategorisationGameData.defaultCategories }
+    val itemPool = remember { CategorisationGameData.defaultItemPool }
 
     val currentItem = remember(difficulty, roundCount) {
         itemPool[(roundCount - 1) % itemPool.size]
+    }
+
+    // Ensure target category is always in the active list, with distractors scaled by difficulty
+    val activeCategoryList = remember(difficulty, currentItem) {
+        val targetCat = categories.first { it.id == currentItem.categoryId }
+        val otherCats = categories.filter { it.id != currentItem.categoryId }
+        val categoryCount = when (difficulty) {
+            1 -> 2
+            2 -> 3
+            3 -> 4
+            else -> categories.size
+        }
+        val selectedDistractors = otherCats.take(categoryCount - 1)
+        (listOf(targetCat) + selectedDistractors).sortedBy { it.id }
     }
 
     Column(

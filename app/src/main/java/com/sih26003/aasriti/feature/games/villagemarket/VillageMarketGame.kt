@@ -28,6 +28,33 @@ import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class MarketItem(val id: String, val name: String, val emoji: String)
 
+object VillageMarketData {
+    val defaultStallGoods = listOf(
+        // Assam staples & GI heritage
+        MarketItem("rice", "জহা চাউল (Joha Scented Rice)", "🌾"),
+        MarketItem("lemon", "কাজি নেমু (Assam Lemon)", "🍋"),
+        MarketItem("tea", "অসম চাহ (Assam Orthodox Tea)", "🍵"),
+        MarketItem("pitha", "ঘিলা পিঠা (Ghila Pitha)", "🥞"),
+        MarketItem("jaapi", "বাঁহৰ জাপি (Bamboo Jaapi)", "👒"),
+
+        // Manipur regional specialties
+        MarketItem("chakhao", "চাক-হাও চাউল (Chak-hao Black Rice)", "🍚"),
+        MarketItem("singju", "ছিংজু চালাড (Singju Salad)", "🥗"),
+        MarketItem("fish", "লোকেল মাছ (Fresh River Fish)", "🐟"),
+
+        // Meghalaya specialties
+        MarketItem("orange", "খাচী সুমথিৰা (Khasi Mandarin)", "🍊"),
+        MarketItem("bamboo", "বাঁহৰ গাজ (Bamboo Shoot)", "🎍"),
+        MarketItem("ginger", "আদা (Nadia Ginger)", "🫚"),
+        MarketItem("ryndia", "ৰিন্ডিয়া এৰী কাপোৰ (Ryndia Shawl)", "🧵"),
+
+        // North Eastern universal pantry
+        MarketItem("chilli", "ভূত জলকীয়া (Bhut Jolokia)", "🌶️"),
+        MarketItem("betel", "তামোল-পান (Tamul Paan)", "🍃"),
+        MarketItem("oil", "সৰিয়হ তেল (Mustard Oil)", "🫙")
+    )
+}
+
 class VillageMarketEngine(
     patientId: String,
     gameRepository: GameRepository,
@@ -65,19 +92,7 @@ fun VillageMarketGameScreen(
     val roundCount by engine.roundCount.collectAsState()
 
     // Authentic North Eastern Village Market inventory
-    val allStallGoods = remember {
-        listOf(
-            MarketItem("rice", "জহা চাউল (Joha Rice)", "🌾"),
-            MarketItem("lemon", "কাজি নেমু (Assam Lemon)", "🍋"),
-            MarketItem("chilli", "ভূত জলকীয়া (Bhut Jolokia)", "🌶️"),
-            MarketItem("betel", "তামোল-পান (Paan)", "🍃"),
-            MarketItem("tea", "অসম চাহ (Assam Tea)", "🍵"),
-            MarketItem("fish", "লোকেল মাছ (River Fish)", "🐟"),
-            MarketItem("oil", "সৰিয়হ তেল (Mustard Oil)", "🫙"),
-            MarketItem("bamboo", "বাঁহৰ গাজ (Bamboo Shoot)", "🎍"),
-            MarketItem("ginger", "আদা (Ginger)", "🫚")
-        )
-    }
+    val allStallGoods = remember { VillageMarketData.defaultStallGoods }
 
     val (shoppingList, activeStall) = remember(difficulty, roundCount) {
         val count = when (difficulty) {
@@ -87,12 +102,16 @@ fun VillageMarketGameScreen(
             4 -> 4
             else -> 5
         }
-        val targetList = allStallGoods.take(count)
+        val offset = ((roundCount - 1) * 2) % allStallGoods.size
+        val rotated = allStallGoods.drop(offset) + allStallGoods.take(offset)
+        val targetList = rotated.take(count)
+        val remaining = rotated.drop(count)
         val stall = when (difficulty) {
-            1 -> targetList + allStallGoods.drop(count).take(2) // 4 items total in stall
-            2 -> targetList + allStallGoods.drop(count).take(3) // 6 items in stall
+            1 -> targetList + remaining.take(2) // 4 items total in stall
+            2 -> targetList + remaining.take(3) // 6 items in stall
+            3 -> targetList + remaining.take(5) // 8 items in stall
             else -> allStallGoods // full market stall
-        }.shuffled()
+        }.shuffled(java.util.Random(roundCount.toLong()))
         Pair(targetList, stall)
     }
 

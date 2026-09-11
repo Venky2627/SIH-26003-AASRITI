@@ -29,6 +29,21 @@ import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class CueItem(val id: String, val name: String, val emoji: String)
 
+object VoiceCueCardData {
+    val defaultItems = listOf(
+        CueItem("tea", "চাহৰ কাপ (Tea Cup)", "☕"),
+        CueItem("water", "পানীৰ গিলাচ (Water Glass)", "🥛"),
+        CueItem("flower", "কপৌ ফুল (Kopou Orchid)", "🌸"),
+        CueItem("book", "কিতাপ (Book)", "📖"),
+        CueItem("banana", "মালভোগ কল (Banana)", "🍌"),
+        CueItem("gamosa", "ফুলাম গামোচা (Phulam Gamosa)", "🧣"),
+        CueItem("jaapi", "বাঁহৰ জাপি (Bamboo Jaapi)", "👒"),
+        CueItem("duitara", "দুতৰা বাদ্য (Duitara)", "🪕"),
+        CueItem("pena", "পেনা বাদ্য (Pena)", "🎻"),
+        CueItem("jolpan", "জলপান বাটি (Jolpan Bowl)", "🥣")
+    )
+}
+
 class VoiceCueCardEngine(
     patientId: String,
     gameRepository: GameRepository,
@@ -66,25 +81,18 @@ fun VoiceCueCardGameScreen(
     val roundCount by engine.roundCount.collectAsState()
     val scope = rememberCoroutineScope()
 
-    val availableItems = remember {
-        listOf(
-            CueItem("tea", "চাহৰ কাপ (Tea Cup)", "☕"),
-            CueItem("water", "পানীৰ গিলাচ (Water Glass)", "🥛"),
-            CueItem("flower", "ফুল (Flower)", "🌸"),
-            CueItem("book", "কিতাপ (Book)", "📖"),
-            CueItem("banana", "কল (Banana)", "🍌"),
-            CueItem("gamosa", "গামোচা (Gamosa)", "🧣")
-        )
-    }
+    val availableItems = remember { VoiceCueCardData.defaultItems }
 
-    // Sequence target for current level
+    // Sequence target for current level with round progression
     val targetSequence = remember(difficulty, roundCount) {
+        val offset = (roundCount - 1) % availableItems.size
+        val shifted = availableItems.drop(offset) + availableItems.take(offset)
         when (difficulty) {
-            1 -> listOf(availableItems[0]) // single item
-            2 -> listOf(availableItems[1]) // short instruction
-            3 -> listOf(availableItems[2], availableItems[3]) // 2-step
-            4 -> listOf(availableItems[4], availableItems[0]) // mixed
-            else -> listOf(availableItems[1], availableItems[2], availableItems[5]) // 3-step sequence
+            1 -> listOf(shifted[0]) // single item
+            2 -> listOf(shifted[0]) // short instruction
+            3 -> listOf(shifted[0], shifted[1]) // 2-step
+            4 -> listOf(shifted[0], shifted[1]) // 2-step mixed
+            else -> listOf(shifted[0], shifted[1], shifted[2]) // 3-step sequence
         }
     }
 
@@ -248,12 +256,17 @@ fun VoiceCueCardGameScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Cards Layout: Number of choices scaled by level
-                    val displayItems = when (difficulty) {
-                        1 -> availableItems.take(2)
-                        2 -> availableItems.take(3)
-                        3 -> availableItems.take(4)
-                        else -> availableItems
+                    // Cards Layout: Number of choices scaled by level, ensuring targets are always present
+                    val displayItems = remember(difficulty, targetSequence, availableItems) {
+                        val distractors = availableItems.filter { item -> !targetSequence.any { it.id == item.id } }
+                        val distractorCount = when (difficulty) {
+                            1 -> 1 // 1 target + 1 distractor = 2
+                            2 -> 2 // 1 target + 2 distractors = 3
+                            3 -> 2 // 2 targets + 2 distractors = 4
+                            4 -> 4 // 2 targets + 4 distractors = 6
+                            else -> 5 // 3 targets + 5 distractors = 8
+                        }
+                        (targetSequence + distractors.take(distractorCount)).distinctBy { it.id }.sortedBy { it.id }
                     }
 
                     Column(modifier = Modifier.fillMaxWidth()) {
