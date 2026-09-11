@@ -6,6 +6,15 @@ package com.sih26003.aasriti.navigation
  */
 object AppRoutes {
     const val ROLE_SELECT = "role_select"
+    const val ONBOARDING_WELCOME = "onboarding_welcome"
+    const val ONBOARDING_THEME = "onboarding_theme"
+    const val ONBOARDING_LANGUAGE = "onboarding_language"
+    const val ONBOARDING_ACCESSIBILITY = "onboarding_accessibility"
+    const val ONBOARDING_PATIENT_REGISTER = "onboarding_patient_register"
+    const val ONBOARDING_CAREGIVER_REGISTER = "onboarding_caregiver_register"
+    const val ONBOARDING_CARE_CIRCLE_SETUP = "onboarding_care_circle_setup"
+    const val ONBOARDING_CARE_CIRCLE_SETUP_PARAM = "onboarding_care_circle_setup/{patientId}"
+    const val ONBOARDING_CONSENT = "onboarding_consent"
     const val INFORMED_CONSENT = "informed_consent"
     const val PIN_AUTH_CAREGIVER = "pin_auth_caregiver"
     const val PIN_AUTH_DOCTOR = "pin_auth_doctor"
@@ -29,4 +38,5 @@ object AppRoutes {
 
     fun buildRemindersRoute(patientId: String): String = "reminders/$patientId"
     fun buildFamilyTriviaRoute(difficulty: Int): String = "game_family_trivia/$difficulty"
+    fun buildCareCircleSetupRoute(patientId: String): String = "onboarding_care_circle_setup/$patientId"
 }

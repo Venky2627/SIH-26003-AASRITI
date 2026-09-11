@@ -48,10 +48,14 @@ fun RoleAndModeSelectScreen(
     onCaregiverLoginSelected: () -> Unit,
     onAshaLoginSelected: () -> Unit,
     onDoctorLoginSelected: () -> Unit,
-    onConsentSelected: (() -> Unit)? = null
+    onConsentSelected: (() -> Unit)? = null,
+    onStartOnboarding: (() -> Unit)? = null,
+    onRegisterPatientSelected: (() -> Unit)? = null,
+    onRegisterCaregiverSelected: (() -> Unit)? = null
 ) {
     var showDevMenu by remember { mutableStateOf(false) }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val allPatients by patientRepository.allPatients.collectAsState(initial = emptyList())
 
     Column(
         modifier = Modifier
@@ -72,6 +76,32 @@ fun RoleAndModeSelectScreen(
                 onLanguageSelected = { DemoStateHolder.currentLanguage = it }
             )
             CalmConnectivityPill(isAssamese = isAssamese)
+        }
+
+        if (onStartOnboarding != null) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clickable { onStartOnboarding() },
+                shape = RoundedCornerShape(12.dp),
+                color = AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.08f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.2f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = if (isAssamese) "🌸 প্ৰথমবাৰ আহিছে? আৰম্ভণি পৰিদৰ্শন (Welcome Tour)" else "🌸 New here? Start Guided Onboarding Tour",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AasritiColorTokens.DeepNortheastForest
+                    )
+                    Text("➔", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                }
+            }
         }
 
         // 1. App Heritage Branding Header
@@ -115,69 +145,91 @@ fun RoleAndModeSelectScreen(
                 modifier = Modifier.padding(bottom = 10.dp)
             )
 
-            // Fictional Profile: Aita Borah (AS-KAM-0042)
-            val demoPatient = remember { com.sih26003.aasriti.demo.DemoPatientConfig.createCanonicalPatient() }
+            val displayPatients = if (allPatients.isNotEmpty()) allPatients else listOf(remember { com.sih26003.aasriti.demo.DemoPatientConfig.createCanonicalPatient() })
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(AasritiColorTokens.SoftCream)
-                    .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
-                    .clickable { onPatientSelected(demoPatient) }
-                    .padding(16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+            displayPatients.take(2).forEach { p ->
+                val namePart = p.pseudonymCode.substringBefore(" •").ifBlank { p.pseudonymCode }
+                val subPart = p.pseudonymCode.substringAfter(" •", p.primaryLanguage)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(2.5.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
+                        .clickable { onPatientSelected(p) }
+                        .padding(14.dp),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(AasritiColorTokens.MutedHeritageTerracotta.copy(alpha = 0.15f))
+                                    .border(2.dp, AasritiColorTokens.MutedHeritageTerracotta, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("👵", fontSize = 32.sp)
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column {
+                                Text(
+                                    text = namePart,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                                Text(
+                                    text = subPart,
+                                    fontSize = 13.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "কামৰূপ গ্ৰাম্য • ${p.primaryLanguage}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.DeepNortheastForest
+                                )
+                            }
+                        }
+
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
-                                .background(AasritiColorTokens.MutedHeritageTerracotta.copy(alpha = 0.15f))
-                                .border(2.dp, AasritiColorTokens.MutedHeritageTerracotta, CircleShape),
+                                .background(AasritiColorTokens.DeepNortheastForest),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("👵", fontSize = 36.sp)
-                        }
-
-                        Spacer(modifier = Modifier.width(14.dp))
-
-                        Column {
-                            Text(
-                                text = AasritiDemoData.patient.displayName,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
-                            Text(
-                                text = "${AasritiDemoData.patient.displaySubtitle} • ${AasritiDemoData.patient.pseudonymCode}",
-                                fontSize = 13.sp,
-                                color = AasritiColorTokens.WarmSlate
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "কামৰূপ গ্ৰাম্য • অসমীয়া মাধ্যম",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AasritiColorTokens.DeepNortheastForest
-                            )
+                            Text("➔", color = AasritiColorTokens.WarmIvory, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                     }
+                }
+            }
 
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(AasritiColorTokens.DeepNortheastForest),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("➔", color = AasritiColorTokens.WarmIvory, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    }
+            if (onRegisterPatientSelected != null || onStartOnboarding != null) {
+                OutlinedButton(
+                    onClick = { (onRegisterPatientSelected ?: onStartOnboarding)?.invoke() },
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.DeepNortheastForest),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text(
+                        text = if (isAssamese) "+ নতুন জ্যেষ্ঠ পঞ্জীয়ন কৰক (Add Elder)" else "+ Register New Elder (Onboarding)",
+                        color = AasritiColorTokens.DeepNortheastForest,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
                 }
             }
         }
@@ -210,6 +262,18 @@ fun RoleAndModeSelectScreen(
                     )
                     Text("🔒 PIN", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
                 }
+            }
+
+            if (onRegisterCaregiverSelected != null) {
+                Text(
+                    text = if (isAssamese) "নতুন যত্ন লওঁতা? পঞ্জীয়ন আৰু PIN ছেট কৰক ➔" else "New Caregiver? Register profile & PIN ➔",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AasritiColorTokens.DeepNortheastForest,
+                    modifier = Modifier
+                        .clickable { onRegisterCaregiverSelected() }
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                )
             }
 
             // ASHA Community Worker Mode Button

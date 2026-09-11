@@ -7,7 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.Image
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import com.sih26003.aasriti.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,8 +111,28 @@ fun AasritiEmblem(
     }
 }
 
+
+
+/**
+ * Authentic AASRITI Master Logo Image.
+ * Directly renders the canonical brand terracotta spiral and golden sun emblem.
+ */
+@Composable
+fun AasritiLogoImage(
+    modifier: Modifier = Modifier,
+    size: Dp = 100.dp
+) {
+    Image(
+        painter = painterResource(id = R.drawable.ic_aasriti_logo),
+        contentDescription = "আশ্ৰীতি (AASRITI) Logo",
+        modifier = modifier.size(size),
+        contentScale = ContentScale.Fit
+    )
+}
+
 /**
  * Reusable AASRITI Brand Emblem Badge with container styling.
+ * Uses the authentic brand logo inside a warm heritage circular badge.
  */
 @Composable
 fun AasritiLogoBadge(
@@ -122,10 +146,16 @@ fun AasritiLogoBadge(
             .size(size)
             .clip(CircleShape)
             .background(containerColor)
-            .border(1.5.dp, borderColor, CircleShape),
+            .border(1.5.dp, borderColor, CircleShape)
+            .padding(size * 0.10f),
         contentAlignment = Alignment.Center
     ) {
-        AasritiEmblem(modifier = Modifier.size(size * 0.75f))
+        Image(
+            painter = painterResource(id = R.drawable.ic_aasriti_logo),
+            contentDescription = "AASRITI Logo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
+        )
     }
 }
 

@@ -37,6 +37,13 @@ import com.sih26003.aasriti.feature.memoryalbum.MemoryGardenScreen
 import com.sih26003.aasriti.feature.patient.CareCircleScreen
 import com.sih26003.aasriti.feature.patient.PatientHomeScreen
 import com.sih26003.aasriti.feature.patient.SosScreen
+import com.sih26003.aasriti.feature.onboarding.AccessibilitySetupScreen
+import com.sih26003.aasriti.feature.onboarding.CareCircleSetupScreen
+import com.sih26003.aasriti.feature.onboarding.CaregiverRegistrationScreen
+import com.sih26003.aasriti.feature.onboarding.CulturalThemeScreen
+import com.sih26003.aasriti.feature.onboarding.LanguageSelectScreen
+import com.sih26003.aasriti.feature.onboarding.PatientRegistrationScreen
+import com.sih26003.aasriti.feature.onboarding.WelcomeScreen
 import com.sih26003.aasriti.feature.reminders.RemindersScreen
 import kotlinx.coroutines.launch
 
@@ -52,6 +59,10 @@ class MainActivity : ComponentActivity() {
                 val scope = rememberCoroutineScope()
                 var activePatient by remember { mutableStateOf<PatientEntity?>(null) }
                 var activePatientRelationships by remember { mutableStateOf<List<RelationshipEntity>>(emptyList()) }
+                var onboardingRegion by remember { mutableStateOf("ASSAM") }
+                var onboardingLanguage by remember { mutableStateOf("as") }
+                var onboardingExtraLargeFont by remember { mutableStateOf(false) }
+                var onboardingVoiceEnabled by remember { mutableStateOf(true) }
 
                 LaunchedEffect(Unit) {
                     val existing = app.patientRepository.getPatientById(com.sih26003.aasriti.demo.DemoPatientConfig.PATIENT_ID)
@@ -91,7 +102,137 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                NavHost(navController = navController, startDestination = AppRoutes.ROLE_SELECT) {
+                NavHost(navController = navController, startDestination = AppRoutes.ONBOARDING_WELCOME) {
+                    // SCREEN 1: Open / Welcome Screen (Prototype Screen 1)
+                    composable(AppRoutes.ONBOARDING_WELCOME) {
+                        WelcomeScreen(
+                            onEnterClicked = { navController.navigate(AppRoutes.ONBOARDING_THEME) },
+                            onCaregiverClicked = { navController.navigate(AppRoutes.ONBOARDING_CAREGIVER_REGISTER) },
+                            onDoctorClicked = { navController.navigate(AppRoutes.PIN_AUTH_DOCTOR) },
+                            onDirectProfilesClicked = { navController.navigate(AppRoutes.ROLE_SELECT) }
+                        )
+                    }
+
+                    // SCREEN 2: Cultural Theme Selection (Prototype Screen 2)
+                    composable(AppRoutes.ONBOARDING_THEME) {
+                        CulturalThemeScreen(
+                            voicePromptManager = app.voicePromptManager,
+                            selectedRegion = onboardingRegion,
+                            onRegionSelected = { region, lang ->
+                                onboardingRegion = region
+                                onboardingLanguage = lang
+                                app.voicePromptManager.setLanguage(lang)
+                            },
+                            onContinueClicked = { navController.navigate(AppRoutes.ONBOARDING_LANGUAGE) },
+                            onBackClicked = { navController.popBackStack() }
+                        )
+                    }
+
+                    // SCREEN 4: Language Selection (Prototype Screen 4)
+                    composable(AppRoutes.ONBOARDING_LANGUAGE) {
+                        LanguageSelectScreen(
+                            voicePromptManager = app.voicePromptManager,
+                            selectedLanguage = onboardingLanguage,
+                            onLanguageSelected = { lang ->
+                                onboardingLanguage = lang
+                                app.voicePromptManager.setLanguage(lang)
+                            },
+                            onContinueClicked = { navController.navigate(AppRoutes.ONBOARDING_ACCESSIBILITY) },
+                            onBackClicked = { navController.popBackStack() }
+                        )
+                    }
+
+                    // SCREEN 5: Accessibility / Personalisation (Prototype Screen 5)
+                    composable(AppRoutes.ONBOARDING_ACCESSIBILITY) {
+                        AccessibilitySetupScreen(
+                            voicePromptManager = app.voicePromptManager,
+                            isExtraLargeFont = onboardingExtraLargeFont,
+                            isVoiceAssistanceEnabled = onboardingVoiceEnabled,
+                            onPreferencesChanged = { xl, voice ->
+                                onboardingExtraLargeFont = xl
+                                onboardingVoiceEnabled = voice
+                            },
+                            onContinueClicked = { navController.navigate(AppRoutes.ONBOARDING_PATIENT_REGISTER) },
+                            onBackClicked = { navController.popBackStack() }
+                        )
+                    }
+
+                    // Patient Registration & Profile Creation
+                    composable(AppRoutes.ONBOARDING_PATIENT_REGISTER) {
+                        PatientRegistrationScreen(
+                            patientRepository = app.patientRepository,
+                            initialRegion = onboardingRegion,
+                            initialLanguage = onboardingLanguage,
+                            onPatientRegistered = { newPatient ->
+                                activePatient = newPatient
+                                app.voicePromptManager.setLanguage(newPatient.primaryLanguage)
+                                scope.launch {
+                                    activePatientRelationships = app.patientRepository.getRelationshipsList(newPatient.id)
+                                }
+                                navController.navigate(AppRoutes.ONBOARDING_CONSENT)
+                            },
+                            onBackClicked = { navController.popBackStack() }
+                        )
+                    }
+
+                    // SCREEN 6: Informed Consent & Assent (Onboarding Path)
+                    composable(AppRoutes.ONBOARDING_CONSENT) {
+                        InformedConsentScreen(
+                            onConsentAccepted = {
+                                navController.navigate(AppRoutes.PATIENT_HOME) {
+                                    popUpTo(AppRoutes.ONBOARDING_WELCOME) { inclusive = true }
+                                }
+                            },
+                            onConsentDeclined = { navController.popBackStack() }
+                        )
+                    }
+
+                    // Caregiver Registration
+                    composable(AppRoutes.ONBOARDING_CAREGIVER_REGISTER) {
+                        CaregiverRegistrationScreen(
+                            userRepository = app.userRepository,
+                            patientRepository = app.patientRepository,
+                            onCaregiverRegistered = { patientId ->
+                                navController.navigate(AppRoutes.buildCareCircleSetupRoute(patientId))
+                            },
+                            onBackClicked = { navController.popBackStack() }
+                        )
+                    }
+
+                    // Care Circle Setup for Emergency Contacts & Trivia
+                    composable(
+                        route = AppRoutes.ONBOARDING_CARE_CIRCLE_SETUP_PARAM,
+                        arguments = listOf(androidx.navigation.navArgument("patientId") {
+                            type = androidx.navigation.NavType.StringType
+                            nullable = true
+                            defaultValue = null
+                        })
+                    ) { backStackEntry ->
+                        val pId = backStackEntry.arguments?.getString("patientId")
+                        CareCircleSetupScreen(
+                            patientRepository = app.patientRepository,
+                            patientId = pId,
+                            onNavigateBack = { navController.popBackStack() },
+                            onComplete = { _ ->
+                                navController.navigate(AppRoutes.CAREGIVER_DASHBOARD) {
+                                    popUpTo(AppRoutes.ROLE_SELECT) { inclusive = false }
+                                }
+                            }
+                        )
+                    }
+                    composable(AppRoutes.ONBOARDING_CARE_CIRCLE_SETUP) {
+                        CareCircleSetupScreen(
+                            patientRepository = app.patientRepository,
+                            patientId = null,
+                            onNavigateBack = { navController.popBackStack() },
+                            onComplete = { _ ->
+                                navController.navigate(AppRoutes.CAREGIVER_DASHBOARD) {
+                                    popUpTo(AppRoutes.ROLE_SELECT) { inclusive = false }
+                                }
+                            }
+                        )
+                    }
+
                     // 1. Role Selection & Direct Patient Photo Mode
                     composable(AppRoutes.ROLE_SELECT) {
                         RoleAndModeSelectScreen(
@@ -115,11 +256,20 @@ class MainActivity : ComponentActivity() {
                             },
                             onConsentSelected = {
                                 navController.navigate(AppRoutes.INFORMED_CONSENT)
+                            },
+                            onStartOnboarding = {
+                                navController.navigate(AppRoutes.ONBOARDING_WELCOME)
+                            },
+                            onRegisterPatientSelected = {
+                                navController.navigate(AppRoutes.ONBOARDING_PATIENT_REGISTER)
+                            },
+                            onRegisterCaregiverSelected = {
+                                navController.navigate(AppRoutes.ONBOARDING_CAREGIVER_REGISTER)
                             }
                         )
                     }
 
-                    // SCREEN 6: Informed Consent & Privacy Assent (DPDPA 2023)
+                    // SCREEN 6: Informed Consent & Privacy Assent (Direct View / Policy Check)
                     composable(AppRoutes.INFORMED_CONSENT) {
                         InformedConsentScreen(
                             onConsentAccepted = { navController.popBackStack() },
