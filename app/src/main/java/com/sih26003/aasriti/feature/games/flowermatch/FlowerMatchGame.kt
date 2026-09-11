@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.flowermatch
+package com.sih26003.aasriti.feature.games.flowermatch
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.GameSessionEntity
 import com.sih26003.aasriti.data.repository.GameRepository
@@ -194,8 +196,9 @@ fun FlowerMatchGameScreen(
                 )
             }
 
-            // Audio Replay Button
-            Button(
+            // Canonical Voice Pill
+            AasritiVoicePill(
+                state = AasritiVoicePillState.IDLE,
                 onClick = {
                     val prompt = if (isAssamese) {
                         "অনুগ্ৰহ কৰি ${targetFlower.nameIndic} বাছক।"
@@ -204,17 +207,8 @@ fun FlowerMatchGameScreen(
                     }
                     voicePromptManager?.speak(prompt)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 56.dp)
-            ) {
-                Text(
-                    text = if (isAssamese) "🔊 শুনক" else "🔊 Listen",
-                    color = AasritiColorTokens.WarmIvory,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                customText = if (isAssamese) "🔊 শুনক" else "🔊 Listen"
+            )
         }
 
         // 100% Offline Status Badge

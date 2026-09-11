@@ -25,9 +25,39 @@ import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class CueItem(val id: String, val name: String, val emoji: String)
+
+object VoiceCueCardMatcher {
+    /**
+     * Multilingual speech keyword matcher for spoken voice cue answers.
+     * Supports Assamese, English, Manipuri, and Khasi vocabulary.
+     */
+    fun matchesSpokenCue(spokenText: String, expectedItem: CueItem): Boolean {
+        val clean = spokenText.lowercase().trim()
+        val targetId = expectedItem.id.lowercase()
+        if (clean.contains(targetId)) return true
+
+        val aliases = when (targetId) {
+            "tea" -> listOf("tea", "চাহ", "চা", "chai", "cup")
+            "water" -> listOf("water", "পানী", "পানি", "pani", "glass", "ishi", "um")
+            "flower" -> listOf("flower", "ফুল", "phool", "kopou", "leikham")
+            "book" -> listOf("book", "কিতাপ", "বই", "kitap", "lairik", "kot")
+            "banana" -> listOf("banana", "কল", "kol", "laphoi", "kait")
+            "gamosa" -> listOf("gamosa", "গামোচা", "gamusa", "towel", "scarf")
+            "jaapi" -> listOf("jaapi", "জাপি", "japi", "hat")
+            "duitara" -> listOf("duitara", "দুতৰা", "dotara", "lute", "instrument")
+            "pena" -> listOf("pena", "পেনা", "lute", "fiddle")
+            "jolpan" -> listOf("jolpan", "জলপান", "snack", "bowl", "curd")
+            else -> listOf(targetId)
+        }
+
+        return aliases.any { clean.contains(it) }
+    }
+}
 
 object VoiceCueCardData {
     val defaultItems = listOf(
@@ -108,6 +138,7 @@ fun VoiceCueCardGameScreen(
 
     var selectedItems by remember { mutableStateOf(listOf<String>()) }
     var isListeningVoice by remember { mutableStateOf(false) }
+    var isPlayingAudio by remember { mutableStateOf(false) }
     var voiceSecondsLeft by remember { mutableStateOf(5) }
     var showVoiceFallbackQuestion by remember { mutableStateOf(false) }
 
@@ -198,27 +229,31 @@ fun VoiceCueCardGameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Audio Replay Button
-                    Button(
-                        onClick = { engine.playCue(spokenPromptText) },
-                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(58.dp)
-                    ) {
-                        Text("🔊 পুনৰ শুনক (Listen Again)", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
-                    }
+                    // Canonical Voice Pill for Audio Replay
+                    AasritiVoicePill(
+                        state = if (isPlayingAudio) AasritiVoicePillState.PLAYING else AasritiVoicePillState.IDLE,
+                        onClick = {
+                            isPlayingAudio = true
+                            engine.playCue(spokenPromptText)
+                            scope.launch {
+                                delay(2500)
+                                isPlayingAudio = false
+                            }
+                        },
+                        customText = if (isPlayingAudio) "🔊 বজাই থকা হৈছে... (Playing...)" else "🔊 পুনৰ শুনক (Listen Again)",
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Optional Voice Answer path (5-second limit, non-blocking)
+                    // Optional Voice Answer Path using AasritiVoicePill (5-second limit, non-punitive fallback)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(
+                        AasritiVoicePill(
+                            state = if (isListeningVoice) AasritiVoicePillState.LISTENING else AasritiVoicePillState.PAUSED,
                             onClick = {
                                 if (!isListeningVoice) {
                                     isListeningVoice = true
@@ -234,22 +269,12 @@ fun VoiceCueCardGameScreen(
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isListeningVoice) AasritiColorTokens.SupportingSage.copy(alpha = 0.4f) else AasritiColorTokens.SoftCream
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
-                            modifier = Modifier.weight(1f).padding(end = 8.dp).height(50.dp)
-                        ) {
-                            Text(
-                                if (isListeningVoice) "🎙️ শুনি আছোঁ ($voiceSecondsLeft s)..." else "🎙️ মুখেৰে কওক (Voice Input)",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isListeningVoice) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
-                            )
-                        }
+                            customText = if (isListeningVoice) "🎙️ শুনি আছোঁ ($voiceSecondsLeft s)..." else "🎙️ মুখেৰে কওক (Voice Answer)",
+                            modifier = Modifier.weight(1f)
+                        )
 
                         if (showVoiceFallbackQuestion) {
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text("❓ স্পৰ্শ কৰক", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.MugaGold)
                         }
                     }

@@ -291,4 +291,73 @@ class CulturalGamesTests {
             assertEquals(1.0f, color.alpha, 0.01f)
         }
     }
+
+    // =========================================================================
+    // 6. VOICE CONTROLLER AFFORDANCE & SPEECH RECOGNITION TESTS
+    // =========================================================================
+
+    @Test
+    fun testVoicePillStateSemantics() {
+        val states = com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.values()
+        assertEquals(5, states.size)
+        assertTrue(states.contains(com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.IDLE))
+        assertTrue(states.contains(com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.PLAYING))
+        assertTrue(states.contains(com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.LISTENING))
+        assertTrue(states.contains(com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.PAUSED))
+        assertTrue(states.contains(com.sih26003.aasriti.core.ui.components.AasritiVoicePillState.ERROR))
+    }
+
+    @Test
+    fun testVoiceCueCardMatcherMultilingualRecognition() {
+        val jaapiItem = com.sih26003.aasriti.feature.games.voicecuecard.CueItem("jaapi", "বাঁহৰ জাপি (Bamboo Jaapi)", "👒")
+        val teaItem = com.sih26003.aasriti.feature.games.voicecuecard.CueItem("tea", "চাহৰ কাপ (Tea Cup)", "☕")
+        val penaItem = com.sih26003.aasriti.feature.games.voicecuecard.CueItem("pena", "পেনা বাদ্য (Pena)", "🎻")
+        val duitaraItem = com.sih26003.aasriti.feature.games.voicecuecard.CueItem("duitara", "দুতৰা বাদ্য (Duitara)", "🪕")
+
+        // Exact & Indic speech matching
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("জাপি", jaapiItem))
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("bamboo jaapi please", jaapiItem))
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("চাহৰ কাপ", teaItem))
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("hot tea", teaItem))
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("পেনা বাদ্য", penaItem))
+        assertTrue(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("দুতৰা বাদ্য", duitaraItem))
+
+        // Non-matching speech should return false
+        assertFalse(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("গামোচা", jaapiItem))
+        assertFalse(com.sih26003.aasriti.feature.games.voicecuecard.VoiceCueCardMatcher.matchesSpokenCue("something completely unrelated", teaItem))
+    }
+
+    @Test
+    fun testRegionalLanguagePacksJsonIntegrity() {
+        val jsonFiles = listOf("as_prompts.json", "en_prompts.json", "mn_prompts.json", "kha_prompts.json")
+        val requiredKeys = listOf(
+            "welcome",
+            "voice_cue_card_instructions",
+            "categorisation_instructions",
+            "village_market_instructions",
+            "correct_feedback"
+        )
+
+        val gson = com.google.gson.Gson()
+
+        jsonFiles.forEach { filename ->
+            val file = java.io.File("src/main/assets/language-packs/$filename")
+            assertTrue("File $filename must exist in assets", file.exists())
+
+            val pack = file.reader().use { reader ->
+                gson.fromJson(reader, com.sih26003.aasriti.voice.packs.LanguagePack::class.java)
+            }
+
+            assertNotNull("Language pack $filename must parse successfully", pack)
+            assertFalse("Language code in $filename must not be blank", pack.language.isBlank())
+            assertFalse("Language name in $filename must not be blank", pack.languageName.isBlank())
+
+            requiredKeys.forEach { key ->
+                assertTrue(
+                    "Language pack $filename must contain key '$key'",
+                    pack.prompts.containsKey(key) && !pack.prompts[key].isNullOrBlank()
+                )
+            }
+        }
+    }
 }

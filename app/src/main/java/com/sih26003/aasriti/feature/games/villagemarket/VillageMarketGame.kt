@@ -24,6 +24,8 @@ import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
+import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class MarketItem(val id: String, val name: String, val emoji: String)
@@ -141,8 +143,15 @@ fun VillageMarketGameScreen(
             ) {
                 Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
+            AasritiVoicePill(
+                state = AasritiVoicePillState.IDLE,
+                onClick = { engine.speakList(shoppingList.joinToString(", ") { it.name }) },
+                customText = "🔊 তালিকা"
+            )
+
             Text(
-                "স্তৰ $difficulty (Level $difficulty)",
+                "স্তৰ $difficulty",
                 color = AasritiColorTokens.DeepNortheastForest,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
