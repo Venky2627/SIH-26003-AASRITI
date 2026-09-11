@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti
+package com.sih26003.aasriti
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -263,7 +263,11 @@ class MainActivity : ComponentActivity() {
                                 initialDifficulty = diff
                             )
                         }
-                        FamilyTriviaGameScreen(engine = engine, onBack = { navController.popBackStack() })
+                        FamilyTriviaGameScreen(
+                            engine = engine,
+                            patientRepository = app.patientRepository,
+                            onBack = { navController.popBackStack() }
+                        )
                     }
 
                     // GAME 1: Family Trivia (Fallback route resolving difficulty from Room)
@@ -284,7 +288,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         engine?.let { eng ->
-                            FamilyTriviaGameScreen(engine = eng, onBack = { navController.popBackStack() })
+                            FamilyTriviaGameScreen(
+                                engine = eng,
+                                patientRepository = app.patientRepository,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                     }
 

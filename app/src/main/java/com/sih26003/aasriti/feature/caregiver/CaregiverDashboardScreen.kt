@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.caregiver
+package com.sih26003.aasriti.feature.caregiver
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -24,6 +27,7 @@ import com.sih26003.aasriti.core.security.CryptoUtils
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.local.entities.DoctorAccessEntity
+import com.sih26003.aasriti.data.local.entities.RelationshipEntity
 import com.sih26003.aasriti.data.repository.CareLogRepository
 import com.sih26003.aasriti.data.repository.DoctorAccessRepository
 import com.sih26003.aasriti.data.repository.GameRepository
@@ -73,6 +77,7 @@ fun CaregiverDashboardScreen(
 
     val realSessions by gameRepository.getSessionsForPatient(patient.id).collectAsState(initial = emptyList())
     val realCareLogs by careLogRepository.getLogsForPatient(patient.id).collectAsState(initial = emptyList())
+    val realRelationships by patientRepository.getRelationships(patient.id).collectAsState(initial = emptyList())
     val roomReminders by (resolvedReminderRepo?.getActiveReminders(patient.id)?.collectAsState(initial = emptyList())
         ?: remember { mutableStateOf(emptyList()) })
 
@@ -137,6 +142,7 @@ fun CaregiverDashboardScreen(
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Overview, 1: Care History
     var showQuickLogDialog by remember { mutableStateOf(false) }
+    var showAddFamilyDialog by remember { mutableStateOf(false) }
     var generatedDoctorCode by remember { mutableStateOf<String?>("424242") }
     var historyFilterCategory by remember { mutableStateOf("ALL") }
 
@@ -746,7 +752,158 @@ fun CaregiverDashboardScreen(
                     }
                 }
 
-                // 6. Doctor Access Code Generator
+                // 6. Family Circle for Trivia & Reminiscence Card
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(AasritiColorTokens.SoftCream)
+                            .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(18.dp))
+                            .padding(16.dp)
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("👨‍👩‍👧", fontSize = 20.sp)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = if (isAssamese) "পৰিয়ালৰ সদস্য আৰু স্মৃতি (Family Circle)" else "Family Circle & Trivia Setup",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                        Text(
+                                            text = if (isAssamese) "স্মৃতি খেলৰ বাবে সদস্য তালিকা" else "Configured members for Family Trivia",
+                                            fontSize = 11.sp,
+                                            color = AasritiColorTokens.WarmSlate
+                                        )
+                                    }
+                                }
+
+                                if (realRelationships.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(AasritiColorTokens.MutedHeritageTerracotta.copy(alpha = 0.12f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "${realRelationships.size} সদস্য",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.MutedHeritageTerracotta
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            if (realRelationships.isEmpty()) {
+                                Text(
+                                    text = if (isAssamese) "কোনো পৰিয়ালৰ সদস্য যোগ কৰা হোৱা নাই।" else "No family members added yet.",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (isAssamese)
+                                        "'পৰিয়ালৰ স্মৃতি' খেলত আইতাই চিনি পাবলৈ তলৰ বুটাম টিপি পৰিয়ালৰ সদস্যৰ নাম আৰু সম্পৰ্ক নিৰ্ধাৰণ কৰক।"
+                                    else
+                                        "Add family members below so elder can recognize them in Family Trivia game rounds.",
+                                    fontSize = 12.sp,
+                                    color = AasritiColorTokens.WarmSlate
+                                )
+                            } else {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    realRelationships.forEach { member ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(AasritiColorTokens.WarmSunkenSurface)
+                                                .border(1.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(10.dp))
+                                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                val avatarEmoji = when {
+                                                    member.relationshipType.contains("নাতি", ignoreCase = true) || member.relationshipType.contains("Grandson", ignoreCase = true) -> "👦"
+                                                    member.relationshipType.contains("নাতিনী", ignoreCase = true) || member.relationshipType.contains("Granddaughter", ignoreCase = true) -> "👧"
+                                                    member.relationshipType.contains("পুত্ৰ", ignoreCase = true) || member.relationshipType.contains("Son", ignoreCase = true) -> "👨"
+                                                    member.relationshipType.contains("কন্যা", ignoreCase = true) || member.relationshipType.contains("Daughter", ignoreCase = true) -> "👩"
+                                                    member.relationshipType.contains("বোৱাৰী", ignoreCase = true) -> "👩"
+                                                    member.relationshipType.contains("স্বামী", ignoreCase = true) || member.relationshipType.contains("পত্নী", ignoreCase = true) -> "👵"
+                                                    else -> "👤"
+                                                }
+                                                Text(avatarEmoji, fontSize = 20.sp)
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Column {
+                                                    Text(
+                                                        text = member.name,
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = AasritiColorTokens.DeepCharcoal
+                                                    )
+                                                    Text(
+                                                        text = member.relationshipType,
+                                                        fontSize = 12.sp,
+                                                        color = AasritiColorTokens.MutedHeritageTerracotta,
+                                                        fontWeight = FontWeight.SemiBold
+                                                    )
+                                                }
+                                            }
+
+                                            IconButton(
+                                                onClick = {
+                                                    scope.launch {
+                                                        patientRepository.deleteRelationship(member.id)
+                                                    }
+                                                }
+                                            ) {
+                                                Text("✕", color = AasritiColorTokens.WarmAmberWarning, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = { showAddFamilyDialog = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MutedHeritageTerracotta),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                            ) {
+                                Text(
+                                    text = if (isAssamese) "+ পৰিয়ালৰ সদস্য যোগ কৰক (Add Member)" else "+ Add Family Member",
+                                    color = AasritiColorTokens.WarmIvory,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 7. Doctor Access Code Generator
                 item {
                     Box(
                         modifier = Modifier
@@ -1223,6 +1380,18 @@ fun CaregiverDashboardScreen(
             }
         }
     }
+
+    if (showAddFamilyDialog) {
+        AddFamilyMemberDialog(
+            patientId = patient.id,
+            onDismiss = { showAddFamilyDialog = false },
+            onSave = { newMember ->
+                scope.launch {
+                    patientRepository.addRelationship(newMember)
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -1336,4 +1505,184 @@ private fun CareLogHistoryCard(log: CareLogEntity) {
 private fun formatTimestamp(timestamp: Long): String {
     val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
     return sdf.format(Date(timestamp))
+}
+
+@Composable
+fun AddFamilyMemberDialog(
+    patientId: String,
+    onDismiss: () -> Unit,
+    onSave: (RelationshipEntity) -> Unit
+) {
+    var nameInput by remember { mutableStateOf("") }
+    var selectedRelation by remember { mutableStateOf("পুত্ৰ (Son)") }
+    var validationError by remember { mutableStateOf<String?>(null) }
+
+    val relationsList = listOf(
+        "পুত্ৰ (Son)",
+        "কন্যা (Daughter)",
+        "নাতি (Grandson)",
+        "নাতিনী (Granddaughter)",
+        "বোৱাৰী (Daughter-in-law)",
+        "জোঁৱাই (Son-in-law)",
+        "স্বামী/পত্নী (Spouse)",
+        "ভনী/বায়েক (Sister)",
+        "ভাই/ককাই (Brother)",
+        "বন্ধু (Friend)"
+    )
+
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(AasritiColorTokens.WarmIvory)
+                .border(2.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
+                .padding(20.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "👨‍👩‍👧 পৰিয়ালৰ সদস্য যোগ কৰক",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AasritiColorTokens.DeepCharcoal
+                )
+                Text(
+                    text = "Add Family Member for Trivia & Reminiscence",
+                    fontSize = 12.sp,
+                    color = AasritiColorTokens.WarmSlate
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedTextField(
+                    value = nameInput,
+                    onValueChange = {
+                        nameInput = it
+                        validationError = null
+                    },
+                    label = { Text("সদস্যৰ নাম (Full Name)") },
+                    placeholder = { Text("যেনে: ৰূপম বৰা (Rupam Borah)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AasritiColorTokens.DeepNortheastForest,
+                        unfocusedBorderColor = AasritiColorTokens.WarmStoneBorder,
+                        focusedLabelColor = AasritiColorTokens.DeepNortheastForest
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "আইতাৰ সৈতে সম্পৰ্ক (Relationship):",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AasritiColorTokens.DeepCharcoal,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 140.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    relationsList.chunked(2).forEach { rowChips ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            rowChips.forEach { rel ->
+                                val isSelected = (selectedRelation == rel)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            if (isSelected) AasritiColorTokens.DeepNortheastForest
+                                            else AasritiColorTokens.SoftCream
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) AasritiColorTokens.DeepNortheastForest
+                                            else AasritiColorTokens.WarmStoneBorder,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { selectedRelation = rel }
+                                        .padding(vertical = 8.dp, horizontal = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = rel,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) AasritiColorTokens.WarmIvory else AasritiColorTokens.DeepCharcoal,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (validationError != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = validationError ?: "",
+                        color = AasritiColorTokens.WarmAmberWarning,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AasritiColorTokens.WarmStoneBorder),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                    ) {
+                        Text("বাতিল (Cancel)", color = AasritiColorTokens.WarmSlate, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = {
+                            val trimmed = nameInput.trim()
+                            if (trimmed.isBlank()) {
+                                validationError = "অনুগ্ৰহ কৰি সদস্যৰ নাম লিখক (Please enter member name)"
+                            } else {
+                                onSave(
+                                    RelationshipEntity(
+                                        patientId = patientId,
+                                        name = trimmed,
+                                        relationshipType = selectedRelation
+                                    )
+                                )
+                                onDismiss()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                    ) {
+                        Text("সংৰক্ষণ (Save)", color = AasritiColorTokens.WarmIvory, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
 }

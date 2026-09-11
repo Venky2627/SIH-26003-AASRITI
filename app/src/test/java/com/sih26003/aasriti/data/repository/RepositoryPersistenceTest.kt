@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.data.repository
+package com.sih26003.aasriti.data.repository
 
 import com.sih26003.aasriti.data.local.dao.CareLogDao
 import com.sih26003.aasriti.data.local.dao.GameSessionDao
@@ -406,5 +406,48 @@ class RepositoryPersistenceTest {
         val latest = gameRepository.getLatestSession(DemoPatientConfig.PATIENT_ID, "PATTERN_RECOGNITION")
         assertNotNull(latest)
         assertEquals(2, latest!!.adaptationDecision)
+    }
+
+    @Test
+    fun testPatientRepositoryAddAndManageFamilyRelationships() = runBlocking {
+        val member1 = RelationshipEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            name = "ৰূপম বৰা (Rupam)",
+            relationshipType = "পুত্ৰ (Son)"
+        )
+        val member2 = RelationshipEntity(
+            patientId = DemoPatientConfig.PATIENT_ID,
+            name = "মীৰা বৰা (Mira)",
+            relationshipType = "কন্যা (Daughter)"
+        )
+
+        // 1. Add relationships
+        patientRepository.addRelationship(member1)
+        patientRepository.addRelationship(member2)
+
+        val activeList = patientRepository.getRelationshipsList(DemoPatientConfig.PATIENT_ID)
+        assertEquals(2, activeList.size)
+        assertTrue(activeList.any { it.name == "ৰূপম বৰা (Rupam)" })
+        assertTrue(activeList.any { it.name == "মীৰা বৰা (Mira)" })
+
+        // 2. Verify SyncQueue recorded INSERTs
+        val pendingQueue = syncQueueDao.getPendingSyncBatches()
+        assertEquals(2, pendingQueue.size)
+        assertEquals("relationships", pendingQueue[0].tableName)
+        assertEquals("INSERT", pendingQueue[0].operation)
+
+        // 3. Delete a relationship
+        patientRepository.deleteRelationship(member1.id)
+        val afterDelete = patientRepository.getRelationshipsList(DemoPatientConfig.PATIENT_ID)
+        assertEquals(1, afterDelete.size)
+        assertEquals("মীৰা বৰা (Mira)", afterDelete[0].name)
+
+        // 4. Verify SyncQueue recorded DELETE
+        val updatedQueue = syncQueueDao.getPendingSyncBatches()
+        assertEquals(3, updatedQueue.size)
+        val deleteOp = updatedQueue.last()
+        assertEquals("relationships", deleteOp.tableName)
+        assertEquals("DELETE", deleteOp.operation)
+        assertEquals(member1.id, deleteOp.recordId)
     }
 }

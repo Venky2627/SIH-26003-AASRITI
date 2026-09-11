@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.data.repository
+package com.sih26003.aasriti.data.repository
 
 import com.google.gson.Gson
 import com.sih26003.aasriti.data.local.dao.CareLogDao
@@ -61,6 +61,18 @@ class PatientRepository(
                 recordId = rel.id,
                 operation = "INSERT",
                 payloadJson = Gson().toJson(rel)
+            )
+        )
+    }
+
+    suspend fun deleteRelationship(id: String) {
+        relationshipDao.deleteRelationship(id)
+        syncQueueDao.enqueue(
+            SyncQueueEntity(
+                tableName = "relationships",
+                recordId = id,
+                operation = "DELETE",
+                payloadJson = "{\"id\":\"$id\"}"
             )
         )
     }
