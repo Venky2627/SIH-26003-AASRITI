@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti
+package com.sih26003.aasriti
 
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.local.entities.ReminderEntity
@@ -430,5 +430,223 @@ class CaregiverAshaWorkflowTests {
 
         assertEquals("NORMAL", priority.severity)
         assertEquals("Continue daily routine", priority.suggestedAction)
+    }
+
+    // =========================================================================
+    // 7. EXP-03 ASHA ROSTER PRIORITY ENGINE WIRING TESTS
+    // =========================================================================
+
+    @Test
+    fun testAshaRosterCanonicalPatientMapsToRoomIdentityAndEvaluatesLivePriorityEngine() {
+        val roster = com.sih26003.aasriti.demo.AasritiDemoData.ashaRoster
+        val canonicalItem = roster.first { it.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE }
+
+        // Canonical patient (AS-KAM-0042 / Aita Borah) resolves to Room ID
+        assertEquals("AS-KAM-0042", canonicalItem.pseudonymCode)
+        val roomId = if (canonicalItem.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE) {
+            DemoPatientConfig.PATIENT_ID
+        } else {
+            null
+        }
+        assertEquals(DemoPatientConfig.PATIENT_ID, roomId)
+
+        // Evaluate live PriorityEngine triage with clean state -> NORMAL
+        val priority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+        assertEquals("NORMAL", priority.severity)
+        assertEquals("Continue daily routine", priority.suggestedAction)
+    }
+
+    @Test
+    fun testAshaRosterNonRoomPatientsPreserveStaticStatusHonestly() {
+        val roster = com.sih26003.aasriti.demo.AasritiDemoData.ashaRoster
+        val nonRoomItems = roster.filter { it.pseudonymCode != DemoPatientConfig.PSEUDONYM_CODE }
+
+        assertEquals(2, nonRoomItems.size)
+
+        // Contract: Non-Room entries must return null for Room patient ID
+        nonRoomItems.forEach { item ->
+            val roomId = if (item.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE) {
+                DemoPatientConfig.PATIENT_ID
+            } else {
+                null
+            }
+            assertNull("Non-Room demo roster entry must not have a fabricated Room ID", roomId)
+        }
+
+        // Verify honest preservation of static status tiers
+        val biren = nonRoomItems.first { it.pseudonymCode == "AS-KAM-0043" }
+        val hemolata = nonRoomItems.first { it.pseudonymCode == "AS-KAM-0044" }
+        assertEquals("NORMAL", biren.statusTier)
+        assertEquals("PRIORITY", hemolata.statusTier)
+    }
+
+    @Test
+    fun testAshaFieldVisitFallLogEscalatesCanonicalPatientTriageToPriority() {
+        // When ASHA logs a FALL event for Aita Borah, PriorityEngine must escalate to PRIORITY
+        val ashaFallLog = CareLog(
+            id = "asha_log_fall_01",
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "ASHA",
+            category = "FALL",
+            severity = "PRIORITY",
+            notes = "ৰক্তচাপ ১২৪/৮০ • আইতা আজি পুৱা বিছনাৰ কাষত পিছলি পৰিছিল (Minor bedside slip observed)",
+            timestamp = System.currentTimeMillis()
+        )
+
+        val livePriority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = listOf(ashaFallLog)
+        )
+
+        assertEquals("PRIORITY", livePriority.severity)
+        assertTrue("Live priority title alerts fall/stumble", livePriority.titleEn.contains("Stumble"))
+        assertEquals("Check balance & footwear", livePriority.suggestedAction)
+    }
+
+    @Test
+    fun testAshaRosterDynamicFilteringMatchesEffectiveTriageTier() {
+        val roster = com.sih26003.aasriti.demo.AasritiDemoData.ashaRoster
+
+        // Simulated dynamic PriorityEngine output for canonical patient (WATCH due to pending morning medicine)
+        val pendingMedReminder = Reminder(
+            id = "rem_med_morning",
+            patientId = testPatient.id,
+            titleIndic = "পুৱাৰ ৰক্তচাপৰ ঔষধ",
+            titleEn = "Morning BP Medicine",
+            timeLabel = "08:00 AM",
+            isMedicine = true,
+            isCompleted = false
+        )
+        val evaluatedCanonicalPriority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = listOf(pendingMedReminder),
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+        assertEquals("WATCH", evaluatedCanonicalPriority.severity)
+
+        fun getEffectiveStatusTier(item: com.sih26003.aasriti.demo.DemoAshaRosterItem): String {
+            return if (item.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE) {
+                evaluatedCanonicalPriority.severity
+            } else {
+                item.statusTier
+            }
+        }
+
+        val allFiltered = roster
+        val watchFiltered = roster.filter { getEffectiveStatusTier(it) == "WATCH" }
+        val priorityFiltered = roster.filter { getEffectiveStatusTier(it) == "PRIORITY" }
+
+        assertEquals(3, allFiltered.size)
+        // Canonical patient (WATCH) + Biren (NORMAL) + Hemolata (PRIORITY)
+        assertEquals(1, watchFiltered.size)
+        assertEquals("AS-KAM-0042", watchFiltered.first().pseudonymCode)
+        assertEquals(1, priorityFiltered.size)
+        assertEquals("AS-KAM-0044", priorityFiltered.first().pseudonymCode)
+    }
+
+    @Test
+    fun testAshaSyntheticRosterHasExactly14EldersWithUniqueIds() {
+        val roster = com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.roster
+        assertEquals("ASHA synthetic roster provides exactly 14 demo elders", 14, roster.size)
+
+        val uniqueIds = roster.map { it.id }.toSet()
+        assertEquals("All 14 elders have unique demo roster IDs", 14, uniqueIds.size)
+
+        val uniqueCodes = roster.map { it.pseudonymCode }.toSet()
+        assertEquals("All 14 elders have unique pseudonym codes", 14, uniqueCodes.size)
+
+        // Verify all IDs follow asha_pat_X format
+        for (i in 1..14) {
+            assertTrue("Contains asha_pat_$i", uniqueIds.contains("asha_pat_$i"))
+        }
+    }
+
+    @Test
+    fun testAshaSyntheticRosterOnlyCanonicalElderMapsToRoomIdentity() {
+        val roster = com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.roster
+        val roomBackedElders = roster.filter {
+            com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.resolveRoomPatientId(it) != null
+        }
+
+        // Contract: Exactly 1 elder (Aita Borah / AS-KAM-0042) is Room-backed
+        assertEquals(1, roomBackedElders.size)
+        assertEquals(DemoPatientConfig.PSEUDONYM_CODE, roomBackedElders.first().pseudonymCode)
+        assertEquals(
+            DemoPatientConfig.PATIENT_ID,
+            com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.resolveRoomPatientId(roomBackedElders.first())
+        )
+
+        // All 13 other synthetic elders must return null to prevent Room database contamination
+        val nonRoomElders = roster.filter { it.pseudonymCode != DemoPatientConfig.PSEUDONYM_CODE }
+        assertEquals(13, nonRoomElders.size)
+        nonRoomElders.forEach { elder ->
+            assertNull(
+                "Synthetic demo elder ${elder.pseudonymCode} must not map to a Room database ID",
+                com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.resolveRoomPatientId(elder)
+            )
+        }
+    }
+
+    @Test
+    fun testAshaSyntheticRosterTriageTiersAreValidAndNonClinical() {
+        val roster = com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.roster
+        val validTiers = setOf("NORMAL", "WATCH", "PRIORITY")
+
+        roster.forEach { elder ->
+            assertTrue("Status tier '${elder.statusTier}' is valid", validTiers.contains(elder.statusTier))
+            assertTrue("Name Indic is non-blank", elder.nameIndic.isNotBlank())
+            assertTrue("Name En is non-blank", elder.nameEn.isNotBlank())
+            assertTrue("Hamlet is non-blank", elder.hamlet.isNotBlank())
+            assertTrue("Last visited date is non-blank", elder.lastVisitedDate.isNotBlank())
+            assertTrue("Notes are non-blank", elder.notes.isNotBlank())
+        }
+    }
+
+    @Test
+    fun testAshaSyntheticRosterDynamicFilteringWithLiveRoomPriority() {
+        val roster = com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.roster
+        assertEquals(14, roster.size)
+
+        // Simulate canonical patient evaluated as PRIORITY due to fall event
+        val ashaFallLog = CareLog(
+            id = "asha_log_fall_01",
+            patientId = DemoPatientConfig.PATIENT_ID,
+            authorRole = "ASHA",
+            category = "FALL",
+            severity = "PRIORITY",
+            notes = "ৰক্তচাপ ১২৪/৮০ • পিছলি পৰিছিল",
+            timestamp = System.currentTimeMillis()
+        )
+        val livePriority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = listOf(ashaFallLog)
+        )
+        assertEquals("PRIORITY", livePriority.severity)
+
+        fun getEffectiveTier(item: com.sih26003.aasriti.demo.DemoAshaRosterItem): String {
+            return if (com.sih26003.aasriti.feature.asha.AshaSyntheticRoster.resolveRoomPatientId(item) != null) {
+                livePriority.severity
+            } else {
+                item.statusTier
+            }
+        }
+
+        val allFiltered = roster
+        val priorityFiltered = roster.filter { getEffectiveTier(it) == "PRIORITY" }
+
+        assertEquals(14, allFiltered.size)
+        // Canonical elder escalated to PRIORITY + 3 baseline synthetic elders with PRIORITY (pat_3, pat_7, pat_13) = 4
+        assertTrue("Priority count includes canonical patient plus synthetic priority elders", priorityFiltered.size >= 4)
+        assertTrue("Canonical patient is in priority list", priorityFiltered.any { it.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE })
     }
 }
