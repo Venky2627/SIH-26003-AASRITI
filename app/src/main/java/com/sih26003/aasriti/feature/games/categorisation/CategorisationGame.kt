@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.categorisation
+package com.sih26003.aasriti.feature.games.categorisation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +23,8 @@ import com.sih26003.aasriti.feature.games.framework.GamePhase
 import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
+
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class CategorisationItem(val name: String, val categoryId: String, val emoji: String)
 
@@ -95,7 +97,7 @@ fun CategorisationGameScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -108,13 +110,19 @@ fun CategorisationGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.defaultMinSize(minHeight = 52.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "স্তৰ $difficulty (Level $difficulty)",
+                color = AasritiColorTokens.DeepNortheastForest,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         when (phase) {
@@ -122,7 +130,8 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -130,7 +139,7 @@ fun CategorisationGameScreen(
                         "🧺 শ্ৰেণীবিভাজন (Categorisation)",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -143,15 +152,15 @@ fun CategorisationGameScreen(
                             else -> "মনোযোগেৰে আৰু ক্ষিপ্ৰভাৱে শ্ৰেণী নিৰ্বাচন কৰক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.WarmSlate,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.startRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -169,14 +178,20 @@ fun CategorisationGameScreen(
                     // Item to classify with high contrast border
                     Box(
                         modifier = Modifier
-                            .size(150.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(20.dp))
-                            .border(3.dp, Color(0xFFFFD700), RoundedCornerShape(20.dp)),
+                            .size(160.dp)
+                            .background(AasritiColorTokens.SoftCream, RoundedCornerShape(24.dp))
+                            .border(2.5.dp, AasritiColorTokens.MugaGold, RoundedCornerShape(24.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(currentItem.emoji, fontSize = 58.sp)
-                            Text(currentItem.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(currentItem.emoji, fontSize = 60.sp)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                currentItem.name,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AasritiColorTokens.DeepCharcoal
+                            )
                         }
                     }
 
@@ -185,30 +200,30 @@ fun CategorisationGameScreen(
                         "এইটো কিহৰ দলত পৰে? (Which group?)",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700)
+                        color = AasritiColorTokens.DeepCharcoal
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Large Category Target Buttons
+                    // Large Category Target Buttons (>= 64dp touch targets)
                     activeCategoryList.forEach { category ->
                         Button(
                             onClick = {
                                 val isCorrect = (category.id == currentItem.categoryId)
                                 engine.onAnswerAttempt(isCorrect)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E1E)),
-                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(62.dp)
+                                .height(64.dp)
                                 .padding(vertical = 4.dp)
-                                .border(2.dp, Color(0xFF424242), RoundedCornerShape(14.dp))
                         ) {
                             Text(
-                                "${category.emoji} ${category.labelIndic}",
+                                "${category.emoji}  ${category.labelIndic}",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = AasritiColorTokens.DeepCharcoal
                             )
                         }
                     }
@@ -219,7 +234,8 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -229,19 +245,19 @@ fun CategorisationGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
                 }
             }
@@ -250,18 +266,19 @@ fun CategorisationGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
+                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = AasritiColorTokens.DeepCharcoal)
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -275,3 +292,4 @@ fun CategorisationGameScreen(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+

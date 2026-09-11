@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.voicecuecard
+package com.sih26003.aasriti.feature.games.voicecuecard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,6 +25,7 @@ import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 
 data class CueItem(val id: String, val name: String, val emoji: String)
 
@@ -105,7 +106,7 @@ fun VoiceCueCardGameScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(AasritiColorTokens.WarmIvory)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -118,13 +119,19 @@ fun VoiceCueCardGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                modifier = Modifier.defaultMinSize(minHeight = 52.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "স্তৰ $difficulty (Level $difficulty)",
+                color = AasritiColorTokens.DeepNortheastForest,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         when (phase) {
@@ -132,7 +139,8 @@ fun VoiceCueCardGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -140,7 +148,7 @@ fun VoiceCueCardGameScreen(
                         "🔊 কণ্ঠ আৰু ছবি (Voice Cue Card)",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -153,7 +161,7 @@ fun VoiceCueCardGameScreen(
                             else -> "ক্ৰম অনুসৰি তিনিটা বস্তু চিনাক্ত কৰক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.WarmSlate,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
@@ -165,8 +173,8 @@ fun VoiceCueCardGameScreen(
                             engine.startRound()
                             engine.playCue(spokenPromptText)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
@@ -176,6 +184,7 @@ fun VoiceCueCardGameScreen(
                 }
             }
 
+
             GamePhase.PLAYING -> {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -184,14 +193,13 @@ fun VoiceCueCardGameScreen(
                     // Audio Replay Button
                     Button(
                         onClick = { engine.playCue(spokenPromptText) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .border(2.dp, Color(0xFF4CAF50), RoundedCornerShape(14.dp))
+                            .height(58.dp)
                     ) {
-                        Text("🔊 পুনৰ শুনক (Listen Again)", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("🔊 পুনৰ শুনক (Listen Again)", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -218,19 +226,23 @@ fun VoiceCueCardGameScreen(
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isListeningVoice) AasritiColorTokens.SupportingSage.copy(alpha = 0.4f) else AasritiColorTokens.SoftCream
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
+                            modifier = Modifier.weight(1f).padding(end = 8.dp).height(50.dp)
                         ) {
                             Text(
                                 if (isListeningVoice) "🎙️ শুনি আছোঁ ($voiceSecondsLeft s)..." else "🎙️ মুখেৰে কওক (Voice Input)",
                                 fontSize = 14.sp,
-                                color = if (isListeningVoice) Color(0xFF00E676) else Color(0xFFFFD700)
+                                fontWeight = FontWeight.Bold,
+                                color = if (isListeningVoice) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
                             )
                         }
 
                         if (showVoiceFallbackQuestion) {
-                            Text("❓ স্পৰ্শ কৰক", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFA000))
+                            Text("❓ স্পৰ্শ কৰক", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.MugaGold)
                         }
                     }
 
@@ -257,15 +269,15 @@ fun VoiceCueCardGameScreen(
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(96.dp)
+                                            .height(98.dp)
                                             .background(
-                                                if (isSelected) Color(0xFF1B5E20) else Color(0xFF1E1E1E),
-                                                RoundedCornerShape(14.dp)
+                                                if (isSelected) AasritiColorTokens.SupportingSage.copy(alpha = 0.4f) else AasritiColorTokens.SoftCream,
+                                                RoundedCornerShape(16.dp)
                                             )
                                             .border(
                                                 2.dp,
-                                                if (isSelected) Color(0xFF00E676) else Color(0xFF424242),
-                                                RoundedCornerShape(14.dp)
+                                                if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
+                                                RoundedCornerShape(16.dp)
                                             )
                                             .clickable {
                                                 val nextSelected = selectedItems + item.id
@@ -288,7 +300,12 @@ fun VoiceCueCardGameScreen(
                                     ) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Text(item.emoji, fontSize = 38.sp)
-                                            Text(item.name, fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                            Text(
+                                                item.name,
+                                                fontSize = 13.sp,
+                                                color = if (isSelected) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal,
+                                                fontWeight = FontWeight.Bold
+                                            )
                                         }
                                     }
                                 }
@@ -302,7 +319,8 @@ fun VoiceCueCardGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(2.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -312,19 +330,19 @@ fun VoiceCueCardGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.MugaGold),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
                     }
                 }
             }
@@ -333,18 +351,19 @@ fun VoiceCueCardGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream, RoundedCornerShape(20.dp))
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(20.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
+                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = AasritiColorTokens.DeepCharcoal)
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
