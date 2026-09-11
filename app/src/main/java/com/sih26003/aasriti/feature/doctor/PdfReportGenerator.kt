@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.doctor
+package com.sih26003.aasriti.feature.doctor
 
 import android.content.Context
 import android.content.Intent
@@ -40,7 +40,12 @@ object PdfReportGenerator {
         val carePriorityStatus: String = "NORMAL",
         val clinicianNotes: String = "Preserve bilingual cognitive cues and daily hydration routines. Routine review in 4 weeks.",
         val sessions: List<GameSessionEntity> = emptyList(),
-        val careLogs: List<CareLogEntity> = emptyList()
+        val careLogs: List<CareLogEntity> = emptyList(),
+        val includeDemographics: Boolean = true,
+        val includeTelemetry: Boolean = true,
+        val includeCareLogs: Boolean = true,
+        val includePriority: Boolean = true,
+        val includeGuidance: Boolean = true
     )
 
     fun generateClinicianPdf(context: Context, data: ReportData): File {
@@ -71,186 +76,196 @@ object PdfReportGenerator {
         paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
         paint.textSize = 10f
         paint.color = Color.parseColor("#CE9042") // Amber Gold
-        canvas.drawText("100% Offline • On-Device Room SQLite Persistence • Date: $generatedDateStr", 45f, y + 46f, paint)
+        canvas.drawText("100% Offline • On-Device Encrypted Storage • Date: $generatedDateStr", 45f, y + 46f, paint)
 
         y += 75f
 
-        // Patient Profile Container (Cream container with border)
-        paint.color = Color.parseColor("#F5EFE6") // SoftCream
-        canvas.drawRoundRect(30f, y, 565f, y + 80f, 8f, 8f, paint)
+        // Patient Profile Container (Demographics)
+        if (data.includeDemographics) {
+            paint.color = Color.parseColor("#F5EFE6") // SoftCream
+            canvas.drawRoundRect(30f, y, 565f, y + 80f, 8f, 8f, paint)
 
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 1f
-        paint.color = Color.parseColor("#D4C3AC") // WarmStoneBorder
-        canvas.drawRoundRect(30f, y, 565f, y + 80f, 8f, 8f, paint)
-        paint.style = Paint.Style.FILL
-
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        paint.textSize = 13f
-        paint.color = Color.parseColor("#2A1D15")
-        canvas.drawText("PATIENT PROFILE", 45f, y + 20f, paint)
-
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-        paint.textSize = 10.5f
-        paint.color = Color.parseColor("#4A525A")
-        canvas.drawText("Name: ${data.patientName}", 45f, y + 40f, paint)
-        canvas.drawText("Canonical ID: ${data.patientId} (Pseudonym: ${data.pseudonymCode})", 45f, y + 55f, paint)
-        canvas.drawText("Demographics: ${data.age} Yrs • ${data.gender} • Loc: ${data.villageLocation}", 45f, y + 70f, paint)
-
-        canvas.drawText("Attending: ${data.clinicianName}", 320f, y + 40f, paint)
-        canvas.drawText("Stage: ${data.cognitiveStage}", 320f, y + 55f, paint)
-        canvas.drawText("Reporting Period: ${data.reportingPeriod}", 320f, y + 70f, paint)
-
-        y += 95f
-
-        // SECTION 1: Longitudinal Cognitive Telemetry
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        paint.textSize = 12f
-        paint.color = Color.parseColor("#245C45") // Forest Green
-        canvas.drawText("1. LONGITUDINAL INTERACTION TELEMETRY (Room SQLite)", 30f, y + 14f, paint)
-        y += 24f
-
-        val avgAccuracy = if (data.sessions.isNotEmpty()) (data.sessions.map { it.accuracy }.average() * 100).toInt() else 0
-        val avgLatency = if (data.sessions.isNotEmpty()) data.sessions.map { it.reactionTimeMs }.average().toInt() else 0
-        val totalHesitations = data.sessions.sumOf { it.hesitationCount }
-
-        // Metrics Stat Cards Row
-        val cardWidth = 125f
-        val statMetrics = listOf(
-            Pair("Total Sessions", "${data.sessions.size} sessions"),
-            Pair("Avg Accuracy", if (data.sessions.isNotEmpty()) "$avgAccuracy%" else "No data"),
-            Pair("Avg Latency", if (data.sessions.isNotEmpty()) "$avgLatency ms" else "No data"),
-            Pair("Hesitations (>3.5s)", "$totalHesitations events")
-        )
-
-        for (i in statMetrics.indices) {
-            val cx = 30f + i * (cardWidth + 8f)
-            paint.color = Color.parseColor("#F5EFE6")
-            canvas.drawRoundRect(cx, y, cx + cardWidth, y + 42f, 6f, 6f, paint)
             paint.style = Paint.Style.STROKE
-            paint.color = Color.parseColor("#D4C3AC")
-            canvas.drawRoundRect(cx, y, cx + cardWidth, y + 42f, 6f, 6f, paint)
+            paint.strokeWidth = 1f
+            paint.color = Color.parseColor("#D4C3AC") // WarmStoneBorder
+            canvas.drawRoundRect(30f, y, 565f, y + 80f, 8f, 8f, paint)
             paint.style = Paint.Style.FILL
 
-            paint.textSize = 9f
-            paint.color = Color.parseColor("#4A525A")
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            canvas.drawText(statMetrics[i].first, cx + 8f, y + 16f, paint)
-
-            paint.textSize = 12f
-            paint.color = Color.parseColor("#2A1D15")
             paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            canvas.drawText(statMetrics[i].second, cx + 8f, y + 34f, paint)
-        }
-        y += 52f
+            paint.textSize = 13f
+            paint.color = Color.parseColor("#2A1D15")
+            canvas.drawText("PATIENT PROFILE", 45f, y + 20f, paint)
 
-        // Table of Recent Game Sessions
-        paint.color = Color.parseColor("#EDE0D0")
-        canvas.drawRect(30f, y, 565f, y + 18f, paint)
-        paint.color = Color.parseColor("#2A1D15")
-        paint.textSize = 9f
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        canvas.drawText("DATE / TIME", 35f, y + 13f, paint)
-        canvas.drawText("GAME ID", 150f, y + 13f, paint)
-        canvas.drawText("LEVEL", 280f, y + 13f, paint)
-        canvas.drawText("ACCURACY", 340f, y + 13f, paint)
-        canvas.drawText("LATENCY", 420f, y + 13f, paint)
-        canvas.drawText("ADAPTATION", 490f, y + 13f, paint)
-        y += 20f
-
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-        if (data.sessions.isEmpty()) {
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            paint.textSize = 10.5f
             paint.color = Color.parseColor("#4A525A")
-            canvas.drawText("No completed game sessions recorded yet in Room SQLite.", 35f, y + 14f, paint)
-            y += 20f
-        } else {
-            val recentSessions = data.sessions.takeLast(4).reversed()
-            for (s in recentSessions) {
-                paint.color = Color.parseColor("#2A1D15")
-                canvas.drawText(dateFormat.format(Date(s.timestamp)), 35f, y + 12f, paint)
-                canvas.drawText(s.gameId.replace("_", " "), 150f, y + 12f, paint)
-                canvas.drawText("L${s.difficultyLevel}", 280f, y + 12f, paint)
-                canvas.drawText("${(s.accuracy * 100).toInt()}%", 340f, y + 12f, paint)
-                canvas.drawText("${s.reactionTimeMs} ms", 420f, y + 12f, paint)
-                canvas.drawText("Rec: L${s.adaptationDecision}", 490f, y + 12f, paint)
-                y += 16f
-            }
+            canvas.drawText("Name: ${data.patientName}", 45f, y + 40f, paint)
+            canvas.drawText("Canonical ID: ${data.patientId} (Pseudonym: ${data.pseudonymCode})", 45f, y + 55f, paint)
+            canvas.drawText("Demographics: ${data.age} Yrs • ${data.gender} • Loc: ${data.villageLocation}", 45f, y + 70f, paint)
+
+            canvas.drawText("Attending: ${data.clinicianName}", 320f, y + 40f, paint)
+            canvas.drawText("Stage: ${data.cognitiveStage}", 320f, y + 55f, paint)
+            canvas.drawText("Reporting Period: ${data.reportingPeriod}", 320f, y + 70f, paint)
+
+            y += 95f
         }
-        y += 12f
+
+        // SECTION 1: Longitudinal Cognitive Telemetry
+        if (data.includeTelemetry) {
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            paint.textSize = 12f
+            paint.color = Color.parseColor("#245C45") // Forest Green
+            canvas.drawText("1. LONGITUDINAL INTERACTION TELEMETRY", 30f, y + 14f, paint)
+            y += 24f
+
+            val avgAccuracy = if (data.sessions.isNotEmpty()) (data.sessions.map { it.accuracy }.average() * 100).toInt() else 0
+            val avgLatency = if (data.sessions.isNotEmpty()) data.sessions.map { it.reactionTimeMs }.average().toInt() else 0
+            val totalHesitations = data.sessions.sumOf { it.hesitationCount }
+
+            // Metrics Stat Cards Row
+            val cardWidth = 125f
+            val statMetrics = listOf(
+                Pair("Total Sessions", "${data.sessions.size} sessions"),
+                Pair("Avg Accuracy", if (data.sessions.isNotEmpty()) "$avgAccuracy%" else "No data"),
+                Pair("Avg Latency", if (data.sessions.isNotEmpty()) "$avgLatency ms" else "No data"),
+                Pair("Hesitations (>3.5s)", "$totalHesitations events")
+            )
+
+            for (i in statMetrics.indices) {
+                val cx = 30f + i * (cardWidth + 8f)
+                paint.color = Color.parseColor("#F5EFE6")
+                canvas.drawRoundRect(cx, y, cx + cardWidth, y + 42f, 6f, 6f, paint)
+                paint.style = Paint.Style.STROKE
+                paint.color = Color.parseColor("#D4C3AC")
+                canvas.drawRoundRect(cx, y, cx + cardWidth, y + 42f, 6f, 6f, paint)
+                paint.style = Paint.Style.FILL
+
+                paint.textSize = 9f
+                paint.color = Color.parseColor("#4A525A")
+                paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+                canvas.drawText(statMetrics[i].first, cx + 8f, y + 16f, paint)
+
+                paint.textSize = 12f
+                paint.color = Color.parseColor("#2A1D15")
+                paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+                canvas.drawText(statMetrics[i].second, cx + 8f, y + 34f, paint)
+            }
+            y += 52f
+
+            // Table of Recent Game Sessions
+            paint.color = Color.parseColor("#EDE0D0")
+            canvas.drawRect(30f, y, 565f, y + 18f, paint)
+            paint.color = Color.parseColor("#2A1D15")
+            paint.textSize = 9f
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            canvas.drawText("DATE / TIME", 35f, y + 13f, paint)
+            canvas.drawText("GAME ID", 150f, y + 13f, paint)
+            canvas.drawText("LEVEL", 280f, y + 13f, paint)
+            canvas.drawText("ACCURACY", 340f, y + 13f, paint)
+            canvas.drawText("LATENCY", 420f, y + 13f, paint)
+            canvas.drawText("ADAPTATION", 490f, y + 13f, paint)
+            y += 20f
+
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            if (data.sessions.isEmpty()) {
+                paint.color = Color.parseColor("#4A525A")
+                canvas.drawText("No completed game sessions recorded yet.", 35f, y + 14f, paint)
+                y += 20f
+            } else {
+                val recentSessions = data.sessions.takeLast(4).reversed()
+                for (s in recentSessions) {
+                    paint.color = Color.parseColor("#2A1D15")
+                    canvas.drawText(dateFormat.format(Date(s.timestamp)), 35f, y + 12f, paint)
+                    canvas.drawText(s.gameId.replace("_", " "), 150f, y + 12f, paint)
+                    canvas.drawText("L${s.difficultyLevel}", 280f, y + 12f, paint)
+                    canvas.drawText("${(s.accuracy * 100).toInt()}%", 340f, y + 12f, paint)
+                    canvas.drawText("${s.reactionTimeMs} ms", 420f, y + 12f, paint)
+                    canvas.drawText("Rec: L${s.adaptationDecision}", 490f, y + 12f, paint)
+                    y += 16f
+                }
+            }
+            y += 12f
+        }
 
         // SECTION 2: Caregiver & ASHA Field Observations
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        paint.textSize = 12f
-        paint.color = Color.parseColor("#245C45")
-        canvas.drawText("2. CAREGIVER & ASHA FIELD OBSERVATIONS (Room SQLite)", 30f, y + 14f, paint)
-        y += 24f
+        if (data.includeCareLogs) {
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            paint.textSize = 12f
+            paint.color = Color.parseColor("#245C45")
+            canvas.drawText("2. CAREGIVER & ASHA FIELD OBSERVATIONS", 30f, y + 14f, paint)
+            y += 24f
 
-        // Priority Status Pill
-        paint.color = when (data.carePriorityStatus) {
-            "PRIORITY" -> Color.parseColor("#8B183F")
-            "WATCH" -> Color.parseColor("#B45309")
-            else -> Color.parseColor("#245C45")
-        }
-        canvas.drawRoundRect(30f, y, 220f, y + 24f, 6f, 6f, paint)
-        paint.color = Color.WHITE
-        paint.textSize = 10f
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        canvas.drawText("TODAY'S CARE PRIORITY: ${data.carePriorityStatus}", 40f, y + 16f, paint)
-        y += 32f
-
-        // Table of Recent Care Logs
-        paint.color = Color.parseColor("#EDE0D0")
-        canvas.drawRect(30f, y, 565f, y + 18f, paint)
-        paint.color = Color.parseColor("#2A1D15")
-        paint.textSize = 9f
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        canvas.drawText("TIMESTAMP", 35f, y + 13f, paint)
-        canvas.drawText("ROLE", 140f, y + 13f, paint)
-        canvas.drawText("CATEGORY", 210f, y + 13f, paint)
-        canvas.drawText("SEVERITY", 300f, y + 13f, paint)
-        canvas.drawText("OBSERVATION NOTES", 380f, y + 13f, paint)
-        y += 20f
-
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-        if (data.careLogs.isEmpty()) {
-            paint.color = Color.parseColor("#4A525A")
-            canvas.drawText("No caregiver or field visit logs recorded yet in Room SQLite.", 35f, y + 14f, paint)
-            y += 20f
-        } else {
-            val recentLogs = data.careLogs.takeLast(4).reversed()
-            for (l in recentLogs) {
-                paint.color = Color.parseColor("#2A1D15")
-                canvas.drawText(dateFormat.format(Date(l.timestamp)), 35f, y + 12f, paint)
-                canvas.drawText(l.authorRole, 140f, y + 12f, paint)
-                canvas.drawText(l.category, 210f, y + 12f, paint)
-                canvas.drawText(l.severity, 300f, y + 12f, paint)
-                val cleanNote = if (l.notes.length > 32) l.notes.substring(0, 30) + "..." else l.notes
-                canvas.drawText(cleanNote, 380f, y + 12f, paint)
-                y += 16f
+            // Priority Status Pill
+            if (data.includePriority) {
+                paint.color = when (data.carePriorityStatus) {
+                    "PRIORITY" -> Color.parseColor("#8B183F")
+                    "WATCH" -> Color.parseColor("#B45309")
+                    else -> Color.parseColor("#245C45")
+                }
+                canvas.drawRoundRect(30f, y, 220f, y + 24f, 6f, 6f, paint)
+                paint.color = Color.WHITE
+                paint.textSize = 10f
+                paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+                canvas.drawText("TODAY'S CARE PRIORITY: ${data.carePriorityStatus}", 40f, y + 16f, paint)
+                y += 32f
             }
+
+            // Table of Recent Care Logs
+            paint.color = Color.parseColor("#EDE0D0")
+            canvas.drawRect(30f, y, 565f, y + 18f, paint)
+            paint.color = Color.parseColor("#2A1D15")
+            paint.textSize = 9f
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            canvas.drawText("TIMESTAMP", 35f, y + 13f, paint)
+            canvas.drawText("ROLE", 140f, y + 13f, paint)
+            canvas.drawText("CATEGORY", 210f, y + 13f, paint)
+            canvas.drawText("SEVERITY", 300f, y + 13f, paint)
+            canvas.drawText("OBSERVATION NOTES", 380f, y + 13f, paint)
+            y += 20f
+
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            if (data.careLogs.isEmpty()) {
+                paint.color = Color.parseColor("#4A525A")
+                canvas.drawText("No caregiver or field visit logs recorded yet.", 35f, y + 14f, paint)
+                y += 20f
+            } else {
+                val recentLogs = data.careLogs.takeLast(4).reversed()
+                for (l in recentLogs) {
+                    paint.color = Color.parseColor("#2A1D15")
+                    canvas.drawText(dateFormat.format(Date(l.timestamp)), 35f, y + 12f, paint)
+                    canvas.drawText(l.authorRole, 140f, y + 12f, paint)
+                    canvas.drawText(l.category, 210f, y + 12f, paint)
+                    canvas.drawText(l.severity, 300f, y + 12f, paint)
+                    val cleanNote = if (l.notes.length > 32) l.notes.substring(0, 30) + "..." else l.notes
+                    canvas.drawText(cleanNote, 380f, y + 12f, paint)
+                    y += 16f
+                }
+            }
+            y += 12f
         }
-        y += 12f
 
         // SECTION 3: Clinician Guidance & Care Plan
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        paint.textSize = 12f
-        paint.color = Color.parseColor("#245C45")
-        canvas.drawText("3. CLINICIAN GUIDANCE & REVIEW NOTES", 30f, y + 14f, paint)
-        y += 22f
+        if (data.includeGuidance) {
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            paint.textSize = 12f
+            paint.color = Color.parseColor("#245C45")
+            canvas.drawText("3. CLINICIAN GUIDANCE & REVIEW NOTES", 30f, y + 14f, paint)
+            y += 22f
 
-        paint.color = Color.parseColor("#F5EFE6")
-        canvas.drawRoundRect(30f, y, 565f, y + 45f, 6f, 6f, paint)
-        paint.style = Paint.Style.STROKE
-        paint.color = Color.parseColor("#D4C3AC")
-        canvas.drawRoundRect(30f, y, 565f, y + 45f, 6f, 6f, paint)
-        paint.style = Paint.Style.FILL
+            paint.color = Color.parseColor("#F5EFE6")
+            canvas.drawRoundRect(30f, y, 565f, y + 45f, 6f, 6f, paint)
+            paint.style = Paint.Style.STROKE
+            paint.color = Color.parseColor("#D4C3AC")
+            canvas.drawRoundRect(30f, y, 565f, y + 45f, 6f, 6f, paint)
+            paint.style = Paint.Style.FILL
 
-        paint.color = Color.parseColor("#2A1D15")
-        paint.textSize = 10f
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-        canvas.drawText("Care Guidance: ${data.clinicianNotes}", 40f, y + 20f, paint)
-        canvas.drawText("Follow-up Action: Review scheduled in 4 weeks. Continue daily reminders & reminiscence engagement.", 40f, y + 36f, paint)
-        y += 58f
+            paint.color = Color.parseColor("#2A1D15")
+            paint.textSize = 10f
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            canvas.drawText("Care Guidance: ${data.clinicianNotes}", 40f, y + 20f, paint)
+            canvas.drawText("Follow-up Action: Review scheduled in 4 weeks. Continue daily reminders & reminiscence engagement.", 40f, y + 36f, paint)
+            y += 58f
+        }
 
         // SECTION 4: Mandatory Legal / Medical Disclaimer Box
         paint.color = Color.parseColor("#EFE7DA")

@@ -207,23 +207,7 @@ fun FlowerMatchGameScreen(
                     }
                     voicePromptManager?.speak(prompt)
                 },
-                customText = if (isAssamese) "🔊 শুনক" else "🔊 Listen"
-            )
-        }
-
-        // 100% Offline Status Badge
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                .border(1.dp, AasritiColorTokens.DeepNortheastForest, RoundedCornerShape(8.dp))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-        ) {
-            Text(
-                text = "100% Offline • Room SQLite Local Source of Truth",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = AasritiColorTokens.DeepNortheastForest
+                customText = if (isAssamese) "শুনক" else "Listen"
             )
         }
 
@@ -358,7 +342,7 @@ fun FlowerMatchGameScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    // Room SQLite Local Persistence Badge
+                    // Local Persistence Badge
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -366,7 +350,7 @@ fun FlowerMatchGameScreen(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "✓ Room SQLite: অধিবেশন সংৰক্ষিত (100% Offline)",
+                            text = if (isAssamese) "✓ অধিবেশন সংৰক্ষিত (Saved Locally)" else "✓ Session Saved Locally",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = AasritiColorTokens.DeepNortheastForest

@@ -196,7 +196,7 @@ fun RoleAndModeSelectScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "কামৰূপ গ্ৰাম্য • ${p.primaryLanguage}",
+                                    text = if (isAssamese) "কামৰূপ গ্ৰাম্য • ${p.primaryLanguage}" else "Kamrup Rural • ${p.primaryLanguage}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = AasritiColorTokens.DeepNortheastForest
@@ -299,7 +299,7 @@ fun RoleAndModeSelectScreen(
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.DeepNortheastForest
                     )
-                    Text("১৪ গৰাকী", fontSize = 13.sp, color = AasritiColorTokens.DeepNortheastForest)
+                    Text(if (isAssamese) "১৪ গৰাকী" else "14 Elders", fontSize = 13.sp, color = AasritiColorTokens.DeepNortheastForest)
                 }
             }
 
@@ -324,7 +324,7 @@ fun RoleAndModeSelectScreen(
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.MutedHeritageTerracotta
                     )
-                    Text("ক'ড", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
+                    Text(if (isAssamese) "ক'ড" else "PIN", fontSize = 13.sp, color = AasritiColorTokens.WarmSlate)
                 }
             }
         }
@@ -634,9 +634,9 @@ fun PinAuthScreen(
                 text = if (isLockedOut) {
                     if (isAssamese) "লক কৰা হৈছে (Locked)" else "Locked (5 min)"
                 } else if (isNewSetup) {
-                    "পিন সংৰক্ষণ কৰক (Save PIN) ➔"
+                    if (isAssamese) "পিন সংৰক্ষণ কৰক (Save PIN) ➔" else "Save PIN ➔"
                 } else {
-                    "প্ৰৱেশ কৰক (Enter) ➔"
+                    if (isAssamese) "প্ৰৱেশ কৰক (Enter) ➔" else "Enter ➔"
                 },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,

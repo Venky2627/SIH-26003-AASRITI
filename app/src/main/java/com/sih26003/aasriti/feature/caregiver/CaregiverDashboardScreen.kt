@@ -27,6 +27,7 @@ import com.sih26003.aasriti.core.security.CryptoUtils
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.local.entities.DoctorAccessEntity
+import com.sih26003.aasriti.data.local.entities.PatientEntity
 import com.sih26003.aasriti.data.local.entities.RelationshipEntity
 import com.sih26003.aasriti.data.repository.CareLogRepository
 import com.sih26003.aasriti.data.repository.DoctorAccessRepository
@@ -34,6 +35,7 @@ import com.sih26003.aasriti.data.repository.GameRepository
 import com.sih26003.aasriti.data.repository.PatientRepository
 import com.sih26003.aasriti.data.repository.ReminderRepository
 import com.sih26003.aasriti.demo.AasritiDemoData
+import com.sih26003.aasriti.demo.DemoPatient
 import com.sih26003.aasriti.demo.DemoPatientConfig
 import com.sih26003.aasriti.demo.DemoStateHolder
 import com.sih26003.aasriti.domain.model.CareLog
@@ -49,8 +51,8 @@ import java.util.Locale
  * SCREEN_CAREGIVER_DASHBOARD, SCREEN_CAREGIVER_QUICK_LOG & SCREEN_CAREGIVER_CARE_HISTORY:
  * Room-backed family caregiver and health observer management center.
  * Follows UI_SCREEN_SPEC.md & UI_RULES.md:
- * - Patient status header with canonical DemoPatientConfig.PATIENT_ID ("aita_borah_01")
- * - 100% Offline Room SQLite Local Source of Truth
+ * - Patient status header with reactive patient selection
+ * - 100% Offline Local Encrypted Storage
  * - Reactive Today's Priority Card evaluated by PriorityEngine
  * - Legitimate Quick Care Log (<30s entry) persisting into Room care_logs
  * - Full chronological Care History viewer with category filters and honest empty states
@@ -65,15 +67,34 @@ fun CaregiverDashboardScreen(
     careLogRepository: CareLogRepository,
     onOpenReminders: (String) -> Unit,
     onLogout: () -> Unit,
-    reminderRepository: ReminderRepository? = null
+    reminderRepository: ReminderRepository? = null,
+    activePatient: PatientEntity? = null
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as? AasritiApplication
     val resolvedReminderRepo = reminderRepository ?: app?.reminderRepository
 
-    val patient = remember { AasritiDemoData.patient }
-    val scope = rememberCoroutineScope()
     val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val patientId = activePatient?.id ?: DemoStateHolder.activePatientId ?: AasritiDemoData.patient.id
+    val patientDisplayName = activePatient?.let {
+        it.pseudonymCode.substringBefore(" •").ifBlank { it.pseudonymCode }
+    } ?: DemoStateHolder.activePatientName ?: if (isAssamese) AasritiDemoData.patient.displayName else AasritiDemoData.patient.displaySubtitle
+    val patientSubtitle = activePatient?.let {
+        "${it.pseudonymCode} • ${it.cognitiveStage}"
+    } ?: AasritiDemoData.patient.displaySubtitle
+
+    val patient = remember(activePatient, DemoStateHolder.activePatientId, DemoStateHolder.activePatientName, isAssamese) {
+        DemoPatient(
+            id = patientId,
+            pseudonymCode = activePatient?.pseudonymCode ?: AasritiDemoData.patient.pseudonymCode,
+            displayName = patientDisplayName,
+            displaySubtitle = patientSubtitle,
+            villageLocation = AasritiDemoData.patient.villageLocation,
+            primaryLanguage = if (isAssamese) "as" else "en",
+            cognitiveStage = activePatient?.cognitiveStage ?: AasritiDemoData.patient.cognitiveStage
+        )
+    }
+    val scope = rememberCoroutineScope()
 
     val realSessions by gameRepository.getSessionsForPatient(patient.id).collectAsState(initial = emptyList())
     val realCareLogs by careLogRepository.getLogsForPatient(patient.id).collectAsState(initial = emptyList())
@@ -129,7 +150,7 @@ fun CaregiverDashboardScreen(
             birthYear = 1958,
             gender = "F",
             villageLocation = patient.villageLocation,
-            primaryLanguage = "as",
+            primaryLanguage = if (isAssamese) "as" else "en",
             cognitiveStage = patient.cognitiveStage
         )
         PriorityEngine.evaluateTodayPriority(
@@ -166,7 +187,7 @@ fun CaregiverDashboardScreen(
                     color = AasritiColorTokens.DeepCharcoal
                 )
                 Text(
-                    text = "মীৰা বৰা (Mira Borah • Daughter)",
+                    text = if (isAssamese) "মীৰা বৰা (Mira Borah • Daughter)" else "Mira Borah (Primary Caregiver)",
                     fontSize = 13.sp,
                     color = AasritiColorTokens.DeepNortheastForest,
                     fontWeight = FontWeight.SemiBold
@@ -179,7 +200,7 @@ fun CaregiverDashboardScreen(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "100% Offline • Room SQLite Local Source of Truth",
+                        text = if (isAssamese) "১০০% অফলাইন • স্থানীয় সংৰক্ষণ" else "100% Offline • Local Secure Storage",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.DeepNortheastForest
@@ -193,7 +214,12 @@ fun CaregiverDashboardScreen(
                 shape = RoundedCornerShape(12.dp),
                 border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder)
             ) {
-                Text("প্ৰস্থান (Logout)", color = AasritiColorTokens.WarmAmberWarning, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isAssamese) "প্ৰস্থান (Logout)" else "Logout",
+                    color = AasritiColorTokens.WarmAmberWarning,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -326,7 +352,7 @@ fun CaregiverDashboardScreen(
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = "● স্থানীয় অফলাইন",
+                                    text = if (isAssamese) "● স্থানীয় অফলাইন" else "● Local Offline",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AasritiColorTokens.DeepNortheastForest
@@ -367,6 +393,8 @@ fun CaregiverDashboardScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.weight(1f)
                                 ) {
+                                    Text("⚡", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Box(
                                         modifier = Modifier
                                             .size(10.dp)
@@ -421,7 +449,7 @@ fun CaregiverDashboardScreen(
                                     modifier = Modifier.height(64.dp)
                                 ) {
                                     Text(
-                                        text = "কৰণীয়: ${evaluatedPriority.suggestedAction}",
+                                        text = if (isAssamese) "কৰণীয়: ${evaluatedPriority.suggestedAction}" else "Action: ${evaluatedPriority.suggestedAction}",
                                         color = AasritiColorTokens.WarmIvory,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold
@@ -475,12 +503,16 @@ fun CaregiverDashboardScreen(
                             .padding(16.dp)
                     ) {
                         Column {
-                            Text(
-                                text = "দৈনন্দিন অগ্ৰগতি (Daily Care Progress)",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AasritiColorTokens.DeepCharcoal
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📋", fontSize = 18.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (isAssamese) "দৈনন্দিন অগ্ৰগতি (Daily Care Progress)" else "Daily Care Progress",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AasritiColorTokens.DeepCharcoal
+                                )
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
 
                             if (reminders.isEmpty()) {
@@ -505,7 +537,7 @@ fun CaregiverDashboardScreen(
                                 val percent = if (totalRoutines > 0) (doneCount * 100) / totalRoutines else 0
 
                                 Text(
-                                    text = "নিয়ম পালন: $doneCount / $totalRoutines সম্পন্ন ($percent%)",
+                                    text = if (isAssamese) "নিয়ম পালন: $doneCount / $totalRoutines সম্পন্ন ($percent%)" else "Routines Completed: $doneCount / $totalRoutines ($percent%)",
                                     fontSize = 13.sp,
                                     color = AasritiColorTokens.WarmSlate
                                 )
@@ -541,7 +573,7 @@ fun CaregiverDashboardScreen(
                                 .height(64.dp)
                         ) {
                             Text(
-                                text = "+ খৰতকীয়া টোকা (Log)",
+                                text = if (isAssamese) "+ খৰতকীয়া টোকা (Log)" else "+ Quick Log",
                                 color = AasritiColorTokens.WarmIvory,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
@@ -558,7 +590,7 @@ fun CaregiverDashboardScreen(
                                 .height(64.dp)
                         ) {
                             Text(
-                                text = "⏰ সোঁৱৰণী (Reminders)",
+                                text = if (isAssamese) "⏰ সোঁৱৰণী (Reminders)" else "⏰ Reminders",
                                 color = AasritiColorTokens.DeepCharcoal,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
@@ -601,7 +633,7 @@ fun CaregiverDashboardScreen(
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            text = "${realSessions.size} খেল (Sessions)",
+                                            text = if (isAssamese) "${realSessions.size} খেল (Sessions)" else "${realSessions.size} Sessions",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = AasritiColorTokens.DeepNortheastForest
@@ -642,14 +674,15 @@ fun CaregiverDashboardScreen(
                                 }
 
                                 Text(
-                                    text = "শেহতীয়া খেল: $gameTitle",
+                                    text = if (isAssamese) "শেহতীয়া খেল: $gameTitle" else "Latest Game: $gameTitle",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = AasritiColorTokens.DeepCharcoal
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "সময়: ${formatTimestamp(latestSession.timestamp)} • স্থিতি: ${if (latestSession.completed) "সম্পন্ন (Completed)" else "অসমাপ্ত (Incomplete)"}",
+                                    text = if (isAssamese) "সময়: ${formatTimestamp(latestSession.timestamp)} • স্থিতি: ${if (latestSession.completed) "সম্পন্ন (Completed)" else "অসমাপ্ত (Incomplete)"}"
+                                    else "Time: ${formatTimestamp(latestSession.timestamp)} • Status: ${if (latestSession.completed) "Completed" else "Incomplete"}",
                                     fontSize = 12.sp,
                                     color = AasritiColorTokens.WarmSlate
                                 )
@@ -670,13 +703,13 @@ fun CaregiverDashboardScreen(
                                     ) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Text(
-                                                text = "স্তৰ ${latestSession.difficultyLevel}",
+                                                text = if (isAssamese) "স্তৰ ${latestSession.difficultyLevel}" else "Level ${latestSession.difficultyLevel}",
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = AasritiColorTokens.DeepNortheastForest
                                             )
                                             Text(
-                                                text = "পৰৱৰ্তী: স্তৰ ${latestSession.adaptationDecision}",
+                                                text = if (isAssamese) "পৰৱৰ্তী: স্তৰ ${latestSession.adaptationDecision}" else "Next: Level ${latestSession.adaptationDecision}",
                                                 fontSize = 10.sp,
                                                 color = AasritiColorTokens.WarmSlate
                                             )
@@ -699,7 +732,7 @@ fun CaregiverDashboardScreen(
                                                 color = AasritiColorTokens.DeepCharcoal
                                             )
                                             Text(
-                                                text = "সঠিকতা (Accuracy)",
+                                                text = if (isAssamese) "সঠিকতা (Accuracy)" else "Accuracy",
                                                 fontSize = 10.sp,
                                                 color = AasritiColorTokens.WarmSlate
                                             )
@@ -722,7 +755,7 @@ fun CaregiverDashboardScreen(
                                                 color = AasritiColorTokens.DeepCharcoal
                                             )
                                             Text(
-                                                text = "প্ৰতিক্ৰিয়া (Latency)",
+                                                text = if (isAssamese) "প্ৰতিক্ৰিয়া (Latency)" else "Latency",
                                                 fontSize = 10.sp,
                                                 color = AasritiColorTokens.WarmSlate
                                             )
@@ -733,7 +766,8 @@ fun CaregiverDashboardScreen(
                                 if (latestSession.hesitationCount > 0) {
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "⚠️ দ্বিধাবোধ বিৰতি (>3.5s): ${latestSession.hesitationCount} বাৰ পৰিলক্ষিত।",
+                                        text = if (isAssamese) "⚠️ দ্বিধাবোধ বিৰতি (>3.5s): ${latestSession.hesitationCount} বাৰ পৰিলক্ষিত।"
+                                        else "⚠️ Hesitation pause (>3.5s): ${latestSession.hesitationCount} times.",
                                         fontSize = 12.sp,
                                         color = AasritiColorTokens.WarmAmberWarning,
                                         fontWeight = FontWeight.Medium
@@ -743,7 +777,8 @@ fun CaregiverDashboardScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "এই তথ্য কেৱল দৈনন্দিন কাৰ্য্যক্ষমতাৰ পৰ্যবেক্ষণৰ বাবেহে, কোনো চিকিৎসা বা ৰোগ নিৰ্ণয় নহয়। (Functional interaction metrics only, not a clinical diagnosis)",
+                                text = if (isAssamese) "এই তথ্য কেৱল দৈনন্দিন কাৰ্য্যক্ষমতাৰ পৰ্যবেক্ষণৰ বাবেহে, কোনো চিকিৎসা বা ৰোগ নিৰ্ণয় নহয়। (Functional interaction metrics only, not a clinical diagnosis)"
+                                else "Functional interaction metrics only, not a clinical diagnosis.",
                                 fontSize = 10.sp,
                                 color = AasritiColorTokens.WarmSlate,
                                 lineHeight = 14.sp
@@ -797,7 +832,7 @@ fun CaregiverDashboardScreen(
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            text = "${realRelationships.size} সদস্য",
+                                            text = if (isAssamese) "${realRelationships.size} সদস্য" else "${realRelationships.size} Members",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = AasritiColorTokens.MutedHeritageTerracotta
@@ -915,13 +950,14 @@ fun CaregiverDashboardScreen(
                     ) {
                         Column {
                             Text(
-                                text = "🩺 চিকিৎসকৰ প্ৰৱেশ সংকেত (Doctor Access Code)",
+                                text = if (isAssamese) "🩺 চিকিৎসকৰ প্ৰৱেশ সংকেত (Doctor Access Code)" else "🩺 Doctor Access Code",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = AasritiColorTokens.DeepCharcoal
                             )
                             Text(
-                                text = "চিকিৎসকে ৰোগীৰ খেল আৰু অগ্ৰগতি চাবলৈ এই ৬-অংকৰ ক'ডটো ব্যৱহাৰ কৰিব পাৰে (৭২ ঘণ্টাৰ বাবে বৈধ)।",
+                                text = if (isAssamese) "চিকিৎসকে ৰোগীৰ খেল আৰু অগ্ৰগতি চাবলৈ এই ৬-অংকৰ ক'ডটো ব্যৱহাৰ কৰিব পাৰে (৭২ ঘণ্টাৰ বাবে বৈধ)।"
+                                else "Doctor can use this 6-digit access code to view longitudinal trends and session telemetry (valid for 72h).",
                                 fontSize = 12.sp,
                                 color = AasritiColorTokens.WarmSlate
                             )
@@ -951,7 +987,11 @@ fun CaregiverDashboardScreen(
                                     border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                                     modifier = Modifier.height(44.dp)
                                 ) {
-                                    Text("নতুন ক'ড সৃষ্টি কৰক", color = AasritiColorTokens.DeepCharcoal, fontSize = 13.sp)
+                                    Text(
+                                        text = if (isAssamese) "নতুন ক'ড সৃষ্টি কৰক" else "Generate Code",
+                                        color = AasritiColorTokens.DeepCharcoal,
+                                        fontSize = 13.sp
+                                    )
                                 }
 
                                 Text(
@@ -984,7 +1024,7 @@ fun CaregiverDashboardScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "শেহতীয়া পৰ্যবেক্ষণ (${latestLog.authorRole}):",
+                                        text = if (isAssamese) "শেহতীয়া পৰ্যবেক্ষণ (${latestLog.authorRole}):" else "Recent Observation (${latestLog.authorRole}):",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AasritiColorTokens.DeepNortheastForest
@@ -1003,7 +1043,7 @@ fun CaregiverDashboardScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "সকলো ইতিহাস চাবলৈ ওপৰৰ 'যত্ন ইতিহাস' টেবত টিপক ➔",
+                                    text = if (isAssamese) "সকলো ইতিহাস চাবলৈ ওপৰৰ 'যত্ন ইতিহাস' টেবত টিপক ➔" else "View complete care logs in 'Care History' tab ➔",
                                     fontSize = 12.sp,
                                     color = AasritiColorTokens.DeepNortheastForest,
                                     fontWeight = FontWeight.Bold,
@@ -1025,26 +1065,27 @@ fun CaregiverDashboardScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "এতিয়ালৈকে কোনো টোকা নাই",
+                                        text = if (isAssamese) "এতিয়ালৈকে কোনো টোকা নাই" else "No care notes yet",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = AasritiColorTokens.DeepCharcoal
                                     )
                                     Text(
-                                        text = "প্ৰথম পৰ্যবেক্ষণ সংৰক্ষণ কৰিবলৈ '+ খৰতকীয়া টোকা' টিপক",
+                                        text = if (isAssamese) "প্ৰথম পৰ্যবেক্ষণ সংৰক্ষণ কৰিবলৈ '+ খৰতকীয়া টোকা' টিপক" else "Tap '+ Log' to record first observation",
                                         fontSize = 12.sp,
                                         color = AasritiColorTokens.WarmSlate
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Button(
                                     onClick = { showQuickLogDialog = true },
                                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                                     shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.height(36.dp)
+                                    modifier = Modifier.height(40.dp)
                                 ) {
-                                    Text("+ লিখক", fontSize = 12.sp, color = AasritiColorTokens.WarmIvory)
+                                    Text(if (isAssamese) "+ লিখক" else "+ Log", fontSize = 12.sp, color = AasritiColorTokens.WarmIvory)
                                 }
                             }
                         }
@@ -1076,7 +1117,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "ALL",
                         onClick = { historyFilterCategory = "ALL" },
-                        label = { Text("সকলো (${realCareLogs.size})") },
+                        label = { Text(if (isAssamese) "সকলো (${realCareLogs.size})" else "All (${realCareLogs.size})") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -1087,7 +1128,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "MEDICINE",
                         onClick = { historyFilterCategory = "MEDICINE" },
-                        label = { Text("ঔষধ") },
+                        label = { Text(if (isAssamese) "ঔষধ" else "Medication") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -1098,7 +1139,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "FALL",
                         onClick = { historyFilterCategory = "FALL" },
-                        label = { Text("পতন/উজুটি") },
+                        label = { Text(if (isAssamese) "পতন/উজুটি" else "Fall") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.DeepCranberryEmergency,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -1109,7 +1150,7 @@ fun CaregiverDashboardScreen(
                     FilterChip(
                         selected = historyFilterCategory == "ASHA",
                         onClick = { historyFilterCategory = "ASHA" },
-                        label = { Text("আশা পৰিদৰ্শন") },
+                        label = { Text(if (isAssamese) "আশা পৰিদৰ্শন" else "ASHA Visits") },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = AasritiColorTokens.MugaGold,
                             selectedLabelColor = AasritiColorTokens.WarmIvory,
@@ -1140,14 +1181,15 @@ fun CaregiverDashboardScreen(
                             Text("📋", fontSize = 42.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "কোনো টোকা পোৱা নগ'ল (No records found)",
+                                text = if (isAssamese) "কোনো টোকা পোৱা নগ'ল (No records found)" else "No records found",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = AasritiColorTokens.DeepCharcoal
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "এই শ্ৰেণীত এতিয়ালৈকে কোনো পৰ্যবেক্ষণ লিপিবদ্ধ কৰা হোৱা নাই।",
+                                text = if (isAssamese) "এই শ্ৰেণীত এতিয়ালৈকে কোনো পৰ্যবেক্ষণ লিপিবদ্ধ কৰা হোৱা নাই।"
+                                else "No observations recorded in this category yet.",
                                 fontSize = 13.sp,
                                 color = AasritiColorTokens.WarmSlate
                             )
@@ -1159,7 +1201,7 @@ fun CaregiverDashboardScreen(
                                 modifier = Modifier.height(48.dp)
                             ) {
                                 Text(
-                                    text = "+ প্ৰথম টোকা লিপিবদ্ধ কৰক",
+                                    text = if (isAssamese) "+ প্ৰথম টোকা লিপিবদ্ধ কৰক" else "+ Record First Care Log",
                                     color = AasritiColorTokens.WarmIvory,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -1173,7 +1215,7 @@ fun CaregiverDashboardScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(filteredLogs, key = { it.id }) { log ->
-                            CareLogHistoryCard(log = log)
+                            CareLogHistoryCard(log = log, isAssamese = isAssamese)
                         }
                     }
                 }
@@ -1188,7 +1230,12 @@ fun CaregiverDashboardScreen(
         Dialog(onDismissRequest = { showQuickLogDialog = false }) {
             var selectedCategoryKey by remember { mutableStateOf("MEDICINE") }
             var selectedSeverity by remember { mutableStateOf("NORMAL") }
-            var noteInput by remember { mutableStateOf("পুৱাৰ নিয়মীয়া ঔষধ আৰু আহাৰ সময়মতে গ্ৰহণ কৰিছে।") }
+            var noteInput by remember {
+                mutableStateOf(
+                    if (isAssamese) "পুৱাৰ নিয়মীয়া ঔষধ আৰু আহাৰ সময়মতে গ্ৰহণ কৰিছে।"
+                    else "Regular medicine and meal taken on schedule."
+                )
+            }
             var validationError by remember { mutableStateOf<String?>(null) }
 
             Box(
@@ -1201,13 +1248,13 @@ fun CaregiverDashboardScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "খৰতকীয়া পৰ্যবেক্ষণ টোকা (Quick Care Log)",
+                        text = if (isAssamese) "খৰতকীয়া পৰ্যবেক্ষণ টোকা (Quick Care Log)" else "Quick Care Log",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = AasritiColorTokens.DeepCharcoal
                     )
                     Text(
-                        text = "ৰোগী: ${patient.displayName} • Room SQLite সংৰক্ষণ",
+                        text = if (isAssamese) "ৰোগী: ${patient.displayName} • স্থানীয় সংৰক্ষণ" else "Patient: ${patient.displayName} • Local Storage",
                         fontSize = 12.sp,
                         color = AasritiColorTokens.WarmSlate
                     )
@@ -1216,7 +1263,7 @@ fun CaregiverDashboardScreen(
 
                     // 1. Category Selection Grid
                     Text(
-                        text = "পৰ্যবেক্ষণ শ্ৰেণী (Category):",
+                        text = if (isAssamese) "পৰ্যবেক্ষণ শ্ৰেণী (Category):" else "Observation Category:",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = AasritiColorTokens.DeepCharcoal,
@@ -1224,13 +1271,28 @@ fun CaregiverDashboardScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    val categories = listOf(
+                    val categories = if (isAssamese) listOf(
                         "MEDICINE" to "💊 ঔষধ (Medicine)",
-                        "APPETITE" to "🍲 আহাৰ (Appetite)",
+                        "HYDRATION" to "💧 পানী (Hydration)",
+                        "MEAL" to "🍲 আহাৰ (Meal)",
+                        "MOOD" to "😊 মেজাজ (Mood)",
+                        "ACTIVITY" to "🚶 কাৰ্য্যকলাপ (Activity)",
                         "SLEEP" to "🌙 টোপনি (Sleep)",
-                        "GENERAL" to "😊 মেজাজ (General)",
-                        "FALL" to "⚠️ পতন / উজুটি (Fall)",
-                        "CONFUSION" to "❓ বিভ্ৰান্তি (Confusion)"
+                        "SYMPTOM" to "🩺 লক্ষণ (Symptom)",
+                        "FALL" to "⚠️ পতন / আঘাত (Fall)",
+                        "CONFUSION" to "❓ বিভ্ৰান্তি (Confusion)",
+                        "OTHER" to "📝 অন্যান্য (Other)"
+                    ) else listOf(
+                        "MEDICINE" to "💊 Medication",
+                        "HYDRATION" to "💧 Hydration",
+                        "MEAL" to "🍲 Meal",
+                        "MOOD" to "😊 Mood",
+                        "ACTIVITY" to "🚶 Activity",
+                        "SLEEP" to "🌙 Sleep",
+                        "SYMPTOM" to "🩺 Symptom",
+                        "FALL" to "⚠️ Fall / Injury",
+                        "CONFUSION" to "❓ Confusion",
+                        "OTHER" to "📝 Other"
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -1251,8 +1313,9 @@ fun CaregiverDashboardScreen(
                                             )
                                             .clickable {
                                                 selectedCategoryKey = key
-                                                if (key == "FALL") selectedSeverity = "PRIORITY"
-                                                if (key == "CONFUSION") selectedSeverity = "WATCH"
+                                                if (key == "FALL" || key == "SYMPTOM") selectedSeverity = "PRIORITY"
+                                                else if (key == "CONFUSION") selectedSeverity = "WATCH"
+                                                else if (key == "MEDICINE" || key == "HYDRATION" || key == "MEAL") selectedSeverity = "NORMAL"
                                             }
                                             .padding(vertical = 8.dp, horizontal = 6.dp),
                                         contentAlignment = Alignment.Center
@@ -1273,7 +1336,7 @@ fun CaregiverDashboardScreen(
 
                     // 2. Severity Triage Selector
                     Text(
-                        text = "অগ্ৰাধিকাৰ স্থিতি (Care Priority):",
+                        text = if (isAssamese) "অগ্ৰাধিকাৰ স্থিতি (Care Priority):" else "Care Priority:",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = AasritiColorTokens.DeepCharcoal,
@@ -1285,11 +1348,15 @@ fun CaregiverDashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        listOf(
+                        (if (isAssamese) listOf(
                             "NORMAL" to "স্বাভাৱিক (Normal)",
                             "WATCH" to "নজৰাধীন (Watch)",
                             "PRIORITY" to "প্ৰাথমিকতা (Priority)"
-                        ).forEach { (sevKey, sevLabel) ->
+                        ) else listOf(
+                            "NORMAL" to "Normal",
+                            "WATCH" to "Watch",
+                            "PRIORITY" to "Priority"
+                        )).forEach { (sevKey, sevLabel) ->
                             val isSel = selectedSeverity == sevKey
                             val btnColor = when (sevKey) {
                                 "PRIORITY" -> AasritiColorTokens.MutedHeritageTerracotta
@@ -1324,7 +1391,7 @@ fun CaregiverDashboardScreen(
                             noteInput = it
                             if (it.isNotBlank()) validationError = null
                         },
-                        label = { Text("টোকা (Care Notes)") },
+                        label = { Text(if (isAssamese) "টোকা (Care Notes)" else "Care Notes") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = validationError != null,
                         supportingText = {
@@ -1345,13 +1412,14 @@ fun CaregiverDashboardScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("বাতিল (Cancel)", color = AasritiColorTokens.DeepCharcoal)
+                            Text(if (isAssamese) "বাতিল (Cancel)" else "Cancel", color = AasritiColorTokens.DeepCharcoal)
                         }
 
                         Button(
                             onClick = {
                                 if (noteInput.trim().isBlank()) {
-                                    validationError = "অনুগ্ৰহ কৰি পৰ্যবেক্ষণৰ টোকা লিখক (Notes cannot be empty)"
+                                    validationError = if (isAssamese) "অনুগ্ৰহ কৰি পৰ্যবেক্ষণৰ টোকা লিখক (Notes cannot be empty)"
+                                    else "Care notes cannot be empty"
                                     return@Button
                                 }
 
@@ -1359,7 +1427,7 @@ fun CaregiverDashboardScreen(
                                 scope.launch {
                                     careLogRepository.saveLog(
                                         CareLogEntity(
-                                            patientId = DemoPatientConfig.PATIENT_ID,
+                                            patientId = patient.id,
                                             authorRole = "CAREGIVER",
                                             category = selectedCategoryKey,
                                             severity = selectedSeverity,
@@ -1373,7 +1441,7 @@ fun CaregiverDashboardScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("সংৰক্ষণ কৰক (Save)", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
+                            Text(if (isAssamese) "সংৰক্ষণ কৰক (Save)" else "Save", color = AasritiColorTokens.WarmIvory, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1395,7 +1463,7 @@ fun CaregiverDashboardScreen(
 }
 
 @Composable
-private fun CareLogHistoryCard(log: CareLogEntity) {
+private fun CareLogHistoryCard(log: CareLogEntity, isAssamese: Boolean = false) {
     val sevColor = when (log.severity) {
         "URGENT" -> AasritiColorTokens.DeepCranberryEmergency
         "PRIORITY" -> AasritiColorTokens.MutedHeritageTerracotta
@@ -1405,8 +1473,12 @@ private fun CareLogHistoryCard(log: CareLogEntity) {
 
     val categoryEmoji = when (log.category) {
         "MEDICINE" -> "💊"
-        "APPETITE" -> "🍲"
+        "HYDRATION" -> "💧"
+        "MEAL", "APPETITE" -> "🍲"
+        "MOOD", "GENERAL" -> "😊"
+        "ACTIVITY" -> "🚶"
         "SLEEP" -> "🌙"
+        "SYMPTOM" -> "🩺"
         "FALL" -> "⚠️"
         "CONFUSION" -> "❓"
         else -> "📝"
@@ -1446,7 +1518,8 @@ private fun CareLogHistoryCard(log: CareLogEntity) {
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = if (log.authorRole == "ASHA") "আশা কৰ্মী (ASHA)" else "যত্ন লওঁতা (Caregiver)",
+                            text = if (log.authorRole == "ASHA") (if (isAssamese) "আশা কৰ্মী (ASHA)" else "ASHA Worker")
+                            else (if (isAssamese) "যত্ন লওঁতা (Caregiver)" else "Caregiver"),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (log.authorRole == "ASHA") AasritiColorTokens.MugaGold else AasritiColorTokens.DeepNortheastForest
@@ -1492,7 +1565,7 @@ private fun CareLogHistoryCard(log: CareLogEntity) {
                     color = AasritiColorTokens.WarmSlate
                 )
                 Text(
-                    text = "Room SQLite Local",
+                    text = if (isAssamese) "স্থানীয় সংৰক্ষণ" else "Local Storage",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = AasritiColorTokens.DeepNortheastForest

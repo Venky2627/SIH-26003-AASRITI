@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.onboarding
+package com.sih26003.aasriti.feature.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,14 +53,29 @@ fun CaregiverRegistrationScreen(
     var validationError by remember { mutableStateOf<String?>(null) }
     var isSaving by remember { mutableStateOf(false) }
 
-    val relations = listOf(
-        "বোৱাৰী / প্ৰধান যত্ন লওঁতা (Daughter-in-law)",
-        "কন্যা (Daughter)",
-        "পুত্ৰ (Son)",
-        "স্বামী/পত্নী (Spouse)",
-        "নাতি/নাতিনী (Grandchild)",
-        "বন্ধু/প্ৰতিবেশী (Friend/Neighbor)"
-    )
+    val relations = if (isAssamese) {
+        listOf(
+            "আশা কৰ্মী (ASHA Worker)",
+            "সহযোগী যত্ন লওঁতা (Associated Caregiver)",
+            "বোৱাৰী / প্ৰধান যত্ন লওঁতা (Daughter-in-law)",
+            "কন্যা (Daughter)",
+            "পুত্ৰ (Son)",
+            "স্বামী/পত্নী (Spouse)",
+            "নাতি/নাতিনী (Grandchild)",
+            "বন্ধু/প্ৰতিবেশী (Friend/Neighbor)"
+        )
+    } else {
+        listOf(
+            "ASHA Worker",
+            "Associated Caregiver",
+            "Daughter-in-law / Primary Caregiver",
+            "Daughter",
+            "Son",
+            "Spouse",
+            "Grandchild",
+            "Friend / Neighbor"
+        )
+    }
 
     LaunchedEffect(patients) {
         if (selectedPatientId == null && patients.isNotEmpty()) {

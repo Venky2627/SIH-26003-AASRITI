@@ -118,11 +118,14 @@ fun AasritiVoicePill(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = defaultIcon,
-                fontSize = 20.sp
-            )
-            Spacer(modifier = Modifier.width(10.dp))
+            val alreadyHasIcon = displayText.startsWith("🔊") || displayText.startsWith("🎤")
+            if (!alreadyHasIcon) {
+                Text(
+                    text = defaultIcon,
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+            }
             Text(
                 text = displayText,
                 color = contentColor,

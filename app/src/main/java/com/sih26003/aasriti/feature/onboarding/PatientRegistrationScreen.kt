@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.onboarding
+package com.sih26003.aasriti.feature.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,14 +37,14 @@ fun PatientRegistrationScreen(
     onPatientRegistered: (PatientEntity) -> Unit,
     onBackClicked: () -> Unit
 ) {
-    val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val isAssamese = DemoStateHolder.currentLanguage == "as" && initialLanguage != "en"
     val scope = rememberCoroutineScope()
 
     var nameInput by remember { mutableStateOf("") }
     var ageInput by remember { mutableStateOf("72") }
     var selectedGender by remember { mutableStateOf("F") }
     var selectedAvatar by remember { mutableStateOf("👵") }
-    var selectedStage by remember { mutableStateOf("Mild Cognitive Impairment (MCI)") }
+    var selectedStage by remember { mutableStateOf("Early Stage Care") }
     var validationError by remember { mutableStateOf<String?>(null) }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -83,19 +83,7 @@ fun PatientRegistrationScreen(
 
                 AasritiLogoBadge(size = 46.dp)
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "100% Offline",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AasritiColorTokens.DeepNortheastForest
-                    )
-                }
+                Spacer(modifier = Modifier.size(48.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -208,8 +196,9 @@ fun PatientRegistrationScreen(
                         color = AasritiColorTokens.WarmSlate
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    val genderOptions = if (isAssamese) listOf("F" to "মহিলা", "M" to "পুৰুষ") else listOf("F" to "Female", "M" to "Male")
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf("F" to "মহিলা", "M" to "পুৰুষ").forEach { (code, label) ->
+                        genderOptions.forEach { (code, label) ->
                             val isSel = selectedGender == code
                             Box(
                                 modifier = Modifier
@@ -235,9 +224,9 @@ fun PatientRegistrationScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Cognitive Support Stage
+            // Doctor Diagnosis / Cognitive Stage
             Text(
-                text = if (isAssamese) "সহায়তা স্তৰ (Cognitive Support Level):" else "Cognitive Support Level:",
+                text = if (isAssamese) "চিকিৎসকৰ নিদান (Doctor Diagnosis):" else "Doctor Diagnosis:",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AasritiColorTokens.DeepCharcoal
@@ -245,11 +234,21 @@ fun PatientRegistrationScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            listOf(
-                "Mild Cognitive Impairment (MCI)" to "স্মৃতি উদ্দীপনা আৰু সহজ চিনাক্তকৰণ (Gentle Memory Support)",
-                "Early Stage Care" to "দৈনন্দিন নিয়ম আৰু পৰিয়ালৰ মাত (Daily Routine & Voice)",
-                "Healthy Wellness" to "সক্ৰিয় সুস্থতা আৰু জ্ঞানমূলক খেল (Active Cognitive Play)"
-            ).forEach { (stage, desc) ->
+            val stageOptions = if (isAssamese) {
+                listOf(
+                    "Early Stage Care" to "প্ৰাৰম্ভিক যত্ন • দৈনন্দিন নিয়ম আৰু পৰিয়ালৰ মাত (Daily Routine & Voice)",
+                    "Mild Dementia Stage" to "মৃদু স্তৰ • স্মৃতি উদ্দীপনা আৰু চিনাকি সংগী (Gentle Memory Support)",
+                    "Severe Stage" to "উচ্চ স্তৰ • শান্ত পৰিৱেশ আৰু নিৰন্তৰ সংগী (Compassionate Comfort)"
+                )
+            } else {
+                listOf(
+                    "Early Stage Care" to "Daily Routine & Family Voice Guidance",
+                    "Mild Dementia Stage" to "Gentle Memory Stimulation & Familiar Face Support",
+                    "Severe Stage" to "Compassionate Comfort, Calming Audio & Constant Companion"
+                )
+            }
+
+            stageOptions.forEach { (stage, desc) ->
                 val isSel = selectedStage == stage
                 Box(
                     modifier = Modifier
@@ -361,7 +360,7 @@ fun PatientRegistrationScreen(
                 .padding(top = 10.dp)
         ) {
             Text(
-                text = if (isSaving) "সংৰক্ষণ কৰি থকা হৈছে..."
+                text = if (isSaving) (if (isAssamese) "সংৰক্ষণ কৰি থকা হৈছে..." else "Saving...")
                 else if (isAssamese) "প্ৰ'ফাইল সংৰক্ষণ কৰক (Save & Continue) ➔"
                 else "Save Profile & Continue ➔",
                 fontSize = 17.sp,

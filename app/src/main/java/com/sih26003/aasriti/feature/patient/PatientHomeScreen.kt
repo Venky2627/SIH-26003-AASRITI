@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.patient
+package com.sih26003.aasriti.feature.patient
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,7 +50,7 @@ fun PatientHomeScreen(
     onBackToProfiles: () -> Unit
 ) {
     val routines = remember { AasritiDemoData.initialRoutines }
-    val isAssamese = DemoStateHolder.currentLanguage == "as"
+    val isAssamese = patient.primaryLanguage == "as" || (DemoStateHolder.currentLanguage == "as" && patient.primaryLanguage != "en")
     val scrollState = rememberScrollState()
 
     var showOtherGamesModal by remember { mutableStateOf(false) }
@@ -101,7 +101,7 @@ fun PatientHomeScreen(
                     modifier = Modifier.defaultMinSize(minHeight = 52.dp)
                 ) {
                     Text(
-                        text = "🔊 শুনক",
+                        text = if (isAssamese) "🔊 শুনক" else "🔊 Listen",
                         color = AasritiColorTokens.WarmIvory,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
@@ -116,7 +116,7 @@ fun PatientHomeScreen(
                     modifier = Modifier.defaultMinSize(minHeight = 52.dp)
                 ) {
                     Text(
-                        text = "🚨 সহায়",
+                        text = if (isAssamese) "🚨 সহায়" else "🚨 Help",
                         color = AasritiColorTokens.WarmIvory,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
@@ -128,12 +128,13 @@ fun PatientHomeScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         // 2. Temporal Orientation Block
+        val elderName = patient.pseudonymCode.substringBefore(" •").ifBlank { patient.pseudonymCode }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = if (isAssamese) "নমস্কাৰ, আইতা বৰা (${patient.pseudonymCode})" else "Welcome, Aita Borah (${patient.pseudonymCode})",
+                text = if (isAssamese) "নমস্কাৰ, $elderName" else "Welcome, $elderName",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = AasritiColorTokens.DeepCharcoal
@@ -149,21 +150,6 @@ fun PatientHomeScreen(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = AasritiColorTokens.WarmSlate
-                )
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = "100% Offline • Room SQLite Local Source of Truth",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AasritiColorTokens.DeepNortheastForest
                 )
             }
         }
@@ -300,7 +286,7 @@ fun PatientHomeScreen(
                         }
 
                         Text(
-                            text = if (isCompleted) "সম্পূৰ্ণ" else "বাকি",
+                            text = if (isCompleted) (if (isAssamese) "সম্পূৰ্ণ" else "Done") else (if (isAssamese) "বাকি" else "Pending"),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (isCompleted) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmAmberWarning
@@ -394,13 +380,23 @@ fun PatientHomeScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    val otherGames = listOf(
-                        Triple(GameId.FAMILY_TRIVIA, "👨‍👩‍👧 পৰিয়ালৰ স্মৃতি (Family Trivia)", "চিনাকি মানুহ চিনাক্তকৰণ"),
-                        Triple(GameId.VOICE_CUE_CARD, "🔊 কণ্ঠ আৰু ছবি (Voice Cue Card)", "মাত আৰু ছবি মেলোৱা"),
-                        Triple(GameId.SEQUENCING, "🫖 দৈনন্দিন ক্ৰম (Sequencing)", "চাহ বনোৱাৰ ক্ৰম"),
-                        Triple(GameId.CATEGORISATION, "🧺 শ্ৰেণীবিভাজন (Categorisation)", "ফল আৰু পাচলি ভাগ কৰক"),
-                        Triple(GameId.VILLAGE_MARKET, "🛍️ গাঁওৰ বজাৰ (Village Market)", "বজাৰৰ সামগ্ৰী গণনা")
-                    )
+                    val otherGames = if (isAssamese) {
+                        listOf(
+                            Triple(GameId.FAMILY_TRIVIA, "👨‍👩‍👧 পৰিয়ালৰ স্মৃতি (Family Trivia)", "চিনাকি মানুহ চিনাক্তকৰণ"),
+                            Triple(GameId.VOICE_CUE_CARD, "🔊 কণ্ঠ আৰু ছবি (Voice Cue Card)", "মাত আৰু ছবি মেলোৱা"),
+                            Triple(GameId.SEQUENCING, "🫖 দৈনন্দিন ক্ৰম (Sequencing)", "চাহ বনোৱাৰ ক্ৰম"),
+                            Triple(GameId.CATEGORISATION, "🧺 শ্ৰেণীবিভাজন (Categorisation)", "ফল আৰু পাচলি ভাগ কৰক"),
+                            Triple(GameId.VILLAGE_MARKET, "🛍️ গাঁওৰ বজাৰ (Village Market)", "বজাৰৰ সামগ্ৰী গণনা")
+                        )
+                    } else {
+                        listOf(
+                            Triple(GameId.FAMILY_TRIVIA, "👨‍👩‍👧 Family Trivia", "Recognizing familiar family members"),
+                            Triple(GameId.VOICE_CUE_CARD, "🔊 Voice Cue Card", "Matching audio cues and images"),
+                            Triple(GameId.SEQUENCING, "🫖 Daily Sequencing", "Familiar step-by-step activity"),
+                            Triple(GameId.CATEGORISATION, "🧺 Categorisation", "Sorting fruits and daily items"),
+                            Triple(GameId.VILLAGE_MARKET, "🛍️ Village Market", "Item recognition and simple count")
+                        )
+                    }
 
                     otherGames.forEach { (gameId, title, desc) ->
                         Box(
@@ -431,7 +427,7 @@ fun PatientHomeScreen(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("বন্ধ কৰক (Close)", color = AasritiColorTokens.DeepCharcoal, fontWeight = FontWeight.Bold)
+                        Text(if (isAssamese) "বন্ধ কৰক (Close)" else "Close", color = AasritiColorTokens.DeepCharcoal, fontWeight = FontWeight.Bold)
                     }
                 }
             }

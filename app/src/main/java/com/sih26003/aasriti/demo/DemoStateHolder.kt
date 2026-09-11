@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.demo
+package com.sih26003.aasriti.demo
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -14,6 +14,8 @@ object DemoStateHolder {
     var currentLanguage by mutableStateOf("as") // "as" for Assamese, "en" for English
     var largeTextMode by mutableStateOf(false)
     var highContrastMode by mutableStateOf(false)
+    var activePatientId by mutableStateOf<String?>(null)
+    var activePatientName by mutableStateOf<String?>(null)
 
     // 2. Daily Routine Checklist state
     val completedRoutineIds = mutableStateListOf<String>()

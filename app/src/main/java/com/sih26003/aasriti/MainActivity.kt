@@ -11,6 +11,7 @@ import com.sih26003.aasriti.core.ui.theme.AasritiTheme
 import com.sih26003.aasriti.data.local.entities.DoctorAccessEntity
 import com.sih26003.aasriti.data.local.entities.PatientEntity
 import com.sih26003.aasriti.data.local.entities.RelationshipEntity
+import com.sih26003.aasriti.demo.DemoStateHolder
 import com.sih26003.aasriti.feature.asha.AshaDashboardScreen
 import com.sih26003.aasriti.feature.auth.InformedConsentScreen
 import com.sih26003.aasriti.feature.auth.PinAuthScreen
@@ -63,6 +64,11 @@ class MainActivity : ComponentActivity() {
                 var onboardingLanguage by remember { mutableStateOf("as") }
                 var onboardingExtraLargeFont by remember { mutableStateOf(false) }
                 var onboardingVoiceEnabled by remember { mutableStateOf(true) }
+
+                LaunchedEffect(DemoStateHolder.currentLanguage) {
+                    onboardingLanguage = DemoStateHolder.currentLanguage
+                    app.voicePromptManager.setLanguage(DemoStateHolder.currentLanguage)
+                }
 
                 LaunchedEffect(Unit) {
                     val existing = app.patientRepository.getPatientById(com.sih26003.aasriti.demo.DemoPatientConfig.PATIENT_ID)
@@ -120,8 +126,10 @@ class MainActivity : ComponentActivity() {
                             selectedRegion = onboardingRegion,
                             onRegionSelected = { region, lang ->
                                 onboardingRegion = region
-                                onboardingLanguage = lang
-                                app.voicePromptManager.setLanguage(lang)
+                                val effectiveLang = if (DemoStateHolder.currentLanguage == "en") "en" else lang
+                                onboardingLanguage = effectiveLang
+                                DemoStateHolder.currentLanguage = effectiveLang
+                                app.voicePromptManager.setLanguage(effectiveLang)
                             },
                             onContinueClicked = { navController.navigate(AppRoutes.ONBOARDING_LANGUAGE) },
                             onBackClicked = { navController.popBackStack() }
@@ -135,6 +143,7 @@ class MainActivity : ComponentActivity() {
                             selectedLanguage = onboardingLanguage,
                             onLanguageSelected = { lang ->
                                 onboardingLanguage = lang
+                                DemoStateHolder.currentLanguage = lang
                                 app.voicePromptManager.setLanguage(lang)
                             },
                             onContinueClicked = { navController.navigate(AppRoutes.ONBOARDING_ACCESSIBILITY) },
@@ -165,6 +174,10 @@ class MainActivity : ComponentActivity() {
                             initialLanguage = onboardingLanguage,
                             onPatientRegistered = { newPatient ->
                                 activePatient = newPatient
+                                DemoStateHolder.activePatientId = newPatient.id
+                                val elderName = newPatient.pseudonymCode.substringBefore(" •").ifBlank { newPatient.pseudonymCode }
+                                DemoStateHolder.activePatientName = elderName
+                                DemoStateHolder.currentLanguage = newPatient.primaryLanguage
                                 app.voicePromptManager.setLanguage(newPatient.primaryLanguage)
                                 scope.launch {
                                     activePatientRelationships = app.patientRepository.getRelationshipsList(newPatient.id)
@@ -239,6 +252,10 @@ class MainActivity : ComponentActivity() {
                             patientRepository = app.patientRepository,
                             onPatientSelected = { patient ->
                                 activePatient = patient
+                                DemoStateHolder.activePatientId = patient.id
+                                val elderName = patient.pseudonymCode.substringBefore(" •").ifBlank { patient.pseudonymCode }
+                                DemoStateHolder.activePatientName = elderName
+                                DemoStateHolder.currentLanguage = patient.primaryLanguage
                                 app.voicePromptManager.setLanguage(patient.primaryLanguage)
                                 scope.launch {
                                     activePatientRelationships = app.patientRepository.getRelationshipsList(patient.id)
@@ -390,7 +407,8 @@ class MainActivity : ComponentActivity() {
                             doctorAccessRepository = app.doctorAccessRepository,
                             careLogRepository = app.careLogRepository,
                             onOpenReminders = { patientId -> navController.navigate(AppRoutes.buildRemindersRoute(patientId)) },
-                            onLogout = { navController.navigate(AppRoutes.ROLE_SELECT) }
+                            onLogout = { navController.navigate(AppRoutes.ROLE_SELECT) },
+                            activePatient = activePatient
                         )
                     }
 
@@ -401,7 +419,8 @@ class MainActivity : ComponentActivity() {
                             patientRepository = app.patientRepository,
                             gameRepository = app.gameRepository,
                             careLogRepository = app.careLogRepository,
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            activePatient = activePatient
                         )
                     }
 

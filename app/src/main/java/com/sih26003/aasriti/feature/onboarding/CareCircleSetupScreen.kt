@@ -44,7 +44,7 @@ fun CareCircleSetupScreen(
     var selectedRelation by remember { mutableStateOf("SON") }
     var statusMessage by remember { mutableStateOf<String?>(null) }
 
-    val relationTypes = listOf("SON", "DAUGHTER", "SPOUSE", "GRANDSON", "GRANDDAUGHTER", "FRIEND")
+    val relationTypes = listOf("SON", "DAUGHTER", "SPOUSE", "GRANDSON", "GRANDDAUGHTER", "ASHA_WORKER", "ASSOCIATED_CAREGIVER", "FRIEND")
 
     LaunchedEffect(patientId) {
         val targetId = patientId ?: "PATIENT_AITA_BORAH"
@@ -178,37 +178,29 @@ fun CareCircleSetupScreen(
                     color = AasritiColorTokens.WarmSlate
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    relationTypes.take(3).forEach { rel ->
-                        FilterChip(
-                            selected = selectedRelation == rel,
-                            onClick = { selectedRelation = rel },
-                            label = { Text(rel.lowercase().replaceFirstChar { it.uppercase() }) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
-                                selectedLabelColor = AasritiColorTokens.WarmIvory
+                relationTypes.chunked(3).forEach { chunk ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        chunk.forEach { rel ->
+                            val chipLabel = when (rel) {
+                                "ASHA_WORKER" -> "ASHA Worker"
+                                "ASSOCIATED_CAREGIVER" -> "Associated"
+                                "GRANDSON" -> "Grandson"
+                                "GRANDDAUGHTER" -> "Granddaughter"
+                                else -> rel.lowercase().replaceFirstChar { it.uppercase() }
+                            }
+                            FilterChip(
+                                selected = selectedRelation == rel,
+                                onClick = { selectedRelation = rel },
+                                label = { Text(chipLabel, fontSize = 12.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
+                                    selectedLabelColor = AasritiColorTokens.WarmIvory
+                                )
                             )
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    relationTypes.drop(3).forEach { rel ->
-                        FilterChip(
-                            selected = selectedRelation == rel,
-                            onClick = { selectedRelation = rel },
-                            label = { Text(rel.lowercase().replaceFirstChar { it.uppercase() }) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = AasritiColorTokens.DeepNortheastForest,
-                                selectedLabelColor = AasritiColorTokens.WarmIvory
-                            )
-                        )
+                        }
                     }
                 }
             }

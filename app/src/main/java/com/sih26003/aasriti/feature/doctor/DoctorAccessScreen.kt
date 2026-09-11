@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.doctor
+package com.sih26003.aasriti.feature.doctor
 
 import android.content.Intent
 import android.widget.Toast
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.local.entities.GameSessionEntity
+import com.sih26003.aasriti.data.local.entities.PatientEntity
 import com.sih26003.aasriti.data.repository.CareLogRepository
 import com.sih26003.aasriti.data.repository.DoctorAccessRepository
 import com.sih26003.aasriti.data.repository.GameRepository
@@ -56,18 +57,36 @@ fun DoctorAccessScreen(
     patientRepository: PatientRepository,
     gameRepository: GameRepository,
     careLogRepository: CareLogRepository? = null,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    activePatient: PatientEntity? = null
 ) {
     val context = LocalContext.current
-    val patientId = DemoPatientConfig.PATIENT_ID
     val scope = rememberCoroutineScope()
+    val isAssamese = DemoStateHolder.currentLanguage == "as"
+
+    val patientId = activePatient?.id ?: DemoStateHolder.activePatientId ?: DemoPatientConfig.PATIENT_ID
+    val patientDisplayName = activePatient?.let {
+        it.pseudonymCode.substringBefore(" •").ifBlank { it.pseudonymCode }
+    } ?: DemoStateHolder.activePatientName ?: if (isAssamese) "আইতা বৰা (Aita Borah)" else "Aita Borah"
+    val patientPseudonym = activePatient?.pseudonymCode ?: DemoPatientConfig.PSEUDONYM_CODE
+    val patientStage = activePatient?.cognitiveStage ?: "Mild Cognitive Impairment (MCI)"
+    val patientLocation = "Kamrup Rural, Assam"
+    val patientGender = activePatient?.gender ?: "Female"
+    val patientAge = if ((activePatient?.birthYear ?: 1958) > 1900) Calendar.getInstance().get(Calendar.YEAR) - activePatient!!.birthYear else 68
+
     var accessCodeInput by remember { mutableStateOf("424242") }
-    var approvedAccess by remember { mutableStateOf(false) }
+    var approvedAccess by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedTab by remember { mutableStateOf("snapshot") } // "snapshot", "trends", "assessments", "caregiver", "careplan", "pdf"
     var clinicianNote by remember { mutableStateOf("Preserve bilingual cognitive cues and daily hydration routines. Routine review in 4 weeks.") }
     var noteSavedConfirmation by remember { mutableStateOf(false) }
-    val isAssamese = DemoStateHolder.currentLanguage == "as"
+
+    // Selective PDF Export sections
+    var includeDemographics by remember { mutableStateOf(true) }
+    var includeTelemetry by remember { mutableStateOf(true) }
+    var includeCareLogs by remember { mutableStateOf(true) }
+    var includePriority by remember { mutableStateOf(true) }
+    var includeGuidance by remember { mutableStateOf(true) }
 
     val realSessions by gameRepository.getSessionsForPatient(patientId).collectAsState(initial = emptyList())
     val realLogs by (careLogRepository?.getLogsForPatient(patientId) ?: kotlinx.coroutines.flow.flowOf(emptyList()))
@@ -93,15 +112,15 @@ fun DoctorAccessScreen(
 
     val evaluatedPriority = remember(realSessions, realLogs) {
         val domainPatient = com.sih26003.aasriti.domain.model.Patient(
-            id = DemoPatientConfig.PATIENT_ID,
-            pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
-            displayName = "আইতা বৰা (Aita Borah)",
-            displaySubtitle = "৬৮ বছৰীয়া • 68 Years",
+            id = patientId,
+            pseudonymCode = patientPseudonym,
+            displayName = patientDisplayName,
+            displaySubtitle = "$patientAge Years • $patientStage",
             birthYear = 1958,
-            gender = "F",
-            villageLocation = "হাজো, কামৰূপ",
-            primaryLanguage = "as",
-            cognitiveStage = "Mild Cognitive Impairment (MCI)"
+            gender = patientGender,
+            villageLocation = patientLocation,
+            primaryLanguage = if (isAssamese) "as" else "en",
+            cognitiveStage = patientStage
         )
         val domainLogs = realLogs.map {
             com.sih26003.aasriti.domain.model.CareLog(
@@ -163,28 +182,19 @@ fun DoctorAccessScreen(
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(AasritiColorTokens.DeepNortheastForest.copy(alpha = 0.12f))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ) {
-                Text(
-                    text = "Saved Locally • Room SQLite",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AasritiColorTokens.DeepNortheastForest
-                )
-            }
-
             if (approvedAccess) {
                 Button(
-                    onClick = { approvedAccess = false },
+                    onClick = onBack,
                     colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                     shape = RoundedCornerShape(12.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AasritiColorTokens.DeepCranberryEmergency)
                 ) {
-                    Text("প্ৰৱেশ সমাপ্ত (Exit)", color = AasritiColorTokens.DeepCranberryEmergency, fontSize = 13.sp)
+                    Text(
+                        text = if (isAssamese) "প্ৰৱেশ সমাপ্ত (Exit)" else "Exit",
+                        color = AasritiColorTokens.DeepCranberryEmergency,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -749,7 +759,12 @@ fun DoctorAccessScreen(
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier.fillMaxWidth().height(48.dp)
                                     ) {
-                                        Text("নিৰ্দেশনা সংৰক্ষণ কৰক (Save Guidance)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Text(
+                                            text = if (isAssamese) "নিৰ্দেশনা সংৰক্ষণ কৰক (Save Guidance)" else "Save Clinical Guidance",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
                                     }
                                 }
                             }
@@ -770,22 +785,118 @@ fun DoctorAccessScreen(
                                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text("📄 ", fontSize = 20.sp)
-                                        Text("AASRITI Summary Export Dossier", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
+                                        Text(
+                                            text = if (isAssamese) "আশ্ৰিতি সাৰাংশ ডছিয়াৰ ৰপ্তানি" else "AASRITI Summary Export Dossier",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
                                     }
-                                    Text(
-                                        "Generates a formal, printable PDF consultation report compiling real Room SQLite data (Patient Demographics, Longitudinal Trends, Care Logs, Priority, and Guidance Notes).",
-                                        fontSize = 12.sp,
-                                        color = AasritiColorTokens.WarmSlate
-                                    )
 
                                     Divider(color = AasritiColorTokens.WarmStoneBorder, thickness = 1.dp)
 
-                                    Text("Included Dossier Sections (5 of 5):", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepCharcoal)
-                                    Text("✓ Patient Identification & Kamrup Location", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
-                                    Text("✓ Longitudinal Cognitive Latency (${realSessions.size} Sessions)", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
-                                    Text("✓ Caregiver & ASHA Field Logs (${realLogs.size} Records)", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
-                                    Text("✓ Today's Care Priority (${evaluatedPriority.severity})", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
-                                    Text("✓ Clinician Notes & Scheduled Follow-up", fontSize = 12.sp, color = AasritiColorTokens.DeepNortheastForest)
+                                    val selectedCount = listOf(includeDemographics, includeTelemetry, includeCareLogs, includePriority, includeGuidance).count { it }
+                                    Text(
+                                        text = if (isAssamese) "অন্তৰ্ভুক্ত শাখা নিৰ্বাচন ($selectedCount / ৫):" else "Select Dossier Sections ($selectedCount of 5):",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AasritiColorTokens.DeepCharcoal
+                                    )
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { includeDemographics = !includeDemographics }
+                                    ) {
+                                        Checkbox(
+                                            checked = includeDemographics,
+                                            onCheckedChange = { includeDemographics = it },
+                                            colors = CheckboxDefaults.colors(checkedColor = AasritiColorTokens.DeepNortheastForest)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAssamese) "ৰোগীৰ পৰিচয় আৰু স্থান ($patientDisplayName)" else "Patient Identification & Location ($patientDisplayName)",
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { includeTelemetry = !includeTelemetry }
+                                    ) {
+                                        Checkbox(
+                                            checked = includeTelemetry,
+                                            onCheckedChange = { includeTelemetry = it },
+                                            colors = CheckboxDefaults.colors(checkedColor = AasritiColorTokens.DeepNortheastForest)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAssamese) "খেলৰ প্ৰতিক্ৰিয়া সময় আৰু অগ্ৰগতি (${realSessions.size} খেল)" else "Longitudinal Cognitive Latency (${realSessions.size} Sessions)",
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { includeCareLogs = !includeCareLogs }
+                                    ) {
+                                        Checkbox(
+                                            checked = includeCareLogs,
+                                            onCheckedChange = { includeCareLogs = it },
+                                            colors = CheckboxDefaults.colors(checkedColor = AasritiColorTokens.DeepNortheastForest)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAssamese) "যত্ন লওঁতা আৰু আশা কৰ্মীৰ টোকা (${realLogs.size} টোকা)" else "Caregiver & ASHA Field Logs (${realLogs.size} Records)",
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { includePriority = !includePriority }
+                                    ) {
+                                        Checkbox(
+                                            checked = includePriority,
+                                            onCheckedChange = { includePriority = it },
+                                            colors = CheckboxDefaults.colors(checkedColor = AasritiColorTokens.DeepNortheastForest)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAssamese) "আজিৰ অগ্ৰাধিকাৰ স্থিতি (${evaluatedPriority.severity})" else "Today's Care Priority (${evaluatedPriority.severity})",
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { includeGuidance = !includeGuidance }
+                                    ) {
+                                        Checkbox(
+                                            checked = includeGuidance,
+                                            onCheckedChange = { includeGuidance = it },
+                                            colors = CheckboxDefaults.colors(checkedColor = AasritiColorTokens.DeepNortheastForest)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAssamese) "চিকিৎসকৰ পৰামৰ্শ আৰু নিৰ্দেশনা" else "Clinician Notes & Scheduled Follow-up",
+                                            fontSize = 13.sp,
+                                            color = AasritiColorTokens.DeepCharcoal
+                                        )
+                                    }
 
                                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -793,19 +904,24 @@ fun DoctorAccessScreen(
                                         onClick = {
                                             try {
                                                 val reportData = PdfReportGenerator.ReportData(
-                                                    patientId = DemoPatientConfig.PATIENT_ID,
-                                                    patientName = "আইতা বৰা (Aita Borah)",
-                                                    pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
-                                                    age = 68,
-                                                    gender = "Female",
-                                                    villageLocation = "Kamrup Rural, Assam",
-                                                    cognitiveStage = "Mild Cognitive Impairment (MCI)",
+                                                    patientId = patientId,
+                                                    patientName = patientDisplayName,
+                                                    pseudonymCode = patientPseudonym,
+                                                    age = patientAge,
+                                                    gender = patientGender,
+                                                    villageLocation = patientLocation,
+                                                    cognitiveStage = patientStage,
                                                     clinicianName = "Dr. N. Barua, MD (Neurology)",
                                                     reportingPeriod = "Last 30 Days",
                                                     carePriorityStatus = evaluatedPriority.severity,
                                                     clinicianNotes = clinicianNote,
                                                     sessions = realSessions,
-                                                    careLogs = realLogs
+                                                    careLogs = realLogs,
+                                                    includeDemographics = includeDemographics,
+                                                    includeTelemetry = includeTelemetry,
+                                                    includeCareLogs = includeCareLogs,
+                                                    includePriority = includePriority,
+                                                    includeGuidance = includeGuidance
                                                 )
                                                 val pdfFile = PdfReportGenerator.generateClinicianPdf(context, reportData)
                                                 Toast.makeText(context, "PDF Exported: ${pdfFile.name}", Toast.LENGTH_LONG).show()
@@ -821,26 +937,36 @@ fun DoctorAccessScreen(
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.fillMaxWidth().height(52.dp)
                                     ) {
-                                        Text("📥 Download Summary PDF (AASRITI Format)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(
+                                            text = if (isAssamese) "📥 সাৰাংশ PDF ডাউনলোড কৰক" else "📥 Download Summary PDF (AASRITI Format)",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp
+                                        )
                                     }
 
                                     OutlinedButton(
                                         onClick = {
                                             try {
                                                 val reportData = PdfReportGenerator.ReportData(
-                                                    patientId = DemoPatientConfig.PATIENT_ID,
-                                                    patientName = "আইতা বৰা (Aita Borah)",
-                                                    pseudonymCode = DemoPatientConfig.PSEUDONYM_CODE,
-                                                    age = 68,
-                                                    gender = "Female",
-                                                    villageLocation = "Kamrup Rural, Assam",
-                                                    cognitiveStage = "Mild Cognitive Impairment (MCI)",
+                                                    patientId = patientId,
+                                                    patientName = patientDisplayName,
+                                                    pseudonymCode = patientPseudonym,
+                                                    age = patientAge,
+                                                    gender = patientGender,
+                                                    villageLocation = patientLocation,
+                                                    cognitiveStage = patientStage,
                                                     clinicianName = "Dr. N. Barua, MD (Neurology)",
                                                     reportingPeriod = "Last 30 Days",
                                                     carePriorityStatus = evaluatedPriority.severity,
                                                     clinicianNotes = clinicianNote,
                                                     sessions = realSessions,
-                                                    careLogs = realLogs
+                                                    careLogs = realLogs,
+                                                    includeDemographics = includeDemographics,
+                                                    includeTelemetry = includeTelemetry,
+                                                    includeCareLogs = includeCareLogs,
+                                                    includePriority = includePriority,
+                                                    includeGuidance = includeGuidance
                                                 )
                                                 val pdfFile = PdfReportGenerator.generateClinicianPdf(context, reportData)
                                                 val shareIntent = PdfReportGenerator.createShareIntent(context, pdfFile)
@@ -853,7 +979,12 @@ fun DoctorAccessScreen(
                                         border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.DeepNortheastForest),
                                         modifier = Modifier.fillMaxWidth().height(48.dp)
                                     ) {
-                                        Text("📤 Share Summary with Caregiver", color = AasritiColorTokens.DeepNortheastForest, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Text(
+                                            text = if (isAssamese) "📤 যত্ন লওঁতাৰ সৈতে সাৰাংশ শ্বেয়াৰ কৰক" else "📤 Share Summary with Caregiver",
+                                            color = AasritiColorTokens.DeepNortheastForest,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
                                     }
                                 }
                             }
