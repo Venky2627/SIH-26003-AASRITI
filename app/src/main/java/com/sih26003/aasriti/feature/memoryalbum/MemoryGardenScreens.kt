@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.memoryalbum
+package com.sih26003.aasriti.feature.memoryalbum
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.demo.AasritiDemoData
 import com.sih26003.aasriti.demo.DemoMemoryItem
@@ -54,15 +55,15 @@ fun MemoryGardenScreen(
 
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // 1. Top Navigation Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -281,6 +282,7 @@ fun MemoryGardenScreen(
                 )
             }
         }
+    }
     }
 }
 

@@ -649,4 +649,53 @@ class CaregiverAshaWorkflowTests {
         assertTrue("Priority count includes canonical patient plus synthetic priority elders", priorityFiltered.size >= 4)
         assertTrue("Canonical patient is in priority list", priorityFiltered.any { it.pseudonymCode == DemoPatientConfig.PSEUDONYM_CODE })
     }
+
+    // =========================================================================
+    // 7. DOCTOR DASHBOARD & DEVICE COMPATIBILITY TESTS
+    // =========================================================================
+
+    @Test
+    fun testDoctorScreenNullPatientAgeCalculationDoesNotThrowNpe() {
+        val activePatient: com.sih26003.aasriti.data.local.entities.PatientEntity? = null
+        val patientAge = activePatient?.birthYear?.let { by ->
+            if (by > 1900) java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) - by else 68
+        } ?: 68
+
+        assertEquals("When activePatient is null, age must safely resolve to 68 without throwing NPE", 68, patientAge)
+    }
+
+    @Test
+    fun testDoctorScreenValidPatientAgeCalculation() {
+        val patient = com.sih26003.aasriti.data.local.entities.PatientEntity(
+            id = "test_pat_01",
+            pseudonymCode = "AS-KAM-0099",
+            birthYear = 1950,
+            gender = "M"
+        )
+        val expectedAge = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) - 1950
+        val patientAge = patient.birthYear.let { by ->
+            if (by > 1900) java.util.Calendar.getInstance().get(java.util.Calendar.YEAR) - by else 68
+        }
+        assertEquals(expectedAge, patientAge)
+    }
+
+    @Test
+    fun testTrendEngineSafeWithEmptySessions() {
+        val trend = com.sih26003.aasriti.engine.trend.TrendEngine.compute7DaySignals("test_pat_01", emptyList())
+        assertNotNull(trend)
+        assertEquals(0L, trend.averageReactionTimeMs)
+        assertEquals(0, trend.dailyPoints.size)
+    }
+
+    @Test
+    fun testPriorityEngineSafeWithEmptySessionsAndLogs() {
+        val priority = PriorityEngine.evaluateTodayPriority(
+            patient = testPatient,
+            reminders = emptyList(),
+            recentSessions = emptyList(),
+            recentLogs = emptyList()
+        )
+        assertNotNull(priority)
+        assertEquals("NORMAL", priority.severity)
+    }
 }

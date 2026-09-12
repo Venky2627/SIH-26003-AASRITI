@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiLogoBadge
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.PatientEntity
@@ -76,12 +77,12 @@ fun CareCircleSetupScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(horizontal = 20.dp, vertical = 16.dp)
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
         // Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -349,4 +350,5 @@ fun CareCircleSetupScreen(
             }
         }
     }
+}
 }

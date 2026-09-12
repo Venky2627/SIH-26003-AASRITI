@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.PatientEntity
 import com.sih26003.aasriti.demo.AasritiDemoData
@@ -55,15 +56,17 @@ fun PatientHomeScreen(
 
     var showOtherGamesModal by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 18.dp, vertical = 8.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // 1. Top Bar: Profile exit, Voice prompt, and discreet Emergency SOS Pill
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -432,5 +435,6 @@ fun PatientHomeScreen(
                 }
             }
         }
+    }
     }
 }

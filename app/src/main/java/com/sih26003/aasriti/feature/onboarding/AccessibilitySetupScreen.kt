@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiLogoBadge
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.demo.DemoStateHolder
@@ -44,22 +45,14 @@ fun AccessibilitySetupScreen(
     var extraLarge by remember { mutableStateOf(isExtraLargeFont) }
     var voiceEnabled by remember { mutableStateOf(isVoiceAssistanceEnabled) }
 
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            AasritiColorTokens.ParchmentSurface,
-            AasritiColorTokens.ParchmentBase,
-            AasritiColorTokens.ParchmentDeep
-        )
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGradient)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -417,4 +410,5 @@ fun AccessibilitySetupScreen(
             }
         }
     }
+}
 }

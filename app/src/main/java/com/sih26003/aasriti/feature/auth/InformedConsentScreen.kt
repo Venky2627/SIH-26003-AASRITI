@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiLogoBadge
 import com.sih26003.aasriti.core.ui.components.CalmConnectivityPill
 import com.sih26003.aasriti.core.ui.components.LanguageTogglePill
@@ -41,22 +42,14 @@ fun InformedConsentScreen(
     val isAssamese = DemoStateHolder.currentLanguage == "as"
     val scrollState = rememberScrollState()
 
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            AasritiColorTokens.ParchmentSurface,
-            AasritiColorTokens.ParchmentBase,
-            AasritiColorTokens.ParchmentDeep
-        )
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGradient)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // Top Utility Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -378,4 +371,5 @@ fun InformedConsentScreen(
             }
         }
     }
+}
 }

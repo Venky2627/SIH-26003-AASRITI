@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.reminders
+package com.sih26003.aasriti.feature.reminders
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sih26003.aasriti.AasritiApplication
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.ReminderEntity
 import com.sih26003.aasriti.data.repository.ReminderRepository
@@ -57,12 +58,12 @@ fun RemindersScreen(
         "APPOINTMENT" to "📅 সাক্ষাৎ (Appointment)"
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(16.dp)
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
         // Top App Bar / Navigation Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -453,5 +454,6 @@ fun RemindersScreen(
                 }
             }
         }
+    }
     }
 }

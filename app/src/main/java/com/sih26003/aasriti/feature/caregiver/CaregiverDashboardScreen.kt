@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.sih26003.aasriti.AasritiApplication
 import com.sih26003.aasriti.core.security.CryptoUtils
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.local.entities.DoctorAccessEntity
@@ -167,12 +168,14 @@ fun CaregiverDashboardScreen(
     var generatedDoctorCode by remember { mutableStateOf<String?>("424242") }
     var historyFilterCategory by remember { mutableStateOf("ALL") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp)
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 18.dp, vertical = 8.dp)
+        ) {
         // 1. Top Header & Exit
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1459,6 +1462,7 @@ fun CaregiverDashboardScreen(
                 }
             }
         )
+    }
     }
 }
 

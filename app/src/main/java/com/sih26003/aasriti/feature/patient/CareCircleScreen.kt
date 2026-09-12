@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.patient
+package com.sih26003.aasriti.feature.patient
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.demo.AasritiDemoData
 import com.sih26003.aasriti.demo.DemoFamilyContact
@@ -42,13 +43,13 @@ fun CareCircleScreen(
     val contacts = remember { AasritiDemoData.familyContacts }
     val isAssamese = DemoStateHolder.currentLanguage == "as"
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         // 1. Top Navigation Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -140,6 +141,7 @@ fun CareCircleScreen(
                 DemoStateHolder.endSimulatedCall()
             }
         )
+    }
     }
 }
 

@@ -24,6 +24,7 @@ import com.sih26003.aasriti.ml.inference.DecisionTreeEngine
 import com.sih26003.aasriti.voice.playback.VoicePromptManager
 import kotlinx.coroutines.CoroutineScope
 
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
 import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
@@ -120,14 +121,14 @@ fun VillageMarketGameScreen(
     var collectedItems by remember { mutableStateOf(listOf<String>()) }
     var showListPhase by remember { mutableStateOf(true) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -376,6 +377,7 @@ fun VillageMarketGameScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
     }
 }
 

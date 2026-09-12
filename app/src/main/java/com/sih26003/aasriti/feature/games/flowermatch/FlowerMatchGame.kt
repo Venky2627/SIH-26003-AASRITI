@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiVoicePill
 import com.sih26003.aasriti.core.ui.components.AasritiVoicePillState
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
@@ -138,14 +139,14 @@ fun FlowerMatchGameScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // 1. Top Bar with Calm Navigation & Step Indicators
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -388,6 +389,7 @@ fun FlowerMatchGameScreen(
                 )
             }
         }
+    }
     }
 }
 

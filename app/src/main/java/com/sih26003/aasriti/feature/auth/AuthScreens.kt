@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.sih26003.aasriti.core.security.CryptoUtils
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiLogoBadge
 import com.sih26003.aasriti.core.ui.components.CalmConnectivityPill
 import com.sih26003.aasriti.core.ui.components.LanguageTogglePill
@@ -59,14 +60,14 @@ fun RoleAndModeSelectScreen(
     val isAssamese = DemoStateHolder.currentLanguage == "as"
     val allPatients by patientRepository.allPatients.collectAsState(initial = emptyList())
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // Top Utility Bar: Language Selector & Calm Connectivity Indicator (from Prototype Screen 1)
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -357,6 +358,7 @@ fun RoleAndModeSelectScreen(
             )
         }
     }
+}
 
     // Discreet Demo Controls Modal (Keeps video recording clean)
     if (showDevMenu) {
@@ -464,22 +466,17 @@ fun PinAuthScreen(
         isNewSetup = !exists
     }
 
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            AasritiColorTokens.ParchmentSurface,
-            AasritiColorTokens.ParchmentBase,
-            AasritiColorTokens.ParchmentDeep
-        )
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGradient)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             Button(
                 onClick = onBack,
@@ -644,4 +641,5 @@ fun PinAuthScreen(
             )
         }
     }
+}
 }

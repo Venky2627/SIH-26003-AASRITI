@@ -1,4 +1,4 @@
-﻿package com.sih26003.aasriti.feature.games.sequencing
+package com.sih26003.aasriti.feature.games.sequencing
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,8 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
+import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.repository.GameRepository
 import com.sih26003.aasriti.feature.games.framework.BaseGameEngine
 import com.sih26003.aasriti.feature.games.framework.GameId
@@ -124,14 +127,14 @@ fun SequencingGameScreen(
 
     var selectedOrder by remember { mutableStateOf(listOf<SequenceStep>()) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -140,13 +143,14 @@ fun SequencingGameScreen(
         ) {
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262626)),
+                colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.SoftCream),
                 shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, AasritiColorTokens.WarmStoneBorder),
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
             ) {
-                Text("← উভতি যাওক", color = Color(0xFFFFD700), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("← উভতি যাওক", color = AasritiColorTokens.DeepCharcoal, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            Text("স্তৰ $difficulty (Level $difficulty)", color = Color(0xFFFFD700), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("স্তৰ $difficulty (Level $difficulty)", color = AasritiColorTokens.DeepNortheastForest, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         when (phase) {
@@ -154,7 +158,9 @@ fun SequencingGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -162,7 +168,7 @@ fun SequencingGameScreen(
                         "🫖 দৈনন্দিন ক্ৰম: ${activeScenario.title}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -175,7 +181,7 @@ fun SequencingGameScreen(
                             else -> "মনোযোগেৰে সম্পূৰ্ণ ক্ৰমটো সজাওক।"
                         },
                         fontSize = 18.sp,
-                        color = Color.White,
+                        color = AasritiColorTokens.DeepCharcoal,
                         textAlign = TextAlign.Center,
                         lineHeight = 26.sp
                     )
@@ -185,13 +191,13 @@ fun SequencingGameScreen(
                             selectedOrder = emptyList()
                             engine.startRound()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("ক্ৰম সজাওক (Start Sequencing) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("ক্ৰম সজাওক (Start Sequencing) ▶", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
                 }
             }
@@ -205,7 +211,7 @@ fun SequencingGameScreen(
                         "পৰৱৰ্তী কামটো বাছক: (${selectedOrder.size + 1}/$validStepsCount)",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD700),
+                        color = AasritiColorTokens.DeepCharcoal,
                         modifier = Modifier.padding(bottom = 14.dp)
                     )
 
@@ -216,13 +222,13 @@ fun SequencingGameScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 5.dp)
+                                .clip(RoundedCornerShape(14.dp))
                                 .background(
-                                    if (isChosen) Color(0xFF1B5E20) else Color(0xFF1E1E1E),
-                                    RoundedCornerShape(14.dp)
+                                    if (isChosen) AasritiColorTokens.SupportingSage.copy(alpha = 0.35f) else AasritiColorTokens.SoftCream
                                 )
                                 .border(
                                     2.dp,
-                                    if (isChosen) Color(0xFF00E676) else Color(0xFF424242),
+                                    if (isChosen) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.WarmStoneBorder,
                                     RoundedCornerShape(14.dp)
                                 )
                                 .clickable(enabled = !isChosen) {
@@ -251,7 +257,7 @@ fun SequencingGameScreen(
                                     step.description,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isChosen) Color.White else Color(0xFFFFD700)
+                                    color = if (isChosen) AasritiColorTokens.DeepNortheastForest else AasritiColorTokens.DeepCharcoal
                                 )
                             }
                         }
@@ -263,7 +269,9 @@ fun SequencingGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF152618), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -273,19 +281,19 @@ fun SequencingGameScreen(
                         feedbackMsg,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E676),
+                        color = AasritiColorTokens.DeepNortheastForest,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.finishRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF121212))
+                        Text("পৰৱৰ্তী স্তৰ (Next Round) ➔", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
                 }
             }
@@ -294,28 +302,31 @@ fun SequencingGameScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(AasritiColorTokens.SoftCream)
+                        .border(1.5.dp, AasritiColorTokens.WarmStoneBorder, RoundedCornerShape(16.dp))
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD700))
+                    Text("✅ খেল সম্পন্ন হৈছে", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.DeepNortheastForest)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = Color.White)
+                    Text("পৰৱৰ্তী পৰামৰ্শিত স্তৰ: $difficulty", fontSize = 18.sp, color = AasritiColorTokens.DeepCharcoal)
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { engine.proceedToNextRound() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(containerColor = AasritiColorTokens.DeepNortheastForest),
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("আকৌ খেলক (Play Again)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("আকৌ খেলক (Play Again)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AasritiColorTokens.WarmIvory)
                     }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.sih26003.aasriti.AasritiApplication
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.theme.AasritiColorTokens
 import com.sih26003.aasriti.data.local.entities.CareLogEntity
 import com.sih26003.aasriti.data.repository.CareLogRepository
@@ -193,12 +194,12 @@ fun AshaDashboardScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AasritiColorTokens.WarmIvory)
-            .padding(18.dp)
-    ) {
+    AasritiAppBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp)
+        ) {
         // 1. Top Header
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -363,6 +364,7 @@ fun AshaDashboardScreen(
             isAssamese = isAssamese,
             onDismiss = { activeHistoryPatient = null }
         )
+    }
     }
 }
 

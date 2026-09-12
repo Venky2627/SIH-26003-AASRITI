@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sih26003.aasriti.core.ui.components.AasritiAppBackground
 import com.sih26003.aasriti.core.ui.components.AasritiHeroBadge
 import com.sih26003.aasriti.core.ui.components.CalmConnectivityPill
 import com.sih26003.aasriti.core.ui.components.LanguageTogglePill
@@ -51,49 +52,13 @@ fun WelcomeScreen(
     val isAssamese = DemoStateHolder.currentLanguage == "as"
     val scrollState = rememberScrollState()
 
-    // Canonical Prototype Parchment Gradient: #FAF4ED -> #F6EDE0 -> #EDDCC5
-    val backgroundGradient = Brush.verticalGradient(
-        colors = listOf(
-            AasritiColorTokens.ParchmentSurface,
-            AasritiColorTokens.ParchmentBase,
-            AasritiColorTokens.ParchmentDeep
-        )
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGradient)
-    ) {
-        // Subtle ambient radial glow effects from prototype
-        Box(
-            modifier = Modifier
-                .size(240.dp)
-                .offset(x = (-60).dp, y = (-40).dp)
-                .clip(CircleShape)
-                .background(AasritiColorTokens.SoftClay.copy(alpha = 0.12f))
-        )
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .align(Alignment.CenterEnd)
-                .offset(x = 70.dp, y = (-20).dp)
-                .clip(CircleShape)
-                .background(AasritiColorTokens.MugaGold.copy(alpha = 0.10f))
-        )
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .align(Alignment.BottomStart)
-                .offset(x = (-40).dp, y = 50.dp)
-                .clip(CircleShape)
-                .background(AasritiColorTokens.SupportingSage.copy(alpha = 0.12f))
-        )
-
+    AasritiAppBackground {
         // Main Content Container
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(scrollState)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
